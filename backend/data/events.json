@@ -1,0 +1,16 @@
+[
+  {"id": 101, "employee_id": 1, "title": "Daily sync", "start_datetime": "2026-05-13T10:00:00", "end_datetime": "2026-05-13T10:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 102, "employee_id": 1, "title": "Client call", "start_datetime": "2026-05-13T18:30:00", "end_datetime": "2026-05-13T19:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 103, "employee_id": 1, "title": "Planning", "start_datetime": "2026-05-14T14:00:00", "end_datetime": "2026-05-14T15:30:00", "source": "calendar", "type": "meeting"},
+
+  {"id": 201, "employee_id": 2, "title": "Code review", "start_datetime": "2026-05-13T10:30:00", "end_datetime": "2026-05-13T11:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 202, "employee_id": 2, "title": "Architecture", "start_datetime": "2026-05-13T19:30:00", "end_datetime": "2026-05-13T20:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 203, "employee_id": 2, "title": "Sprint work", "start_datetime": "2026-05-14T12:00:00", "end_datetime": "2026-05-14T17:00:00", "source": "calendar", "type": "focus"},
+
+  {"id": 301, "employee_id": 3, "title": "Design critique", "start_datetime": "2026-05-13T08:30:00", "end_datetime": "2026-05-13T09:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 302, "employee_id": 3, "title": "User interview", "start_datetime": "2026-05-13T17:30:00", "end_datetime": "2026-05-13T18:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 303, "employee_id": 3, "title": "Prototype work", "start_datetime": "2026-05-14T10:00:00", "end_datetime": "2026-05-14T15:00:00", "source": "calendar", "type": "focus"},
+
+  {"id": 401, "employee_id": 4, "title": "Testing sync", "start_datetime": "2026-05-13T11:30:00", "end_datetime": "2026-05-13T12:00:00", "source": "calendar", "type": "meeting"},
+  {"id": 402, "employee_id": 4, "title": "Regression", "start_datetime": "2026-05-14T15:00:00", "end_datetime": "2026-05-14T19:30:00", "source": "calendar", "type": "focus"}
+]

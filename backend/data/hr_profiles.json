@@ -1,0 +1,6 @@
+[
+  {"employee_id": 1, "hr_timezone": "Europe/Moscow", "hr_work_format": "hybrid", "hr_work_start": "09:00", "hr_work_end": "18:00"},
+  {"employee_id": 2, "hr_timezone": "Europe/Moscow", "hr_work_format": "remote", "hr_work_start": "10:00", "hr_work_end": "19:00"},
+  {"employee_id": 3, "hr_timezone": "Europe/Moscow", "hr_work_format": "office", "hr_work_start": "09:00", "hr_work_end": "18:00"},
+  {"employee_id": 4, "hr_timezone": "Europe/Moscow", "hr_work_format": "office", "hr_work_start": "11:00", "hr_work_end": "20:00"}
+]
