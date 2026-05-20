@@ -1,7 +1,5 @@
-from __future__ import annotations
-
-from typing import List
 from pydantic import BaseModel
+from typing import List, Optional
 
 
 class Employee(BaseModel):
@@ -27,14 +25,6 @@ class Event(BaseModel):
     type: str
 
 
-class Absence(BaseModel):
-    id: int
-    employee_id: int
-    type: str
-    start_date: str
-    end_date: str
-
-
 class HRProfile(BaseModel):
     employee_id: int
     hr_timezone: str
@@ -54,81 +44,24 @@ class EmployeeMetrics(BaseModel):
     load: float
     timezone_mismatch: int
     hr_mismatch: int
-    absence_count: int
-    calendar_conflict_count: int
-    data_mismatch_count: int
-    issue_count: int
     conflict_count: int
     risk: float
     risk_status: str
-    risk_tone: str
 
 
-class FrontendEmployee(BaseModel):
+class EmployeeListItem(BaseModel):
     id: int
     name: str
-    role: str
     team: str
-    format: str
+    role: str
     timezone: str
-    workDays: List[str]
-    workStart: int
-    workEnd: int
-    updatedAt: str
-    meetingsTotal: int
-    meetingsOutside: int
-    busyHours: float
-    workHours: float
-    timezoneMismatch: int
-    hrCalendarMismatch: int
-    exceptions: List[str]
-    statusNote: str
+    work_format: str
     metrics: EmployeeMetrics
 
 
-class Recommendation(BaseModel):
-    type: str
-    title: str
-    reason: str
-    priority: str
-
-
-class Conflict(BaseModel):
-    id: int
-    employeeId: int
-    employee: str
-    title: str
-    day: str
-    time: str
-    reason: str
-    severity: str
-    source: str = "calendar"
-    type: str = "meeting"
-
-
-class DataMismatch(BaseModel):
-    id: str
-    employeeId: int
-    employee: str
-    type: str
-    title: str
-    reason: str
-    severity: str
-
-
-class AvailabilitySlot(BaseModel):
-    hour: int
-    count: int
-    type: str
-    missing: List[str]
-
-
-class AvailabilityDay(BaseModel):
-    day: str
-    slots: List[AvailabilitySlot]
-
-
-class MeetingSlot(BaseModel):
-    label: str
-    count: int
-    missing: List[str]
+class EmployeeCard(BaseModel):
+    employee: Employee
+    hr_profile: Optional[HRProfile]
+    events: List[Event]
+    metrics: EmployeeMetrics
+    recommendations: List[str]
