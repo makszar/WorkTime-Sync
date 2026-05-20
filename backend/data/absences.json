@@ -1,0 +1,5 @@
+[
+  {"id": 1, "employee_id": 2, "type": "командировка", "start_date": "2026-05-20", "end_date": "2026-05-21"},
+  {"id": 2, "employee_id": 3, "type": "личные часы", "start_date": "2026-05-20", "end_date": "2026-05-20"},
+  {"id": 3, "employee_id": 6, "type": "отпуск", "start_date": "2026-06-01", "end_date": "2026-06-07"}
+]

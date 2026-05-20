@@ -1,5 +1,7 @@
-from pydantic import BaseModel
+from __future__ import annotations
+
 from typing import List, Optional
+from pydantic import BaseModel
 
 
 class Employee(BaseModel):
@@ -25,6 +27,14 @@ class Event(BaseModel):
     type: str
 
 
+class Absence(BaseModel):
+    id: int
+    employee_id: int
+    type: str
+    start_date: str
+    end_date: str
+
+
 class HRProfile(BaseModel):
     employee_id: int
     hr_timezone: str
@@ -44,24 +54,48 @@ class EmployeeMetrics(BaseModel):
     load: float
     timezone_mismatch: int
     hr_mismatch: int
+    absence_count: int
     conflict_count: int
     risk: float
     risk_status: str
+    risk_tone: str
 
 
-class EmployeeListItem(BaseModel):
+class FrontendEmployee(BaseModel):
     id: int
     name: str
-    team: str
     role: str
+    team: str
+    format: str
     timezone: str
-    work_format: str
+    workDays: List[str]
+    workStart: int
+    workEnd: int
+    updatedAt: str
+    meetingsTotal: int
+    meetingsOutside: int
+    busyHours: float
+    workHours: float
+    timezoneMismatch: int
+    hrCalendarMismatch: int
+    exceptions: List[str]
+    statusNote: str
     metrics: EmployeeMetrics
 
 
-class EmployeeCard(BaseModel):
-    employee: Employee
-    hr_profile: Optional[HRProfile]
-    events: List[Event]
-    metrics: EmployeeMetrics
-    recommendations: List[str]
+class Recommendation(BaseModel):
+    type: str
+    title: str
+    reason: str
+    priority: str
+
+
+class Conflict(BaseModel):
+    id: int
+    employeeId: int
+    employee: str
+    title: str
+    day: str
+    time: str
+    reason: str
+    severity: str

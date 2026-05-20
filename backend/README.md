@@ -1,46 +1,47 @@
-# WorkTime Sync Backend MVP
+# WorkTime Sync Backend
 
-Минимальный backend-проект для хакатонного MVP WorkTime Sync.
+Backend полностью адаптирован под текущий React/Vite frontend.
 
-## Что уже есть
+## Главный endpoint для frontend
 
-- Чтение тестовых данных из JSON.
-- Подготовлена функция `load_table()`, которая умеет читать JSON или CSV.
-- API `GET /employees` — список сотрудников с краткими метриками.
-- API `GET /employees/{id}` — карточка сотрудника, события, HR-профиль, рекомендации.
-- API `GET /analytics/summary` — общая аналитика по команде.
-- Расчёты:
-  - `days_since_update`
-  - `schedule_actuality`
-  - `outside_work_ratio`
-  - `load`
-  - `risk`
-  - `risk_status`
-
-## Запуск
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-После запуска открой:
+Frontend при `VITE_USE_MOCK_DATA=false` делает один запрос:
 
 ```text
-http://127.0.0.1:8000/docs
+GET /api/worktime/overview
 ```
 
-## Основные endpoint'ы
+Ответ соответствует форме, которую ждёт `src/App.jsx`:
+
+```json
+{
+  "employees": [],
+  "events": [],
+  "roadmap": [],
+  "summary": {},
+  "recommendations": [],
+  "bestSlots": []
+}
+```
+
+## Остальные endpoint'ы
 
 ```text
+GET /
+GET /health
 GET /employees
-GET /employees/1
+GET /employees/frontend
+GET /employees/{employee_id}
 GET /analytics/summary
+GET /analytics/conflicts
+GET /analytics/availability
+GET /recommendations
+GET /meeting-slots
+POST /upload/{dataset}
 ```
 
-## Формулы
+## Расчёты
+
+Backend считает обязательные для MVP показатели:
 
 ```text
 days_since_update = today - last_update_date
@@ -54,14 +55,65 @@ risk = 0.30 * (1 - schedule_actuality)
      + 0.10 * hr_mismatch
 ```
 
-## Следующий шаг
-
-Добавить endpoint'ы:
+Также считаются:
 
 ```text
-GET /analytics/conflicts
-GET /analytics/availability
-GET /recommendations
-GET /meeting-slots
-POST /upload
+conflicts
+availability map
+best meeting slots
+recommendations
+roadmap
+risk status
+```
+
+## Данные
+
+Данные лежат в `backend/data`:
+
+```text
+employees.json
+hr_profiles.json
+events.json
+absences.json
+```
+
+Поддержка CSV оставлена в `data_loader.py`.
+
+## Запуск backend
+
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate   # Windows PowerShell/CMD
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+API-документация:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+## Запуск frontend с backend
+
+В папке `frontend` создай `.env`:
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
+VITE_USE_MOCK_DATA=false
+```
+
+Потом:
+
+```bash
+cd frontend
+npm.cmd install
+npm.cmd run dev
+```
+
+Открыть сайт:
+
+```text
+http://localhost:5173
 ```
