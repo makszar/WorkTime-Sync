@@ -1,0 +1,38 @@
+﻿id,employee_id,title,start_datetime,end_datetime,source,type
+evt001,emp001,Product daily sync,2026-05-20T10:00:00+03:00,2026-05-20T10:45:00+03:00,google_calendar,meeting
+evt002,emp001,Roadmap planning,2026-05-20T15:00:00+03:00,2026-05-20T16:00:00+03:00,google_calendar,planning
+evt003,emp001,Sprint review,2026-05-21T13:00:00+03:00,2026-05-21T14:00:00+03:00,google_calendar,review
+evt004,emp001,Demo script check,2026-05-22T11:00:00+03:00,2026-05-22T12:00:00+03:00,google_calendar,meeting
+evt005,emp002,Backend standup,2026-05-20T11:00:00+03:00,2026-05-20T11:30:00+03:00,google_calendar,meeting
+evt006,emp002,Code review,2026-05-20T14:00:00+03:00,2026-05-20T15:00:00+03:00,google_calendar,review
+evt007,emp002,Architecture discussion,2026-05-21T16:00:00+03:00,2026-05-21T17:00:00+03:00,google_calendar,meeting
+evt008,emp002,Production incident,2026-05-21T20:00:00+03:00,2026-05-21T21:30:00+03:00,google_calendar,incident
+evt009,emp002,API handoff,2026-05-22T12:00:00+03:00,2026-05-22T13:00:00+03:00,google_calendar,handoff
+evt010,emp003,Design review,2026-05-20T10:00:00+01:00,2026-05-20T11:00:00+01:00,google_calendar,review
+evt011,emp003,US client call,2026-05-20T18:30:00+01:00,2026-05-20T19:30:00+01:00,google_calendar,external_call
+evt012,emp003,Late design feedback,2026-05-21T20:00:00+01:00,2026-05-21T21:00:00+01:00,google_calendar,review
+evt013,emp003,Morning prototype sync,2026-05-22T09:30:00+01:00,2026-05-22T10:00:00+01:00,google_calendar,meeting
+evt014,emp003,Global design meeting,2026-05-22T17:30:00+01:00,2026-05-22T18:30:00+01:00,google_calendar,meeting
+evt015,emp004,Regression testing block,2026-05-18T09:00:00+05:00,2026-05-18T13:00:00+05:00,jira_calendar,focus_work
+evt016,emp004,Bug triage,2026-05-18T14:00:00+05:00,2026-05-18T18:00:00+05:00,jira_calendar,meeting
+evt017,emp004,Release validation,2026-05-19T09:00:00+05:00,2026-05-19T13:00:00+05:00,jira_calendar,focus_work
+evt018,emp004,QA review,2026-05-19T14:00:00+05:00,2026-05-19T18:00:00+05:00,google_calendar,review
+evt019,emp004,Test automation,2026-05-20T09:00:00+05:00,2026-05-20T13:00:00+05:00,jira_calendar,focus_work
+evt020,emp004,Defect sync,2026-05-20T14:00:00+05:00,2026-05-20T18:00:00+05:00,google_calendar,meeting
+evt021,emp004,Smoke testing,2026-05-21T09:00:00+05:00,2026-05-21T13:00:00+05:00,jira_calendar,focus_work
+evt022,emp004,Release checklist,2026-05-21T14:00:00+05:00,2026-05-21T17:30:00+05:00,jira_calendar,focus_work
+evt023,emp004,Final QA sign-off,2026-05-22T09:00:00+05:00,2026-05-22T13:00:00+05:00,google_calendar,review
+evt024,emp004,Hotfix validation,2026-05-22T14:00:00+05:00,2026-05-22T18:00:00+05:00,jira_calendar,focus_work
+evt025,emp005,Requirements interview,2026-05-20T12:00:00+03:00,2026-05-20T13:00:00+03:00,google_calendar,meeting
+evt026,emp005,Weekly analytics sync during vacation,2026-05-22T15:00:00+03:00,2026-05-22T16:00:00+03:00,google_calendar,meeting
+evt027,emp006,HR onboarding,2026-05-20T08:30:00+03:00,2026-05-20T09:30:00+03:00,hr_calendar,meeting
+evt028,emp006,Policy review,2026-05-21T16:00:00+03:00,2026-05-21T17:00:00+03:00,hr_calendar,review
+evt029,emp007,Client pipeline review,2026-05-20T09:30:00+03:00,2026-05-20T10:30:00+03:00,google_calendar,meeting
+evt030,emp007,Sales call,2026-05-21T15:00:00+03:00,2026-05-21T16:00:00+03:00,google_calendar,external_call
+evt031,emp008,Support queue handoff,2026-05-19T12:00:00+05:00,2026-05-19T13:00:00+05:00,support_calendar,handoff
+evt032,emp008,Customer escalation while sick,2026-05-20T16:00:00+05:00,2026-05-20T17:00:00+05:00,support_calendar,incident
+evt033,emp009,Operations morning sync,2026-05-20T09:00:00+02:00,2026-05-20T09:30:00+02:00,google_calendar,meeting
+evt034,emp009,Process check,2026-05-21T11:00:00+02:00,2026-05-21T12:00:00+02:00,google_calendar,review
+evt035,emp010,Stakeholder update,2026-05-20T11:00:00+03:00,2026-05-20T12:00:00+03:00,google_calendar,meeting
+evt036,emp010,Sprint planning,2026-05-21T10:00:00+03:00,2026-05-21T11:00:00+03:00,google_calendar,planning
+evt037,emp010,Partner call,2026-05-22T16:00:00+03:00,2026-05-22T17:00:00+03:00,google_calendar,external_call

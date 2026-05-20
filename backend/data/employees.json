@@ -1,74 +1,182 @@
 [
   {
-    "id": 1,
-    "name": "Анна Морозова",
-    "team": "People Ops",
-    "role": "HR-специалист",
+    "id": "emp001",
+    "name": "Анна Иванова",
+    "team": "Product",
+    "role": "Product Lead",
     "timezone": "Europe/Moscow",
     "work_start": "09:00",
     "work_end": "18:00",
-    "work_days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
     "work_format": "hybrid",
-    "last_update_date": "2026-05-02"
+    "last_update_date": "2026-05-10"
   },
   {
-    "id": 2,
-    "name": "Илья Романов",
-    "team": "Core Platform",
-    "role": "Backend-разработчик",
-    "timezone": "Asia/Yekaterinburg",
+    "id": "emp002",
+    "name": "Дмитрий Соколов",
+    "team": "Product",
+    "role": "Backend Developer",
+    "timezone": "Europe/Moscow",
     "work_start": "10:00",
     "work_end": "19:00",
-    "work_days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "work_format": "remote",
+    "last_update_date": "2025-12-10"
+  },
+  {
+    "id": "emp003",
+    "name": "Елена Петрова",
+    "team": "Product",
+    "role": "UX/UI Designer",
+    "timezone": "Europe/London",
+    "work_start": "09:00",
+    "work_end": "17:00",
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "work_format": "remote",
+    "last_update_date": "2026-05-01"
+  },
+  {
+    "id": "emp004",
+    "name": "Иван Ким",
+    "team": "QA",
+    "role": "QA Engineer",
+    "timezone": "Asia/Almaty",
+    "work_start": "09:00",
+    "work_end": "18:00",
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "work_format": "office",
+    "last_update_date": "2026-04-25"
+  },
+  {
+    "id": "emp005",
+    "name": "Мария Смирнова",
+    "team": "Product",
+    "role": "Business Analyst",
+    "timezone": "Europe/Moscow",
+    "work_start": "09:00",
+    "work_end": "18:00",
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "work_format": "hybrid",
+    "last_update_date": "2026-05-05"
+  },
+  {
+    "id": "emp006",
+    "name": "Павел Орлов",
+    "team": "HR",
+    "role": "HR Manager",
+    "timezone": "Europe/Moscow",
+    "work_start": "08:00",
+    "work_end": "17:00",
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "work_format": "office",
+    "last_update_date": "2026-04-29"
+  },
+  {
+    "id": "emp007",
+    "name": "Алина Волкова",
+    "team": "Sales",
+    "role": "Sales Manager",
+    "timezone": "Europe/Moscow",
+    "work_start": "09:00",
+    "work_end": "18:00",
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "work_format": "remote",
+    "last_update_date": "2026-03-30"
+  },
+  {
+    "id": "emp008",
+    "name": "Сергей Морозов",
+    "team": "Support",
+    "role": "Support Specialist",
+    "timezone": "Asia/Yekaterinburg",
+    "work_start": "11:00",
+    "work_end": "20:00",
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
     "work_format": "remote",
     "last_update_date": "2026-01-30"
   },
   {
-    "id": 3,
-    "name": "Мария Ким",
-    "team": "Product UI",
-    "role": "Frontend-разработчик",
-    "timezone": "Europe/Moscow",
+    "id": "emp009",
+    "name": "Ольга Федорова",
+    "team": "Operations",
+    "role": "Operations Coordinator",
+    "timezone": "Europe/Kaliningrad",
     "work_start": "08:00",
-    "work_end": "17:00",
-    "work_days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "work_end": "16:00",
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
     "work_format": "office",
-    "last_update_date": "2026-04-20"
+    "last_update_date": "2026-05-12"
   },
   {
-    "id": 4,
-    "name": "Дмитрий Волков",
-    "team": "Delivery",
-    "role": "Проектный менеджер",
+    "id": "emp010",
+    "name": "Тимур Ахметов",
+    "team": "Product",
+    "role": "Project Manager",
     "timezone": "Europe/Moscow",
     "work_start": "09:00",
     "work_end": "18:00",
-    "work_days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "work_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
     "work_format": "hybrid",
-    "last_update_date": "2025-12-15"
-  },
-  {
-    "id": 5,
-    "name": "Олег Сафин",
-    "team": "Quality",
-    "role": "QA-инженер",
-    "timezone": "Asia/Dubai",
-    "work_start": "11:00",
-    "work_end": "20:00",
-    "work_days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "work_format": "remote",
-    "last_update_date": "2026-03-12"
-  },
-  {
-    "id": 6,
-    "name": "Екатерина Лебедева",
-    "team": "Discovery",
-    "role": "Бизнес-аналитик",
-    "timezone": "Europe/Moscow",
-    "work_start": "09:00",
-    "work_end": "18:00",
-    "work_days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "work_format": "office",
-    "last_update_date": "2026-05-10"
+    "last_update_date": "2026-05-14"
   }
 ]

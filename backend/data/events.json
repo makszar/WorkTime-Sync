@@ -1,26 +1,335 @@
 [
-  {"id": 101, "employee_id": 1, "title": "HR daily", "start_datetime": "2026-05-18T10:00:00", "end_datetime": "2026-05-18T10:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 102, "employee_id": 1, "title": "Интервью с кандидатом", "start_datetime": "2026-05-18T15:00:00", "end_datetime": "2026-05-18T16:00:00", "source": "calendar", "type": "meeting"},
-  {"id": 103, "employee_id": 1, "title": "Созвон с подрядчиком", "start_datetime": "2026-05-19T18:30:00", "end_datetime": "2026-05-19T19:00:00", "source": "calendar", "type": "meeting"},
-
-  {"id": 201, "employee_id": 2, "title": "Code review", "start_datetime": "2026-05-18T10:30:00", "end_datetime": "2026-05-18T11:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 202, "employee_id": 2, "title": "Синхронизация с командой продукта", "start_datetime": "2026-05-19T20:30:00", "end_datetime": "2026-05-19T21:15:00", "source": "calendar", "type": "meeting"},
-  {"id": 203, "employee_id": 2, "title": "Architecture focus", "start_datetime": "2026-05-20T12:00:00", "end_datetime": "2026-05-20T17:00:00", "source": "task_tracker", "type": "focus"},
-  {"id": 204, "employee_id": 2, "title": "Поддержка релиза", "start_datetime": "2026-05-21T19:30:00", "end_datetime": "2026-05-21T20:30:00", "source": "calendar", "type": "meeting"},
-
-  {"id": 301, "employee_id": 3, "title": "Design critique", "start_datetime": "2026-05-18T08:30:00", "end_datetime": "2026-05-18T09:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 302, "employee_id": 3, "title": "Дизайн-ревью", "start_datetime": "2026-05-20T17:30:00", "end_datetime": "2026-05-20T18:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 303, "employee_id": 3, "title": "Prototype work", "start_datetime": "2026-05-21T10:00:00", "end_datetime": "2026-05-21T15:00:00", "source": "task_tracker", "type": "focus"},
-
-  {"id": 401, "employee_id": 4, "title": "Статус по спринту", "start_datetime": "2026-05-20T08:15:00", "end_datetime": "2026-05-20T09:00:00", "source": "calendar", "type": "meeting"},
-  {"id": 402, "employee_id": 4, "title": "Планирование релиза", "start_datetime": "2026-05-22T19:00:00", "end_datetime": "2026-05-22T20:00:00", "source": "calendar", "type": "meeting"},
-  {"id": 403, "employee_id": 4, "title": "Delivery planning", "start_datetime": "2026-05-21T10:00:00", "end_datetime": "2026-05-21T15:00:00", "source": "task_tracker", "type": "focus"},
-  {"id": 404, "employee_id": 4, "title": "Регулярный статус", "start_datetime": "2026-05-19T18:30:00", "end_datetime": "2026-05-19T19:30:00", "source": "calendar", "type": "meeting"},
-
-  {"id": 501, "employee_id": 5, "title": "Testing sync", "start_datetime": "2026-05-18T11:30:00", "end_datetime": "2026-05-18T12:00:00", "source": "calendar", "type": "meeting"},
-  {"id": 502, "employee_id": 5, "title": "Regression", "start_datetime": "2026-05-19T15:00:00", "end_datetime": "2026-05-19T19:30:00", "source": "task_tracker", "type": "focus"},
-  {"id": 503, "employee_id": 5, "title": "Поздний баг-триаж", "start_datetime": "2026-05-20T20:30:00", "end_datetime": "2026-05-20T21:00:00", "source": "calendar", "type": "meeting"},
-
-  {"id": 601, "employee_id": 6, "title": "Discovery sync", "start_datetime": "2026-05-18T12:00:00", "end_datetime": "2026-05-18T13:00:00", "source": "calendar", "type": "meeting"},
-  {"id": 602, "employee_id": 6, "title": "Requirements workshop", "start_datetime": "2026-05-19T14:00:00", "end_datetime": "2026-05-19T16:00:00", "source": "calendar", "type": "meeting"}
+  {
+    "id": "evt001",
+    "employee_id": "emp001",
+    "title": "Product daily sync",
+    "start_datetime": "2026-05-20T10:00:00+03:00",
+    "end_datetime": "2026-05-20T10:45:00+03:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt002",
+    "employee_id": "emp001",
+    "title": "Roadmap planning",
+    "start_datetime": "2026-05-20T15:00:00+03:00",
+    "end_datetime": "2026-05-20T16:00:00+03:00",
+    "source": "google_calendar",
+    "type": "planning"
+  },
+  {
+    "id": "evt003",
+    "employee_id": "emp001",
+    "title": "Sprint review",
+    "start_datetime": "2026-05-21T13:00:00+03:00",
+    "end_datetime": "2026-05-21T14:00:00+03:00",
+    "source": "google_calendar",
+    "type": "review"
+  },
+  {
+    "id": "evt004",
+    "employee_id": "emp001",
+    "title": "Demo script check",
+    "start_datetime": "2026-05-22T11:00:00+03:00",
+    "end_datetime": "2026-05-22T12:00:00+03:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt005",
+    "employee_id": "emp002",
+    "title": "Backend standup",
+    "start_datetime": "2026-05-20T11:00:00+03:00",
+    "end_datetime": "2026-05-20T11:30:00+03:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt006",
+    "employee_id": "emp002",
+    "title": "Code review",
+    "start_datetime": "2026-05-20T14:00:00+03:00",
+    "end_datetime": "2026-05-20T15:00:00+03:00",
+    "source": "google_calendar",
+    "type": "review"
+  },
+  {
+    "id": "evt007",
+    "employee_id": "emp002",
+    "title": "Architecture discussion",
+    "start_datetime": "2026-05-21T16:00:00+03:00",
+    "end_datetime": "2026-05-21T17:00:00+03:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt008",
+    "employee_id": "emp002",
+    "title": "Production incident",
+    "start_datetime": "2026-05-21T20:00:00+03:00",
+    "end_datetime": "2026-05-21T21:30:00+03:00",
+    "source": "google_calendar",
+    "type": "incident"
+  },
+  {
+    "id": "evt009",
+    "employee_id": "emp002",
+    "title": "API handoff",
+    "start_datetime": "2026-05-22T12:00:00+03:00",
+    "end_datetime": "2026-05-22T13:00:00+03:00",
+    "source": "google_calendar",
+    "type": "handoff"
+  },
+  {
+    "id": "evt010",
+    "employee_id": "emp003",
+    "title": "Design review",
+    "start_datetime": "2026-05-20T10:00:00+01:00",
+    "end_datetime": "2026-05-20T11:00:00+01:00",
+    "source": "google_calendar",
+    "type": "review"
+  },
+  {
+    "id": "evt011",
+    "employee_id": "emp003",
+    "title": "US client call",
+    "start_datetime": "2026-05-20T18:30:00+01:00",
+    "end_datetime": "2026-05-20T19:30:00+01:00",
+    "source": "google_calendar",
+    "type": "external_call"
+  },
+  {
+    "id": "evt012",
+    "employee_id": "emp003",
+    "title": "Late design feedback",
+    "start_datetime": "2026-05-21T20:00:00+01:00",
+    "end_datetime": "2026-05-21T21:00:00+01:00",
+    "source": "google_calendar",
+    "type": "review"
+  },
+  {
+    "id": "evt013",
+    "employee_id": "emp003",
+    "title": "Morning prototype sync",
+    "start_datetime": "2026-05-22T09:30:00+01:00",
+    "end_datetime": "2026-05-22T10:00:00+01:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt014",
+    "employee_id": "emp003",
+    "title": "Global design meeting",
+    "start_datetime": "2026-05-22T17:30:00+01:00",
+    "end_datetime": "2026-05-22T18:30:00+01:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt015",
+    "employee_id": "emp004",
+    "title": "Regression testing block",
+    "start_datetime": "2026-05-18T09:00:00+05:00",
+    "end_datetime": "2026-05-18T13:00:00+05:00",
+    "source": "jira_calendar",
+    "type": "focus_work"
+  },
+  {
+    "id": "evt016",
+    "employee_id": "emp004",
+    "title": "Bug triage",
+    "start_datetime": "2026-05-18T14:00:00+05:00",
+    "end_datetime": "2026-05-18T18:00:00+05:00",
+    "source": "jira_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt017",
+    "employee_id": "emp004",
+    "title": "Release validation",
+    "start_datetime": "2026-05-19T09:00:00+05:00",
+    "end_datetime": "2026-05-19T13:00:00+05:00",
+    "source": "jira_calendar",
+    "type": "focus_work"
+  },
+  {
+    "id": "evt018",
+    "employee_id": "emp004",
+    "title": "QA review",
+    "start_datetime": "2026-05-19T14:00:00+05:00",
+    "end_datetime": "2026-05-19T18:00:00+05:00",
+    "source": "google_calendar",
+    "type": "review"
+  },
+  {
+    "id": "evt019",
+    "employee_id": "emp004",
+    "title": "Test automation",
+    "start_datetime": "2026-05-20T09:00:00+05:00",
+    "end_datetime": "2026-05-20T13:00:00+05:00",
+    "source": "jira_calendar",
+    "type": "focus_work"
+  },
+  {
+    "id": "evt020",
+    "employee_id": "emp004",
+    "title": "Defect sync",
+    "start_datetime": "2026-05-20T14:00:00+05:00",
+    "end_datetime": "2026-05-20T18:00:00+05:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt021",
+    "employee_id": "emp004",
+    "title": "Smoke testing",
+    "start_datetime": "2026-05-21T09:00:00+05:00",
+    "end_datetime": "2026-05-21T13:00:00+05:00",
+    "source": "jira_calendar",
+    "type": "focus_work"
+  },
+  {
+    "id": "evt022",
+    "employee_id": "emp004",
+    "title": "Release checklist",
+    "start_datetime": "2026-05-21T14:00:00+05:00",
+    "end_datetime": "2026-05-21T17:30:00+05:00",
+    "source": "jira_calendar",
+    "type": "focus_work"
+  },
+  {
+    "id": "evt023",
+    "employee_id": "emp004",
+    "title": "Final QA sign-off",
+    "start_datetime": "2026-05-22T09:00:00+05:00",
+    "end_datetime": "2026-05-22T13:00:00+05:00",
+    "source": "google_calendar",
+    "type": "review"
+  },
+  {
+    "id": "evt024",
+    "employee_id": "emp004",
+    "title": "Hotfix validation",
+    "start_datetime": "2026-05-22T14:00:00+05:00",
+    "end_datetime": "2026-05-22T18:00:00+05:00",
+    "source": "jira_calendar",
+    "type": "focus_work"
+  },
+  {
+    "id": "evt025",
+    "employee_id": "emp005",
+    "title": "Requirements interview",
+    "start_datetime": "2026-05-20T12:00:00+03:00",
+    "end_datetime": "2026-05-20T13:00:00+03:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt026",
+    "employee_id": "emp005",
+    "title": "Weekly analytics sync during vacation",
+    "start_datetime": "2026-05-22T15:00:00+03:00",
+    "end_datetime": "2026-05-22T16:00:00+03:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt027",
+    "employee_id": "emp006",
+    "title": "HR onboarding",
+    "start_datetime": "2026-05-20T08:30:00+03:00",
+    "end_datetime": "2026-05-20T09:30:00+03:00",
+    "source": "hr_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt028",
+    "employee_id": "emp006",
+    "title": "Policy review",
+    "start_datetime": "2026-05-21T16:00:00+03:00",
+    "end_datetime": "2026-05-21T17:00:00+03:00",
+    "source": "hr_calendar",
+    "type": "review"
+  },
+  {
+    "id": "evt029",
+    "employee_id": "emp007",
+    "title": "Client pipeline review",
+    "start_datetime": "2026-05-20T09:30:00+03:00",
+    "end_datetime": "2026-05-20T10:30:00+03:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt030",
+    "employee_id": "emp007",
+    "title": "Sales call",
+    "start_datetime": "2026-05-21T15:00:00+03:00",
+    "end_datetime": "2026-05-21T16:00:00+03:00",
+    "source": "google_calendar",
+    "type": "external_call"
+  },
+  {
+    "id": "evt031",
+    "employee_id": "emp008",
+    "title": "Support queue handoff",
+    "start_datetime": "2026-05-19T12:00:00+05:00",
+    "end_datetime": "2026-05-19T13:00:00+05:00",
+    "source": "support_calendar",
+    "type": "handoff"
+  },
+  {
+    "id": "evt032",
+    "employee_id": "emp008",
+    "title": "Customer escalation while sick",
+    "start_datetime": "2026-05-20T16:00:00+05:00",
+    "end_datetime": "2026-05-20T17:00:00+05:00",
+    "source": "support_calendar",
+    "type": "incident"
+  },
+  {
+    "id": "evt033",
+    "employee_id": "emp009",
+    "title": "Operations morning sync",
+    "start_datetime": "2026-05-20T09:00:00+02:00",
+    "end_datetime": "2026-05-20T09:30:00+02:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt034",
+    "employee_id": "emp009",
+    "title": "Process check",
+    "start_datetime": "2026-05-21T11:00:00+02:00",
+    "end_datetime": "2026-05-21T12:00:00+02:00",
+    "source": "google_calendar",
+    "type": "review"
+  },
+  {
+    "id": "evt035",
+    "employee_id": "emp010",
+    "title": "Stakeholder update",
+    "start_datetime": "2026-05-20T11:00:00+03:00",
+    "end_datetime": "2026-05-20T12:00:00+03:00",
+    "source": "google_calendar",
+    "type": "meeting"
+  },
+  {
+    "id": "evt036",
+    "employee_id": "emp010",
+    "title": "Sprint planning",
+    "start_datetime": "2026-05-21T10:00:00+03:00",
+    "end_datetime": "2026-05-21T11:00:00+03:00",
+    "source": "google_calendar",
+    "type": "planning"
+  },
+  {
+    "id": "evt037",
+    "employee_id": "emp010",
+    "title": "Partner call",
+    "start_datetime": "2026-05-22T16:00:00+03:00",
+    "end_datetime": "2026-05-22T17:00:00+03:00",
+    "source": "google_calendar",
+    "type": "external_call"
+  }
 ]

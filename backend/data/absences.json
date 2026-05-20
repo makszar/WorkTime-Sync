@@ -1,5 +1,16 @@
 [
-  {"id": 1, "employee_id": 2, "type": "командировка", "start_date": "2026-05-20", "end_date": "2026-05-21"},
-  {"id": 2, "employee_id": 3, "type": "личные часы", "start_date": "2026-05-20", "end_date": "2026-05-20"},
-  {"id": 3, "employee_id": 6, "type": "отпуск", "start_date": "2026-06-01", "end_date": "2026-06-07"}
+  {
+    "id": "abs001",
+    "employee_id": "emp005",
+    "type": "vacation",
+    "start_date": "2026-05-21",
+    "end_date": "2026-05-24"
+  },
+  {
+    "id": "abs002",
+    "employee_id": "emp008",
+    "type": "sick_leave",
+    "start_date": "2026-05-20",
+    "end_date": "2026-05-20"
+  }
 ]
