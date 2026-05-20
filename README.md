@@ -379,6 +379,7 @@ backend/
 │   └── test_analytics.py
 ├── README.md
 └── requirements.txt
+└── deploy.yml # Нерабочий файл, позже удалим
 ```
 
 ## Как запустить backend
