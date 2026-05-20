@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import Any, Dict, List, Optional
 
 MAX_DAYS_WITHOUT_UPDATE = 90
 DEMO_TODAY = date(2026, 5, 19)
+DEMO_WEEK_START = date(2026, 5, 18)  # Monday. Keeps demo calculations reproducible.
 
 WEEKDAY_BY_INDEX = {
     0: "Mon",
@@ -25,6 +26,9 @@ RU_WEEKDAY = {
     "Sat": "Сб",
     "Sun": "Вс",
 }
+
+DAY_INDEX_BY_RU = {value: index for index, value in enumerate(["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"])}
+CODE_BY_RU = {value: key for key, value in RU_WEEKDAY.items()}
 
 FORMAT_LABEL = {
     "remote": "Удаленно",
@@ -74,6 +78,17 @@ def weekday_label(dt: datetime) -> str:
     return RU_WEEKDAY[weekday_code(dt)]
 
 
+def slot_date(day_label: str) -> date:
+    return DEMO_WEEK_START + timedelta(days=DAY_INDEX_BY_RU[day_label])
+
+
+def slot_interval(day_label: str, hour: int) -> tuple[datetime, datetime]:
+    current_date = slot_date(day_label)
+    start = datetime.combine(current_date, time(hour=hour))
+    end = start + timedelta(hours=1)
+    return start, end
+
+
 def event_duration_hours(event: Dict[str, Any]) -> float:
     start = parse_datetime(event["start_datetime"])
     end = parse_datetime(event["end_datetime"])
@@ -100,6 +115,10 @@ def employee_absences(employee: Dict[str, Any], absences: List[Dict[str, Any]]) 
     return [absence for absence in absences if int(absence["employee_id"]) == employee_id]
 
 
+def intervals_overlap(start_a: datetime, end_a: datetime, start_b: datetime, end_b: datetime) -> bool:
+    return start_a < end_b and end_a > start_b
+
+
 def is_event_outside_work_time(event: Dict[str, Any], employee: Dict[str, Any]) -> bool:
     start = parse_datetime(event["start_datetime"])
     end = parse_datetime(event["end_datetime"])
@@ -111,6 +130,30 @@ def is_event_outside_work_time(event: Dict[str, Any], employee: Dict[str, Any]) 
     work_end = parse_time(employee["work_end"])
 
     return start.time() < work_start or end.time() > work_end
+
+
+def is_absent_on_date(employee: Dict[str, Any], absences: List[Dict[str, Any]], current_date: date) -> Optional[Dict[str, Any]]:
+    for absence in employee_absences(employee, absences):
+        start = parse_date(absence["start_date"])
+        end = parse_date(absence["end_date"])
+        if start <= current_date <= end:
+            return absence
+    return None
+
+
+def blocking_event_for_slot(
+    employee: Dict[str, Any],
+    events: List[Dict[str, Any]],
+    day_label: str,
+    hour: int,
+) -> Optional[Dict[str, Any]]:
+    slot_start, slot_end = slot_interval(day_label, hour)
+    for event in employee_events(employee, events):
+        event_start = parse_datetime(event["start_datetime"])
+        event_end = parse_datetime(event["end_datetime"])
+        if intervals_overlap(slot_start, slot_end, event_start, event_end):
+            return event
+    return None
 
 
 def hr_flags(employee: Dict[str, Any], hr_profile: Optional[Dict[str, Any]]) -> Dict[str, int]:
@@ -172,6 +215,9 @@ def calculate_employee_metrics(
 
     flags = hr_flags(employee, hr_profile)
     active_absence_count = len(current_absences)
+    calendar_conflict_count = outside_work_events
+    data_mismatch_count = flags["timezone_mismatch"] + flags["hr_mismatch"]
+    issue_count = calendar_conflict_count + data_mismatch_count + active_absence_count
 
     risk = (
         0.30 * (1 - schedule_actuality)
@@ -194,7 +240,11 @@ def calculate_employee_metrics(
         "timezone_mismatch": flags["timezone_mismatch"],
         "hr_mismatch": flags["hr_mismatch"],
         "absence_count": active_absence_count,
-        "conflict_count": outside_work_events + flags["timezone_mismatch"] + flags["hr_mismatch"],
+        "calendar_conflict_count": calendar_conflict_count,
+        "data_mismatch_count": data_mismatch_count,
+        "issue_count": issue_count,
+        # Backward-compatible field for existing frontend/cards.
+        "conflict_count": calendar_conflict_count,
         "risk": round2(risk),
         "risk_status": risk_status(risk),
         "risk_tone": risk_tone(risk),
@@ -384,6 +434,47 @@ def build_conflicts(
     return conflicts
 
 
+def build_data_mismatches(
+    employees: List[Dict[str, Any]],
+    hr_profiles: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    hr_by_employee_id = {int(profile["employee_id"]): profile for profile in hr_profiles}
+    mismatches: List[Dict[str, Any]] = []
+
+    for employee in employees:
+        hr_profile = hr_by_employee_id.get(int(employee["id"]))
+        if not hr_profile:
+            continue
+
+        if employee["timezone"] != hr_profile["hr_timezone"]:
+            mismatches.append({
+                "id": f"timezone-{employee['id']}",
+                "employeeId": int(employee["id"]),
+                "employee": employee["name"],
+                "type": "timezone",
+                "title": "Расхождение часового пояса",
+                "reason": f"В профиле: {timezone_label(employee['timezone'])}, в HR: {timezone_label(hr_profile['hr_timezone'])}.",
+                "severity": "Средняя",
+            })
+
+        if (
+            employee["work_format"] != hr_profile["hr_work_format"]
+            or employee["work_start"] != hr_profile["hr_work_start"]
+            or employee["work_end"] != hr_profile["hr_work_end"]
+        ):
+            mismatches.append({
+                "id": f"hr-{employee['id']}",
+                "employeeId": int(employee["id"]),
+                "employee": employee["name"],
+                "type": "hr_profile",
+                "title": "Расхождение с HR-профилем",
+                "reason": "Рабочий формат или часы отличаются от HR-данных.",
+                "severity": "Высокая",
+            })
+
+    return mismatches
+
+
 def build_summary(
     employees: List[Dict[str, Any]],
     events: List[Dict[str, Any]],
@@ -400,6 +491,8 @@ def build_summary(
             "avg_schedule_actuality": 0,
             "avg_load": 0,
             "total_conflicts": 0,
+            "calendar_conflicts": 0,
+            "data_mismatches": 0,
             "total_outside_work_events": 0,
             "outdated_employees": 0,
             "high_risk_employees": 0,
@@ -409,6 +502,7 @@ def build_summary(
 
     metrics = [item["metrics"] for item in employee_items]
     conflicts = build_conflicts(employees, events)
+    data_mismatches = build_data_mismatches(employees, hr_profiles)
     risk_distribution = {"низкий": 0, "средний": 0, "высокий": 0, "критический": 0}
     for metric in metrics:
         risk_distribution[metric["risk_status"]] += 1
@@ -419,7 +513,7 @@ def build_summary(
         teams.setdefault(team, {"team": team, "employees": 0, "avg_risk": 0, "total_conflicts": 0})
         teams[team]["employees"] += 1
         teams[team]["avg_risk"] += item["metrics"]["risk"]
-        teams[team]["total_conflicts"] += item["metrics"]["conflict_count"]
+        teams[team]["total_conflicts"] += item["metrics"]["calendar_conflict_count"]
 
     for team in teams.values():
         team["avg_risk"] = round2(team["avg_risk"] / team["employees"])
@@ -430,6 +524,8 @@ def build_summary(
         "avg_schedule_actuality": round2(sum(metric["schedule_actuality"] for metric in metrics) / total),
         "avg_load": round2(sum(metric["load"] for metric in metrics) / total),
         "total_conflicts": len(conflicts),
+        "calendar_conflicts": len(conflicts),
+        "data_mismatches": len(data_mismatches),
         "total_outside_work_events": sum(metric["outside_work_events"] for metric in metrics),
         "outdated_employees": sum(1 for metric in metrics if metric["days_since_update"] > MAX_DAYS_WITHOUT_UPDATE),
         "high_risk_employees": sum(1 for metric in metrics if metric["risk"] >= 0.50),
@@ -460,26 +556,73 @@ def build_frontend_summary(frontend_employees: List[Dict[str, Any]], conflicts: 
     }
 
 
-def build_availability(frontend_employees: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def unavailability_reason(
+    employee: Dict[str, Any],
+    events: List[Dict[str, Any]],
+    absences: List[Dict[str, Any]],
+    day_label: str,
+    hour: int,
+    metrics: Optional[Dict[str, Any]] = None,
+) -> Optional[str]:
+    work_day_code = CODE_BY_RU[day_label]
+
+    if work_day_code not in employee["work_days"]:
+        return "нерабочий день"
+
+    if hour < hour_int(employee["work_start"]) or hour >= hour_int(employee["work_end"]):
+        return "вне рабочего времени"
+
+    absence = is_absent_on_date(employee, absences, slot_date(day_label))
+    if absence:
+        return f"{absence['type']}"
+
+    blocking_event = blocking_event_for_slot(employee, events, day_label, hour)
+    if blocking_event:
+        return f"занят: {blocking_event['title']}"
+
+    if metrics and metrics.get("load", 0) >= 0.95:
+        return "перегруз"
+
+    return None
+
+
+def build_availability(
+    employees: List[Dict[str, Any]],
+    events: Optional[List[Dict[str, Any]]] = None,
+    hr_profiles: Optional[List[Dict[str, Any]]] = None,
+    absences: Optional[List[Dict[str, Any]]] = None,
+) -> List[Dict[str, Any]]:
+    events = events or []
+    hr_profiles = hr_profiles or []
+    absences = absences or []
     days = ["Пн", "Вт", "Ср", "Чт", "Пт"]
     hours = range(8, 21)
+    hr_by_employee_id = {int(profile["employee_id"]): profile for profile in hr_profiles}
+    metrics_by_employee_id = {
+        int(employee["id"]): calculate_employee_metrics(employee, events, hr_by_employee_id.get(int(employee["id"])), absences)
+        for employee in employees
+    }
     rows = []
 
     for day in days:
         slots = []
         for hour in hours:
-            available = [
-                employee
-                for employee in frontend_employees
-                if day in employee["workDays"]
-                and employee["workStart"] <= hour < employee["workEnd"]
-                and employee["metrics"]["load"] < 0.95
-            ]
-            missing = [employee["name"] for employee in frontend_employees if employee not in available]
+            available = []
+            missing = []
+            missing_details = []
 
-            if len(available) == len(frontend_employees) and frontend_employees:
+            for employee in employees:
+                metrics = metrics_by_employee_id[int(employee["id"])]
+                reason = unavailability_reason(employee, events, absences, day, hour, metrics)
+                if reason:
+                    missing.append(employee["name"])
+                    missing_details.append({"employee": employee["name"], "reason": reason})
+                else:
+                    available.append(employee)
+
+            if len(available) == len(employees) and employees:
                 slot_type = "all"
-            elif len(available) >= max(1, round(len(frontend_employees) * 0.65)):
+            elif len(available) >= max(1, round(len(employees) * 0.65)):
                 slot_type = "majority"
             else:
                 slot_type = "weak"
@@ -489,15 +632,22 @@ def build_availability(frontend_employees: List[Dict[str, Any]]) -> List[Dict[st
                 "count": len(available),
                 "type": slot_type,
                 "missing": missing,
+                "missingDetails": missing_details,
             })
         rows.append({"day": day, "slots": slots})
 
     return rows
 
 
-def build_best_slots(frontend_employees: List[Dict[str, Any]], limit: int = 3) -> List[Dict[str, Any]]:
+def build_best_slots(
+    employees: List[Dict[str, Any]],
+    events: Optional[List[Dict[str, Any]]] = None,
+    hr_profiles: Optional[List[Dict[str, Any]]] = None,
+    absences: Optional[List[Dict[str, Any]]] = None,
+    limit: int = 3,
+) -> List[Dict[str, Any]]:
     all_slots = []
-    for row in build_availability(frontend_employees):
+    for row in build_availability(employees, events, hr_profiles, absences):
         for slot in row["slots"]:
             all_slots.append({
                 "label": f"{row['day']}, {slot['hour']}:00-{slot['hour'] + 1}:00",
@@ -505,11 +655,17 @@ def build_best_slots(frontend_employees: List[Dict[str, Any]], limit: int = 3) -
                 "hour": slot["hour"],
                 "count": slot["count"],
                 "missing": slot["missing"],
+                "missingDetails": slot.get("missingDetails", []),
             })
 
     return [
-        {"label": slot["label"], "count": slot["count"], "missing": slot["missing"]}
-        for slot in sorted(all_slots, key=lambda item: (-item["count"], item["hour"], item["day"]))[:limit]
+        {
+            "label": slot["label"],
+            "count": slot["count"],
+            "missing": slot["missing"],
+            "missingDetails": slot["missingDetails"],
+        }
+        for slot in sorted(all_slots, key=lambda item: (-item["count"], len(item["missing"]), item["hour"], item["day"]))[:limit]
     ]
 
 
@@ -579,6 +735,14 @@ def build_recommendations(
             "priority": "Срочно" if conflict["severity"] == "Высокая" else "Важно",
         })
 
+    for slot in build_best_slots(employees, events, hr_profiles, absences, limit=1):
+        recommendations.append({
+            "type": "Встреча",
+            "title": "Использовать лучшее командное окно",
+            "reason": f"Рекомендуемый слот: {slot['label']}. Доступно {slot['count']} сотрудников.",
+            "priority": "Планово",
+        })
+
     return sorted(recommendations, key=lambda item: PRIORITY_ORDER.get(item["priority"], 9))
 
 
@@ -625,5 +789,7 @@ def build_worktime_overview(
         "roadmap": build_roadmap(summary),
         "summary": summary,
         "recommendations": build_recommendations(employees, events, hr_profiles, absences),
-        "bestSlots": build_best_slots(frontend_employees),
+        "bestSlots": build_best_slots(employees, events, hr_profiles, absences),
+        "availability": build_availability(employees, events, hr_profiles, absences),
+        "dataMismatches": build_data_mismatches(employees, hr_profiles),
     }

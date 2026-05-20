@@ -1,6 +1,6 @@
 # WorkTime Sync Backend
 
-Backend полностью адаптирован под текущий React/Vite frontend.
+Backend адаптирован под текущий React/Vite frontend и закрывает ключевые MVP-требования по аналитике рабочего времени.
 
 ## Главный endpoint для frontend
 
@@ -19,29 +19,49 @@ GET /api/worktime/overview
   "roadmap": [],
   "summary": {},
   "recommendations": [],
-  "bestSlots": []
+  "bestSlots": [],
+  "availability": [],
+  "dataMismatches": []
 }
 ```
 
-## Остальные endpoint'ы
+## Endpoint'ы
 
 ```text
 GET /
 GET /health
+GET /api/worktime/overview
 GET /employees
 GET /employees/frontend
 GET /employees/{employee_id}
 GET /analytics/summary
 GET /analytics/conflicts
+GET /analytics/data-mismatches
 GET /analytics/availability
 GET /recommendations
 GET /meeting-slots
 POST /upload/{dataset}
 ```
 
-## Расчёты
+## Что доработано
 
-Backend считает обязательные для MVP показатели:
+- CSV/JSON загрузка теперь реально влияет на данные API: если загружен `employees.csv`, backend читает его вместо `employees.json`.
+- При загрузке нового CSV/JSON старый файл другого формата для этого dataset удаляется, чтобы не было stale-данных.
+- Данные проходят Pydantic-валидацию при чтении.
+- Командная доступность учитывает:
+  - рабочие дни;
+  - рабочие часы;
+  - календарные события;
+  - отпуска, личные часы и командировки;
+  - перегруз.
+- Лучшие слоты строятся на основе той же доступности.
+- Разделены:
+  - `calendar_conflict_count` — встречи вне рабочего времени;
+  - `data_mismatch_count` — расхождения с HR/часовым поясом;
+  - `issue_count` — суммарные проблемы.
+- Добавлены backend-тесты.
+
+## Формулы
 
 ```text
 days_since_update = today - last_update_date
@@ -55,16 +75,7 @@ risk = 0.30 * (1 - schedule_actuality)
      + 0.10 * hr_mismatch
 ```
 
-Также считаются:
-
-```text
-conflicts
-availability map
-best meeting slots
-recommendations
-roadmap
-risk status
-```
+`DEMO_TODAY = 2026-05-19` и `DEMO_WEEK_START = 2026-05-18` зафиксированы специально, чтобы демо было воспроизводимым и метрики не менялись каждый день.
 
 ## Данные
 
@@ -77,7 +88,12 @@ events.json
 absences.json
 ```
 
-Поддержка CSV оставлена в `data_loader.py`.
+CSV формат тоже поддерживается. Для массива `work_days` в CSV используй `;`:
+
+```csv
+id,name,team,role,timezone,work_start,work_end,work_days,work_format,last_update_date
+1,Анна,People,HR,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,hybrid,2026-05-01
+```
 
 ## Запуск backend
 
@@ -93,6 +109,13 @@ API-документация:
 
 ```text
 http://127.0.0.1:8000/docs
+```
+
+## Тесты
+
+```bash
+cd backend
+pytest
 ```
 
 ## Запуск frontend с backend

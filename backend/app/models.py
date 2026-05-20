@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 from pydantic import BaseModel
 
 
@@ -55,6 +55,9 @@ class EmployeeMetrics(BaseModel):
     timezone_mismatch: int
     hr_mismatch: int
     absence_count: int
+    calendar_conflict_count: int
+    data_mismatch_count: int
+    issue_count: int
     conflict_count: int
     risk: float
     risk_status: str
@@ -99,3 +102,33 @@ class Conflict(BaseModel):
     time: str
     reason: str
     severity: str
+    source: str = "calendar"
+    type: str = "meeting"
+
+
+class DataMismatch(BaseModel):
+    id: str
+    employeeId: int
+    employee: str
+    type: str
+    title: str
+    reason: str
+    severity: str
+
+
+class AvailabilitySlot(BaseModel):
+    hour: int
+    count: int
+    type: str
+    missing: List[str]
+
+
+class AvailabilityDay(BaseModel):
+    day: str
+    slots: List[AvailabilitySlot]
+
+
+class MeetingSlot(BaseModel):
+    label: str
+    count: int
+    missing: List[str]
