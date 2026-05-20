@@ -16,7 +16,7 @@ def test_worktime_overview_contract():
     assert response.status_code == 200
     data = response.json()
 
-    assert set(["employees", "events", "roadmap", "summary", "recommendations", "bestSlots"]).issubset(data)
+    assert set(["employees", "events", "roadmap", "summary", "recommendations", "bestSlots", "notifications", "groups"]).issubset(data)
     assert len(data["employees"]) >= 5
     assert data["summary"]["total"] == len(data["employees"])
     assert len(data["bestSlots"]) <= 3
@@ -46,7 +46,7 @@ def test_meeting_slots_endpoint():
     assert response.status_code == 200
     slots = response.json()
     assert 1 <= len(slots) <= 3
-    assert {"label", "count", "missing"}.issubset(slots[0])
+    assert {"label", "count", "missing", "missingDetails"}.issubset(slots[0])
 
 
 def test_data_mismatches_endpoint():
@@ -54,3 +54,30 @@ def test_data_mismatches_endpoint():
     assert response.status_code == 200
     mismatches = response.json()
     assert isinstance(mismatches, list)
+
+
+def test_groups_endpoint():
+    response = client.get("/analytics/groups")
+    assert response.status_code == 200
+    groups = response.json()
+    assert {"actual", "outdated", "outsideWorkMeetings", "highLoad", "timezoneConflict", "hrMismatch", "needsConfirmation"}.issubset(groups)
+    assert groups["highLoad"]
+
+
+def test_risk_explanation_endpoint():
+    response = client.get("/employees/4/risk-explanation")
+    assert response.status_code == 200
+    explanation = response.json()
+    assert explanation["employeeId"] == 4
+    assert "formula" in explanation
+    assert len(explanation["factors"]) >= 5
+    assert explanation["recommendedActions"]
+
+
+def test_notifications_endpoint():
+    response = client.get("/notifications")
+    assert response.status_code == 200
+    notifications = response.json()
+    assert isinstance(notifications, list)
+    assert notifications
+    assert {"recipientRole", "title", "reason", "priority", "action"}.issubset(notifications[0])

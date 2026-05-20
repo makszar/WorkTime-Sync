@@ -1,16 +1,30 @@
 [
-  {"id": 101, "employee_id": 1, "title": "Daily sync", "start_datetime": "2026-05-13T10:00:00", "end_datetime": "2026-05-13T10:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 102, "employee_id": 1, "title": "Client call", "start_datetime": "2026-05-13T18:30:00", "end_datetime": "2026-05-13T19:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 103, "employee_id": 1, "title": "Planning", "start_datetime": "2026-05-14T14:00:00", "end_datetime": "2026-05-14T15:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 101, "employee_id": 1, "title": "HR daily", "start_datetime": "2026-05-18T10:00:00", "end_datetime": "2026-05-18T10:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 102, "employee_id": 1, "title": "Интервью с кандидатом", "start_datetime": "2026-05-18T15:00:00", "end_datetime": "2026-05-18T16:00:00", "source": "calendar", "type": "meeting"},
+  {"id": 103, "employee_id": 1, "title": "Созвон с подрядчиком", "start_datetime": "2026-05-19T18:30:00", "end_datetime": "2026-05-19T19:00:00", "source": "calendar", "type": "meeting"},
 
-  {"id": 201, "employee_id": 2, "title": "Code review", "start_datetime": "2026-05-13T10:30:00", "end_datetime": "2026-05-13T11:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 202, "employee_id": 2, "title": "Architecture", "start_datetime": "2026-05-13T19:30:00", "end_datetime": "2026-05-13T20:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 203, "employee_id": 2, "title": "Sprint work", "start_datetime": "2026-05-14T12:00:00", "end_datetime": "2026-05-14T17:00:00", "source": "calendar", "type": "focus"},
+  {"id": 201, "employee_id": 2, "title": "Code review", "start_datetime": "2026-05-18T10:30:00", "end_datetime": "2026-05-18T11:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 202, "employee_id": 2, "title": "Синхронизация с командой продукта", "start_datetime": "2026-05-19T20:30:00", "end_datetime": "2026-05-19T21:15:00", "source": "calendar", "type": "meeting"},
+  {"id": 203, "employee_id": 2, "title": "Architecture focus", "start_datetime": "2026-05-20T12:00:00", "end_datetime": "2026-05-20T17:00:00", "source": "task_tracker", "type": "focus"},
+  {"id": 204, "employee_id": 2, "title": "Поддержка релиза", "start_datetime": "2026-05-21T19:30:00", "end_datetime": "2026-05-21T20:30:00", "source": "calendar", "type": "meeting"},
 
-  {"id": 301, "employee_id": 3, "title": "Design critique", "start_datetime": "2026-05-13T08:30:00", "end_datetime": "2026-05-13T09:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 302, "employee_id": 3, "title": "User interview", "start_datetime": "2026-05-13T17:30:00", "end_datetime": "2026-05-13T18:30:00", "source": "calendar", "type": "meeting"},
-  {"id": 303, "employee_id": 3, "title": "Prototype work", "start_datetime": "2026-05-14T10:00:00", "end_datetime": "2026-05-14T15:00:00", "source": "calendar", "type": "focus"},
+  {"id": 301, "employee_id": 3, "title": "Design critique", "start_datetime": "2026-05-18T08:30:00", "end_datetime": "2026-05-18T09:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 302, "employee_id": 3, "title": "Дизайн-ревью", "start_datetime": "2026-05-20T17:30:00", "end_datetime": "2026-05-20T18:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 303, "employee_id": 3, "title": "Prototype work", "start_datetime": "2026-05-21T10:00:00", "end_datetime": "2026-05-21T15:00:00", "source": "task_tracker", "type": "focus"},
 
-  {"id": 401, "employee_id": 4, "title": "Testing sync", "start_datetime": "2026-05-13T11:30:00", "end_datetime": "2026-05-13T12:00:00", "source": "calendar", "type": "meeting"},
-  {"id": 402, "employee_id": 4, "title": "Regression", "start_datetime": "2026-05-14T15:00:00", "end_datetime": "2026-05-14T19:30:00", "source": "calendar", "type": "focus"}
+  {"id": 401, "employee_id": 4, "title": "Статус по спринту", "start_datetime": "2026-05-20T08:15:00", "end_datetime": "2026-05-20T09:00:00", "source": "calendar", "type": "meeting"},
+  {"id": 402, "employee_id": 4, "title": "Планирование релиза", "start_datetime": "2026-05-22T19:00:00", "end_datetime": "2026-05-22T20:00:00", "source": "calendar", "type": "meeting"},
+  {"id": 403, "employee_id": 4, "title": "Delivery planning", "start_datetime": "2026-05-21T10:00:00", "end_datetime": "2026-05-21T15:00:00", "source": "task_tracker", "type": "focus"},
+  {"id": 404, "employee_id": 4, "title": "Регулярный статус", "start_datetime": "2026-05-19T18:30:00", "end_datetime": "2026-05-19T19:30:00", "source": "calendar", "type": "meeting"},
+  {"id": 405, "employee_id": 4, "title": "Подготовка релизного плана", "start_datetime": "2026-05-18T09:00:00", "end_datetime": "2026-05-18T17:30:00", "source": "task_tracker", "type": "focus"},
+  {"id": 406, "employee_id": 4, "title": "Разбор рисков поставки", "start_datetime": "2026-05-19T09:00:00", "end_datetime": "2026-05-19T17:30:00", "source": "task_tracker", "type": "focus"},
+  {"id": 407, "employee_id": 4, "title": "Координация релиза", "start_datetime": "2026-05-21T09:00:00", "end_datetime": "2026-05-21T17:30:00", "source": "task_tracker", "type": "focus"},
+  {"id": 408, "employee_id": 4, "title": "Финальная подготовка демо", "start_datetime": "2026-05-22T09:00:00", "end_datetime": "2026-05-22T17:30:00", "source": "task_tracker", "type": "focus"},
+
+  {"id": 501, "employee_id": 5, "title": "Testing sync", "start_datetime": "2026-05-18T11:30:00", "end_datetime": "2026-05-18T12:00:00", "source": "calendar", "type": "meeting"},
+  {"id": 502, "employee_id": 5, "title": "Regression", "start_datetime": "2026-05-19T15:00:00", "end_datetime": "2026-05-19T19:30:00", "source": "task_tracker", "type": "focus"},
+  {"id": 503, "employee_id": 5, "title": "Поздний баг-триаж", "start_datetime": "2026-05-20T20:30:00", "end_datetime": "2026-05-20T21:00:00", "source": "calendar", "type": "meeting"},
+
+  {"id": 601, "employee_id": 6, "title": "Discovery sync", "start_datetime": "2026-05-18T12:00:00", "end_datetime": "2026-05-18T13:00:00", "source": "calendar", "type": "meeting"},
+  {"id": 602, "employee_id": 6, "title": "Requirements workshop", "start_datetime": "2026-05-19T14:00:00", "end_datetime": "2026-05-19T16:00:00", "source": "calendar", "type": "meeting"}
 ]

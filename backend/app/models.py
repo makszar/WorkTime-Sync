@@ -1,5 +1,7 @@
+from __future__ import annotations
+
+from typing import Any, List
 from pydantic import BaseModel
-from typing import List, Optional
 
 
 class Employee(BaseModel):
@@ -25,6 +27,14 @@ class Event(BaseModel):
     type: str
 
 
+class Absence(BaseModel):
+    id: int
+    employee_id: int
+    type: str
+    start_date: str
+    end_date: str
+
+
 class HRProfile(BaseModel):
     employee_id: int
     hr_timezone: str
@@ -44,24 +54,123 @@ class EmployeeMetrics(BaseModel):
     load: float
     timezone_mismatch: int
     hr_mismatch: int
+    absence_count: int
+    calendar_conflict_count: int
+    data_mismatch_count: int
+    issue_count: int
     conflict_count: int
     risk: float
     risk_status: str
+    risk_tone: str
 
 
-class EmployeeListItem(BaseModel):
+class FrontendEmployee(BaseModel):
     id: int
     name: str
-    team: str
     role: str
+    team: str
+    format: str
     timezone: str
-    work_format: str
+    workDays: List[str]
+    workStart: int
+    workEnd: int
+    updatedAt: str
+    meetingsTotal: int
+    meetingsOutside: int
+    busyHours: float
+    workHours: float
+    timezoneMismatch: int
+    hrCalendarMismatch: int
+    exceptions: List[str]
+    statusNote: str
     metrics: EmployeeMetrics
 
 
-class EmployeeCard(BaseModel):
-    employee: Employee
-    hr_profile: Optional[HRProfile]
-    events: List[Event]
-    metrics: EmployeeMetrics
-    recommendations: List[str]
+class Recommendation(BaseModel):
+    type: str
+    title: str
+    reason: str
+    priority: str
+
+
+class Conflict(BaseModel):
+    id: int
+    employeeId: int
+    employee: str
+    title: str
+    day: str
+    time: str
+    reason: str
+    severity: str
+    source: str | None = None
+    type: str | None = None
+
+
+class DataMismatch(BaseModel):
+    id: str
+    employeeId: int
+    employee: str
+    type: str
+    title: str
+    reason: str
+    severity: str
+
+
+class AvailabilitySlot(BaseModel):
+    hour: int
+    count: int
+    type: str
+    missing: List[str]
+    missingDetails: List[dict[str, Any]] = []
+
+
+class AvailabilityDay(BaseModel):
+    day: str
+    slots: List[AvailabilitySlot]
+
+
+class MeetingSlot(BaseModel):
+    label: str
+    count: int
+    missing: List[str]
+    missingDetails: List[dict[str, Any]] = []
+
+
+class Notification(BaseModel):
+    id: str
+    recipientRole: str
+    employeeId: int | None = None
+    employee: str | None = None
+    title: str
+    reason: str
+    priority: str
+    action: str
+
+
+class RiskFactor(BaseModel):
+    factor: str
+    label: str
+    value: Any
+    score: float
+    impact: str
+    explanation: str
+
+
+class RiskExplanation(BaseModel):
+    employeeId: int
+    employee: str
+    risk: float
+    riskStatus: str
+    formula: str
+    factors: List[RiskFactor]
+    recommendedActions: List[str]
+
+
+class GroupsResponse(BaseModel):
+    actual: List[FrontendEmployee]
+    outdated: List[FrontendEmployee]
+    outsideWorkMeetings: List[FrontendEmployee]
+    highLoad: List[FrontendEmployee]
+    timezoneConflict: List[FrontendEmployee]
+    hrMismatch: List[FrontendEmployee]
+    needsConfirmation: List[FrontendEmployee]

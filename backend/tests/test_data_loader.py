@@ -45,3 +45,20 @@ def test_json_is_used_when_csv_absent(monkeypatch, tmp_path):
     rows = data_loader.load_dataset("absences", required=False)
 
     assert rows[0]["type"] == "отпуск"
+
+
+def test_upload_validation_keeps_existing_json_when_bad_upload_fails(monkeypatch, tmp_path):
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    json_path = data_dir / "employees.json"
+    json_path.write_text(
+        '[{"id": 1, "name": "Анна", "team": "People", "role": "HR", "timezone": "Europe/Moscow", "work_start": "09:00", "work_end": "18:00", "work_days": ["Mon"], "work_format": "hybrid", "last_update_date": "2026-05-01"}]',
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(data_loader, "DATA_DIR", data_dir)
+
+    with pytest.raises(ValueError):
+        data_loader.save_uploaded_table("employees", ".csv", b"id,name\n1,Broken\n")
+
+    assert json_path.exists()

@@ -3,6 +3,9 @@ from app.analytics import (
     build_availability,
     build_best_slots,
     build_conflicts,
+    build_groups,
+    build_notifications,
+    build_risk_explanation,
     calculate_employee_metrics,
 )
 
@@ -108,3 +111,38 @@ def test_best_slots_are_limited_and_sorted():
     slots = build_best_slots(employees, [], [], [], limit=3)
     assert len(slots) == 3
     assert slots[0]["count"] == 1
+
+
+def test_groups_detect_high_load_and_confirmation_need():
+    employee = sample_employee(last_update_date="2025-12-01")
+    events = [
+        {
+            "id": 1,
+            "employee_id": 1,
+            "title": "Long focus",
+            "start_datetime": "2026-05-18T09:00:00",
+            "end_datetime": "2026-05-22T18:00:00",
+            "source": "task_tracker",
+            "type": "focus",
+        }
+    ]
+    groups = build_groups([employee], events, [], [])
+    assert groups["outdated"]
+    assert groups["highLoad"]
+    assert groups["needsConfirmation"]
+
+
+def test_risk_explanation_contains_weighted_factors():
+    employee = sample_employee(last_update_date="2025-12-01")
+    explanation = build_risk_explanation(1, [employee], [], [], [])
+    assert explanation is not None
+    assert explanation["employeeId"] == 1
+    assert explanation["formula"]
+    assert any(factor["factor"] == "days_since_update" for factor in explanation["factors"])
+
+
+def test_notifications_are_generated_from_risks():
+    employee = sample_employee(last_update_date="2025-12-01")
+    notifications = build_notifications([employee], [], [], [])
+    assert notifications
+    assert notifications[0]["recipientRole"] in {"HR", "Руководитель", "PM"}
