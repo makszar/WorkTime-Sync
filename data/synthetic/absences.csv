@@ -1,0 +1,3 @@
+﻿id,employee_id,type,start_date,end_date
+abs001,emp005,vacation,2026-05-21,2026-05-24
+abs002,emp008,sick_leave,2026-05-20,2026-05-20

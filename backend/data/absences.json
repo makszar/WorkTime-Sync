@@ -1,0 +1,16 @@
+[
+  {
+    "id": "abs001",
+    "employee_id": "emp005",
+    "type": "vacation",
+    "start_date": "2026-05-21",
+    "end_date": "2026-05-24"
+  },
+  {
+    "id": "abs002",
+    "employee_id": "emp008",
+    "type": "sick_leave",
+    "start_date": "2026-05-20",
+    "end_date": "2026-05-20"
+  }
+]

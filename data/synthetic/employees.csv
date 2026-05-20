@@ -1,0 +1,11 @@
+﻿id,name,team,role,timezone,work_start,work_end,work_days,work_format,last_update_date
+emp001,Анна Иванова,Product,Product Lead,Europe/Moscow,09:00,18:00,Mon|Tue|Wed|Thu|Fri,hybrid,2026-05-10
+emp002,Дмитрий Соколов,Product,Backend Developer,Europe/Moscow,10:00,19:00,Mon|Tue|Wed|Thu|Fri,remote,2025-12-10
+emp003,Елена Петрова,Product,UX/UI Designer,Europe/London,09:00,17:00,Mon|Tue|Wed|Thu|Fri,remote,2026-05-01
+emp004,Иван Ким,QA,QA Engineer,Asia/Almaty,09:00,18:00,Mon|Tue|Wed|Thu|Fri,office,2026-04-25
+emp005,Мария Смирнова,Product,Business Analyst,Europe/Moscow,09:00,18:00,Mon|Tue|Wed|Thu|Fri,hybrid,2026-05-05
+emp006,Павел Орлов,HR,HR Manager,Europe/Moscow,08:00,17:00,Mon|Tue|Wed|Thu|Fri,office,2026-04-29
+emp007,Алина Волкова,Sales,Sales Manager,Europe/Moscow,09:00,18:00,Mon|Tue|Wed|Thu|Fri,remote,2026-03-30
+emp008,Сергей Морозов,Support,Support Specialist,Asia/Yekaterinburg,11:00,20:00,Mon|Tue|Wed|Thu|Fri,remote,2026-01-30
+emp009,Ольга Федорова,Operations,Operations Coordinator,Europe/Kaliningrad,08:00,16:00,Mon|Tue|Wed|Thu|Fri,office,2026-05-12
+emp010,Тимур Ахметов,Product,Project Manager,Europe/Moscow,09:00,18:00,Mon|Tue|Wed|Thu|Fri,hybrid,2026-05-14
