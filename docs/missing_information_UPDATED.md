@@ -11,46 +11,117 @@
 - Конфликты.
 - Командная доступность.
 - Рекомендации.
-- Mock-режим.
-- Backend-режим через `/api/worktime/overview`.
+- Подключение к backend через `/api/worktime/overview`.
+- Публичный сайт `https://worktimesync.ru/`.
 
 ### Backend
 
 - FastAPI backend.
-- Endpoint `/api/worktime/overview` для frontend.
-- Endpoint `/health`.
-- Endpoint `/employees`.
-- Endpoint `/employees/frontend`.
-- Endpoint `/employees/{employee_id}`.
-- Endpoint `/analytics/summary`.
-- Endpoint `/analytics/conflicts`.
-- Endpoint `/analytics/data-mismatches`.
-- Endpoint `/analytics/availability`.
-- Endpoint `/recommendations`.
-- Endpoint `/meeting-slots`.
-- Endpoint `POST /upload/{dataset}`.
-- JSON/CSV data loader.
-- Pydantic-валидация данных.
-- Перечитывание данных при каждом запросе.
-- Поддержка сотрудников, событий, HR-профилей и отсутствий.
-- Расчёт метрик актуальности, конфликтов, загрузки и риска.
-- Расчёт команд и сотрудников из данных.
+- `GET /health`.
+- `GET /api/worktime/overview`.
+- `GET /employees`.
+- `GET /employees/frontend`.
+- `GET /employees/{employee_id}`.
+- `GET /employees/{employee_id}/risk-explanation`.
+- `GET /analytics/summary`.
+- `GET /analytics/conflicts`.
+- `GET /analytics/data-mismatches`.
+- `GET /analytics/availability`.
+- `GET /analytics/groups`.
+- `GET /recommendations`.
+- `GET /notifications`.
+- `GET /meeting-slots`.
+- `POST /upload/{dataset}`.
+- CSV/JSON data loader.
+- Основной источник данных `data/synthetic`.
+- Fallback на `backend/data`.
+- Нормализация id вида `emp001`, `evt001`, `abs001`.
+- Нормализация ISO datetime с timezone offsets.
+- Pydantic-валидация.
+- Расчёт актуальности, загрузки, конфликтов и риска.
+- Группы сотрудников.
+- Объяснение риска.
+- Уведомления.
 - Backend-тесты.
-- GitHub Actions workflow `deploy.yml` для деплоя.
+- GitHub Actions деплой через `deploy.yml`.
+
+### Data
+
+- `data/synthetic/employees.csv`.
+- `data/synthetic/events.csv`.
+- `data/synthetic/hr_profiles.csv`.
+- `data/synthetic/absences.csv`.
+- 10 сотрудников.
+- 37 событий.
+- 6 команд.
+- Отсутствия vacation/sick_leave.
 
 ## Что требует уточнения или доработки
 
-### 1. Настоящая база данных
+### 1. README в корне
 
-Сейчас данные хранятся в JSON/CSV-файлах. Это подходит для MVP, но для полноценного продукта нужна БД:
+Корневой README нужно держать синхронизированным с фактическим API.
+
+Особенно важно указать:
+
+- `data/synthetic` как основной источник данных;
+- 10 сотрудников вместо старых 6;
+- новые endpoint'ы:
+  - `/employees/{employee_id}/risk-explanation`;
+  - `/analytics/groups`;
+  - `/notifications`;
+- что `backend/data` теперь fallback.
+
+### 2. Frontend не показывает все backend-возможности
+
+Backend уже умеет:
+
+- risk explanation;
+- groups;
+- notifications;
+- data mismatches.
+
+Но в текущем frontend явно показаны только:
+
+- дашборд;
+- сотрудники;
+- карточка;
+- конфликты;
+- доступность;
+- рекомендации.
+
+Можно добавить frontend-экраны:
+
+- “Группы”;
+- “Уведомления”;
+- “Расхождения HR”;
+- “Почему такой риск”.
+
+### 3. Настоящая база данных
+
+Сейчас основной источник данных — CSV/JSON в `data/synthetic`.
+
+Для production нужно заменить файловое хранилище на:
 
 - PostgreSQL;
 - SQLite;
-- или другая БД.
+- другую БД.
 
-Важно: логика уже построена так, что сотрудников и команды можно брать из слоя данных. В будущем JSON/CSV можно заменить на таблицы БД.
+Но текущая архитектура уже подготовлена: data layer можно заменить без переписывания всей аналитики.
 
-### 2. Авторизация и роли
+### 4. Реальные интеграции
+
+Сейчас календарь, HR, task-tracker и отсутствия имитируются через CSV/JSON.
+
+Нужно подключить:
+
+- Google Calendar;
+- HRM;
+- Jira/YouTrack;
+- табель;
+- корпоративные уведомления.
+
+### 5. Авторизация и роли
 
 В кейсе есть роли:
 
@@ -61,58 +132,55 @@
 - администратор;
 - аналитик.
 
-В текущем коде роли описаны на уровне концепции, но авторизация и разграничение доступа пока не реализованы.
-
-### 3. Реальные интеграции
-
-Пока нет реальных подключений к:
-
-- Google Calendar;
-- HRM-системе;
-- таск-трекеру;
-- табелю;
-- корпоративным уведомлениям.
-
-Сейчас эти источники имитируются JSON/CSV-данными.
-
-### 4. AI-ассистент
-
-В кейсе описан AI-модуль, но сейчас реализованы объяснимые рекомендации на основе правил и метрик. Отдельного чат-ассистента пока нет.
-
-### 5. История изменений
-
-Пока нет истории изменений рабочего графика сотрудника.
+Сейчас роли используются в логике рекомендаций/уведомлений, но полноценной авторизации и прав доступа пока нет.
 
 ### 6. UI для загрузки данных
 
-Backend endpoint `POST /upload/{dataset}` есть, но отдельный удобный frontend-интерфейс загрузки данных требует проверки/доработки.
+Backend endpoint `POST /upload/{dataset}` есть.
 
-### 7. Production-деплой
+Нужен frontend-экран, где пользователь может загрузить:
 
-Есть `deploy.yml`, который запускает деплой через SSH, но для защиты нужно уточнить:
+- employees.csv;
+- events.csv;
+- hr_profiles.csv;
+- absences.csv.
 
-- настроены ли GitHub Secrets;
-- существует ли `/var/www/worktimesync.ru/deploy.sh`;
-- какой URL публичного стенда;
-- запускаются ли frontend и backend после деплоя.
+### 7. Уведомления
 
-### 8. Синхронизация документации
+Backend формирует уведомления, но пока это не реальные push/email/Telegram-уведомления.
 
-В README нужно поддерживать актуальными:
+Следующий шаг:
 
-- количество сотрудников;
-- список endpoint'ов;
-- описание данных;
-- сценарий запуска;
-- статус деплоя.
+- отправка email;
+- Telegram-бот;
+- Slack/Teams;
+- push в интерфейсе.
 
-### 9. Тестовое покрытие
+### 8. AI-ассистент
 
-Backend-тесты уже есть, но можно расширить:
+В кейсе можно развить AI-слой.
 
-- тест загрузки CSV;
-- тест загрузки JSON;
-- тест ошибки валидации;
-- тест отсутствий;
-- тест HR-mismatch;
-- тест динамического изменения количества сотрудников.
+Сейчас есть объяснимые правила и risk explanation, но нет отдельного чат-ассистента.
+
+### 9. История изменений
+
+Пока нет истории изменений графиков.
+
+Нужно хранить:
+
+- кто изменил график;
+- когда;
+- что было до/после;
+- причина изменения.
+
+### 10. Тестовое покрытие
+
+Backend-тесты есть, но можно расширить:
+
+- загрузка CSV;
+- загрузка JSON;
+- невалидные файлы;
+- groups;
+- notifications;
+- risk explanation;
+- public deployment smoke-test.
