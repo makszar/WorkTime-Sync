@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import json
-<<<<<<< HEAD
 from datetime import datetime
-=======
->>>>>>> 5b7658cafd17a04be698c66dc64d9e30a7dc8fad
 from pathlib import Path
 from typing import Any
 
@@ -42,55 +39,54 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 USERS_PATH = PROJECT_ROOT / "data" / "synthetic" / "users.json"
 
 DEFAULT_USERS = [
-<<<<<<< HEAD
-    {"id": "u1", "login": "product_manager", "password": "test1", "name": "Product Manager", "role": "Руководитель отдела", "department": "Product"},
-    {"id": "u2", "login": "qa_manager", "password": "test2", "name": "QA Manager", "role": "Руководитель отдела", "department": "QA"},
-    {"id": "u3", "login": "hr_manager", "password": "test3", "name": "HR Manager", "role": "HR", "department": "HR"},
-    {"id": "u4", "login": "sales_manager", "password": "test4", "name": "Sales Manager", "role": "Руководитель отдела", "department": "Sales"},
-    {"id": "u5", "login": "support_manager", "password": "test5", "name": "Support Manager", "role": "Руководитель отдела", "department": "Support"},
-    {"id": "u6", "login": "ops_manager", "password": "test6", "name": "Operations Manager", "role": "Руководитель отдела", "department": "Operations"},
-=======
     {
         "id": "u1",
-        "login": "zarix",
-        "password": "i9VUibm6",
-        "name": "Зарубин Максим",
+        "login": "product_manager",
+        "password": "test1",
+        "name": "Product Manager",
         "role": "Руководитель отдела",
-        "department": "Core Platform",
+        "department": "Product",
     },
     {
         "id": "u2",
-        "login": "lixxxa",
-        "password": "test1",
-        "name": "lixxxa",
+        "login": "qa_manager",
+        "password": "test2",
+        "name": "QA Manager",
         "role": "Руководитель отдела",
-        "department": "Product UI",
+        "department": "QA",
     },
     {
         "id": "u3",
-        "login": "baftype",
-        "password": "test2",
-        "name": "baftype",
-        "role": "Руководитель отдела",
-        "department": "People Ops",
+        "login": "hr_manager",
+        "password": "test3",
+        "name": "HR Manager",
+        "role": "HR",
+        "department": "HR",
     },
     {
         "id": "u4",
-        "login": "ssdshkaaa",
-        "password": "test3",
-        "name": "ssdshkaaa",
+        "login": "sales_manager",
+        "password": "test4",
+        "name": "Sales Manager",
         "role": "Руководитель отдела",
-        "department": "Delivery",
+        "department": "Sales",
     },
     {
         "id": "u5",
-        "login": "agentemy",
-        "password": "test4",
-        "name": "agentemy",
+        "login": "support_manager",
+        "password": "test5",
+        "name": "Support Manager",
         "role": "Руководитель отдела",
-        "department": "Quality",
+        "department": "Support",
     },
->>>>>>> 5b7658cafd17a04be698c66dc64d9e30a7dc8fad
+    {
+        "id": "u6",
+        "login": "ops_manager",
+        "password": "test6",
+        "name": "Operations Manager",
+        "role": "Руководитель отдела",
+        "department": "Operations",
+    },
 ]
 
 
@@ -102,11 +98,7 @@ class LoginRequest(BaseModel):
 app = FastAPI(
     title="WorkTime Sync Backend",
     description="FastAPI backend для фронтенда WorkTime Sync и аналитики рабочего времени.",
-<<<<<<< HEAD
     version="1.4.0",
-=======
-    version="1.3.0",
->>>>>>> 5b7658cafd17a04be698c66dc64d9e30a7dc8fad
 )
 
 app.add_middleware(
@@ -120,47 +112,6 @@ app.add_middleware(
 
 def public_user(user: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in user.items() if key != "password"}
-<<<<<<< HEAD
-=======
-
-
-def load_users() -> list[dict[str, Any]]:
-    if not USERS_PATH.exists():
-        return DEFAULT_USERS
-
-    with USERS_PATH.open("r", encoding="utf-8") as file:
-        users = json.load(file)
-
-    if not isinstance(users, list):
-        raise HTTPException(status_code=500, detail="users.json должен содержать список профилей")
-
-    return users
-
-
-def filter_by_department(
-    department: str | None,
-    employees: list[dict[str, Any]],
-    events: list[dict[str, Any]],
-    hr_profiles: list[dict[str, Any]],
-    absences: list[dict[str, Any]],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
-    if not department:
-        return employees, events, hr_profiles, absences
-
-    scoped_employees = [employee for employee in employees if employee.get("team") == department]
-    employee_ids = {int(employee["id"]) for employee in scoped_employees}
-
-    return (
-        scoped_employees,
-        [event for event in events if int(event["employee_id"]) in employee_ids],
-        [profile for profile in hr_profiles if int(profile["employee_id"]) in employee_ids],
-        [absence for absence in absences if int(absence["employee_id"]) in employee_ids],
-    )
-
-
-def get_data():
-    """For MVP we reread JSON/CSV files on every request.
->>>>>>> 5b7658cafd17a04be698c66dc64d9e30a7dc8fad
 
 
 def load_users() -> list[dict[str, Any]]:
@@ -205,6 +156,11 @@ def departments_from_employees(employees: list[dict[str, Any]]) -> list[dict[str
 
 
 def get_data():
+    """For MVP we reread JSON/CSV files on every request.
+
+    This makes demos and uploads simple: after replacing a file, the next API
+    call immediately uses the new data.
+    """
     try:
         employees = load_employees()
         events = load_events()
@@ -232,14 +188,10 @@ def login(payload: LoginRequest):
     if not user:
         raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
-<<<<<<< HEAD
-    return {"token": f"demo-{user['login']}", "user": public_user(user)}
-=======
     return {
         "token": f"demo-{user['login']}",
         "user": public_user(user),
     }
->>>>>>> 5b7658cafd17a04be698c66dc64d9e30a7dc8fad
 
 
 @app.get("/")
@@ -250,15 +202,11 @@ def root():
         "frontend_endpoint": "/api/worktime/overview",
         "auth_endpoint": "/auth/login",
         "endpoints": [
-<<<<<<< HEAD
-            "/auth/login", "/health", "/health/data", "/data/source", "/schemas",
-            "/api/worktime/overview", "/employees", "/employees/{employee_id}",
-            "/employees/{employee_id}/risk-explanation", "/analytics/summary",
-            "/analytics/conflicts", "/analytics/data-mismatches", "/analytics/data-quality",
-            "/analytics/availability", "/analytics/groups", "/recommendations",
-            "/notifications", "/meeting-slots", "/upload/{dataset}",
-=======
             "/auth/login",
+            "/health",
+            "/health/data",
+            "/data/source",
+            "/schemas",
             "/api/worktime/overview",
             "/employees",
             "/employees/{employee_id}",
@@ -266,13 +214,13 @@ def root():
             "/analytics/summary",
             "/analytics/conflicts",
             "/analytics/data-mismatches",
+            "/analytics/data-quality",
             "/analytics/availability",
             "/analytics/groups",
             "/recommendations",
             "/notifications",
             "/meeting-slots",
             "/upload/{dataset}",
->>>>>>> 5b7658cafd17a04be698c66dc64d9e30a7dc8fad
         ],
     }
 
@@ -282,7 +230,6 @@ def healthcheck():
     return {"status": "ok"}
 
 
-<<<<<<< HEAD
 @app.get("/health/data")
 def health_data():
     employees, events, hr_profiles, absences = get_data()
@@ -314,6 +261,7 @@ def get_worktime_overview(department: str | None = None):
     scoped = filter_by_department(department, employees, events, hr_profiles, absences)
     result = build_worktime_overview(*scoped)
     source_info = get_data_source_info()
+
     result["total_synthetic_employees"] = len(employees)
     result["departments"] = departments_from_employees(employees)
     result["meta"] = {
@@ -327,18 +275,6 @@ def get_worktime_overview(department: str | None = None):
         "total_employees_count": len(employees),
         "generated_at": datetime.now().isoformat(timespec="seconds"),
     }
-=======
-@app.get("/api/worktime/overview")
-def get_worktime_overview(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    result = build_worktime_overview(*scoped)
-    result["total_synthetic_employees"] = len(employees)
-    result["departments"] = [
-        {"name": team, "count": sum(1 for employee in employees if employee.get("team") == team)}
-        for team in sorted({employee.get("team") for employee in employees})
-    ]
->>>>>>> 5b7658cafd17a04be698c66dc64d9e30a7dc8fad
     return result
 
 
@@ -397,15 +333,12 @@ def get_analytics_data_mismatches(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
     scoped_employees, _, scoped_hr_profiles, _ = filter_by_department(department, employees, events, hr_profiles, absences)
     return build_data_mismatches(scoped_employees, scoped_hr_profiles)
-<<<<<<< HEAD
 
 
 @app.get("/analytics/data-quality")
 def get_analytics_data_quality():
     employees, events, hr_profiles, absences = get_data()
     return build_data_quality(employees, events, hr_profiles, absences, get_data_source_info())
-=======
->>>>>>> 5b7658cafd17a04be698c66dc64d9e30a7dc8fad
 
 
 @app.get("/analytics/availability", response_model=list[AvailabilityDay])
