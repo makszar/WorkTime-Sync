@@ -1,0 +1,50 @@
+[
+  {
+    "id": "u1",
+    "login": "product_manager",
+    "password": "test1",
+    "name": "Product Manager",
+    "role": "Руководитель отдела",
+    "department": "Product"
+  },
+  {
+    "id": "u2",
+    "login": "qa_manager",
+    "password": "test2",
+    "name": "QA Manager",
+    "role": "Руководитель отдела",
+    "department": "QA"
+  },
+  {
+    "id": "u3",
+    "login": "hr_manager",
+    "password": "test3",
+    "name": "HR Manager",
+    "role": "HR",
+    "department": "HR"
+  },
+  {
+    "id": "u4",
+    "login": "sales_manager",
+    "password": "test4",
+    "name": "Sales Manager",
+    "role": "Руководитель отдела",
+    "department": "Sales"
+  },
+  {
+    "id": "u5",
+    "login": "support_manager",
+    "password": "test5",
+    "name": "Support Manager",
+    "role": "Руководитель отдела",
+    "department": "Support"
+  },
+  {
+    "id": "u6",
+    "login": "ops_manager",
+    "password": "test6",
+    "name": "Operations Manager",
+    "role": "Руководитель отдела",
+    "department": "Operations"
+  }
+]

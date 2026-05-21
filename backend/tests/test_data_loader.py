@@ -163,3 +163,23 @@ def test_upload_saves_to_root_synthetic_and_removes_alternate(monkeypatch, tmp_p
     assert saved_path == data_dir / "absences.csv"
     assert saved_path.exists()
     assert not (data_dir / "absences.json").exists()
+
+
+def test_invalid_upload_keeps_existing_file(monkeypatch, tmp_path):
+    data_dir = tmp_path / "data" / "synthetic"
+    data_dir.mkdir(parents=True)
+    employees_path = data_dir / "employees.csv"
+    original_content = (
+        "id,name,team,role,timezone,work_start,work_end,work_days,work_format,last_update_date\n"
+        "emp001,Анна,People,HR,Europe/Moscow,09:00,18:00,Mon|Tue|Wed|Thu|Fri,hybrid,2026-05-01\n"
+    )
+    employees_path.write_text(original_content, encoding="utf-8")
+
+    monkeypatch.delenv("WORKTIME_DATA_DIR", raising=False)
+    monkeypatch.setattr(data_loader, "DATA_DIR", data_dir)
+    monkeypatch.setattr(data_loader, "FALLBACK_DATA_DIR", tmp_path / "backend" / "data")
+
+    with pytest.raises(ValueError):
+        data_loader.save_uploaded_table("employees", ".csv", b"id,name\nbad,Broken\n")
+
+    assert employees_path.read_text(encoding="utf-8") == original_content

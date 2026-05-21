@@ -1,37 +1,28 @@
 # WorkTime Sync Backend
 
-Backend адаптирован под React/Vite frontend и расширен как аналитический контур для хакатонного MVP.
+Текущая версия backend: **1.4.0**.
 
-## Главный endpoint для frontend
+## Главное
 
-Frontend при `VITE_USE_MOCK_DATA=false` делает один запрос:
+Backend теперь закрывает не только базовый API, но и слой проверки данных:
 
-```text
-GET /api/worktime/overview
-```
-
-Ответ содержит всё, что нужно текущему frontend:
-
-```json
-{
-  "employees": [],
-  "events": [],
-  "roadmap": [],
-  "summary": {},
-  "recommendations": [],
-  "bestSlots": [],
-  "notifications": [],
-  "groups": {}
-}
-```
-
-Поля `notifications` и `groups` добавлены поверх текущего frontend-контракта. Они не ломают старый UI, но позволяют показать более сильную backend-аналитику в Swagger.
+- основной источник данных: `data/synthetic/`;
+- fallback: `backend/data/`;
+- demo-login: `POST /auth/login`;
+- фильтрация по отделу: `?department=Product`;
+- диагностика данных: `/health/data`, `/data/source`, `/schemas`, `/analytics/data-quality`;
+- безопасный upload: старый рабочий файл не удаляется, если новый файл не прошёл валидацию;
+- GitHub Actions workflow для backend-тестов: `.github/workflows/backend-ci.yml`.
 
 ## Endpoint'ы
 
 ```text
+POST /auth/login
 GET /
 GET /health
+GET /health/data
+GET /data/source
+GET /schemas
 GET /api/worktime/overview
 GET /employees
 GET /employees/frontend
@@ -40,6 +31,7 @@ GET /employees/{employee_id}/risk-explanation
 GET /analytics/summary
 GET /analytics/conflicts
 GET /analytics/data-mismatches
+GET /analytics/data-quality
 GET /analytics/availability
 GET /analytics/groups
 GET /recommendations
@@ -48,89 +40,128 @@ GET /meeting-slots
 POST /upload/{dataset}
 ```
 
-## Что улучшено в версии 1.2.0
+## Фильтр отдела
 
-- Добавлен `GET /analytics/groups` — группы сотрудников: актуальные, устаревшие, с внешними встречами, высокой загрузкой, конфликтом часового пояса, HR-расхождением, требующие подтверждения.
-- Добавлен `GET /employees/{employee_id}/risk-explanation` — объяснение риска по факторам и формуле.
-- Добавлен `GET /notifications` — уведомления для HR, руководителя и PM на основе риска, перегрузки, конфликтов и расхождений.
-- Улучшены demo-данные в `events.json`, чтобы перегрузка сотрудника реально считалась backend-формулой.
-- Добавлены `response_model` для ключевых endpoint'ов Swagger.
-- CSV/upload доработан: если загружен CSV, он реально используется вместо JSON; невалидные файлы отклоняются через Pydantic-валидацию.
-- Availability и meeting-slots учитывают рабочие часы, календарные события, focus-блоки, absence и перегруз.
-- Добавлены автоматические backend-тесты.
+Большинство аналитических endpoint'ов поддерживают query-параметр:
+
+```text
+?department=Product
+?department=QA
+?department=HR
+?department=Sales
+?department=Support
+?department=Operations
+```
+
+Примеры:
+
+```text
+GET /api/worktime/overview?department=Product
+GET /employees?department=QA
+GET /notifications?department=HR
+GET /meeting-slots?department=Product
+```
+
+## Demo-login
+
+Пользователи лежат в:
+
+```text
+data/synthetic/users.json
+```
+
+Примеры:
+
+```text
+product_manager / test1
+qa_manager / test2
+hr_manager / test3
+sales_manager / test4
+support_manager / test5
+ops_manager / test6
+```
+
+`POST /auth/login` возвращает demo-token и пользователя без пароля.
 
 ## Данные
 
-Основная папка данных для backend:
+Главный источник данных:
 
 ```text
 data/synthetic/
 ```
 
-Backend ожидает в этой папке backend-ready файлы:
-
-```text
-data/synthetic/employees.json
-data/synthetic/events.json
-data/synthetic/hr_profiles.json
-data/synthetic/absences.json
-```
-
-Также поддерживаются CSV-файлы с такими же dataset-name:
+Backend ожидает:
 
 ```text
 data/synthetic/employees.csv
 data/synthetic/events.csv
 data/synthetic/hr_profiles.csv
 data/synthetic/absences.csv
+data/synthetic/users.json
 ```
 
-Если в `data/synthetic` есть CSV и JSON для одного dataset, CSV имеет приоритет:
+Также поддерживаются JSON-файлы с такими же dataset-name. Если CSV и JSON есть одновременно, CSV имеет приоритет.
+
+Loader поддерживает текущий формат synthetic CSV:
 
 ```text
-employees.csv -> читается вместо employees.json
-events.csv -> читается вместо events.json
-hr_profiles.csv -> читается вместо hr_profiles.json
-absences.csv -> читается вместо absences.json
+emp001 -> 1
+evt001 -> 1
+abs001 -> 1
+Mon|Tue|Wed|Thu|Fri -> ["Mon", "Tue", "Wed", "Thu", "Fri"]
+2026-05-20T10:00:00+03:00 -> 2026-05-20T10:00:00
 ```
 
-`backend/data/` оставлен только как временный fallback. Это значит, что если нужного файла нет в `data/synthetic`, backend попробует найти его в `backend/data`.
+## Диагностика данных
 
-Главный источник данных команды — `data/synthetic`. Для демо и командной работы обновлять нужно именно эту папку, а не `backend/data`.
+### `GET /health/data`
 
-Можно переопределить источник данных локально через переменную окружения:
+Проверяет, что backend реально загрузил данные.
 
-```powershell
-$env:WORKTIME_DATA_DIR="C:\path\to\WorkTime-Sync\data\synthetic"
-```
+### `GET /data/source`
 
-## Расчёты
+Показывает, какие файлы реально используются.
 
-Backend считает обязательные для MVP показатели:
+### `GET /schemas`
+
+Показывает ожидаемые колонки CSV/JSON.
+
+### `GET /analytics/data-quality`
+
+Проверяет:
+
+- orphan events;
+- orphan absences;
+- HR-профили без сотрудников;
+- сотрудники без HR-профиля;
+- дубликаты id;
+- некорректные интервалы событий;
+- некорректные интервалы отсутствий.
+
+## Upload
 
 ```text
-days_since_update = DEMO_TODAY - last_update_date
-schedule_actuality = max(0, 1 - days_since_update / 90)
-outside_work_ratio = outside_work_events / total_events
-load = busy_hours / work_hours
-risk = 0.30 * (1 - schedule_actuality)
-     + 0.25 * outside_work_ratio
-     + 0.25 * load
-     + 0.10 * timezone_mismatch
-     + 0.10 * hr_mismatch
+POST /upload/{dataset}
 ```
 
-Дополнительно разделены:
+Поддерживаемые dataset:
 
 ```text
-calendar_conflict_count — встречи/события вне рабочего графика
-data_mismatch_count — расхождения HR/часового пояса
-issue_count — общий счётчик проблем
+employees
+events
+hr_profiles
+absences
 ```
 
-`DEMO_TODAY = 2026-05-19` зафиксирован для воспроизводимого демо. В production это можно заменить на `date.today()` или на выбранный период анализа.
+Upload безопасный:
 
-## Запуск backend
+1. файл сохраняется во временный путь;
+2. валидируется;
+3. только после успешной проверки заменяет старый файл;
+4. если файл невалидный, старый рабочий файл остаётся на месте.
+
+## Запуск
 
 ```powershell
 cd backend
@@ -139,7 +170,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-API-документация:
+Swagger:
 
 ```text
 http://127.0.0.1:8000/docs
@@ -152,39 +183,4 @@ cd backend
 .\.venv\Scripts\python.exe -m pytest
 ```
 
-Ожидаемый результат:
-
-```text
-passed
-```
-
-## Запуск frontend с backend
-
-В папке `frontend` создать `.env`:
-
-```env
-VITE_API_BASE_URL=http://127.0.0.1:8000
-VITE_USE_MOCK_DATA=false
-```
-
-Потом:
-
-```powershell
-cd frontend
-npm.cmd install
-npm.cmd run dev
-```
-
-Открыть сайт:
-
-```text
-http://localhost:5173
-```
-
-## Что остаётся future work
-
-- База данных: SQLite/PostgreSQL вместо файлов.
-- Авторизация и роли.
-- Реальные интеграции с Google Calendar, HRM, task-tracker и табелем.
-- Отдельный AI-chat-ассистент поверх рассчитанных метрик.
-- История изменений графиков.
+Тесты проверяют API, login, department-фильтр, loader, data-quality, безопасный upload и реальные файлы `data/synthetic`.
