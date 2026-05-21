@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
   --bg: #f3f7fb;
-  --panel: rgba(255, 255, 255, 0.84);
+  --panel: rgba(255, 255, 255, 0.86);
   --panel-strong: #ffffff;
   --text: #122033;
   --muted: #6b778c;
@@ -19,7 +19,12 @@
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
+  min-height: 100%;
   margin: 0;
   background:
     radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 34%),
@@ -35,74 +40,80 @@ textarea {
   font: inherit;
 }
 
+button {
+  border: 0;
+}
+
+img {
+  max-width: 100%;
+}
+
 .appShell {
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: 280px 1fr;
 }
 
-.sidebar {
+.topbar {
   position: sticky;
   top: 0;
-  height: 100vh;
-  padding: 24px;
-  border-right: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.66);
-  backdrop-filter: blur(22px);
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.brandMark {
-  width: 48px;
-  height: 48px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #fff;
+  z-index: 20;
   display: grid;
-  place-items: center;
-  font-weight: 800;
-  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.28);
+  grid-template-columns: minmax(180px, auto) 1fr auto;
+  gap: 20px;
+  align-items: center;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(22px);
+  box-shadow: 0 12px 34px rgba(22, 43, 70, 0.08);
 }
 
-.brandTitle {
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.brandSub {
-  color: var(--muted);
-  font-size: 12px;
-  margin-top: 3px;
+.brandText {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .nav {
-  display: grid;
+  display: flex;
+  justify-content: center;
   gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
 }
 
 .navButton,
 .primaryButton,
-.ghostButton {
-  border: 0;
+.ghostButton,
+.iconButton {
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
 }
 
 .navButton {
-  width: 100%;
-  text-align: left;
-  padding: 14px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 14px;
   border-radius: 16px;
   color: var(--muted);
   background: transparent;
+  white-space: nowrap;
+}
+
+.navIcon,
+.cardButton img,
+.iconTextButton img {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .navButton:hover,
@@ -115,25 +126,62 @@ textarea {
   box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.18);
 }
 
-.sidebarHint {
-  margin-top: auto;
-  padding: 16px;
-  border-radius: 20px;
-  background: rgba(59, 130, 246, 0.10);
-  color: var(--muted);
+.userBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.70);
 }
 
-.sidebarHint span {
-  display: block;
-  color: var(--text);
-  font-weight: 800;
-  margin-bottom: 8px;
+.userAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), #1d4ed8);
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.20);
 }
 
-.sidebarHint p {
-  margin: 0;
-  line-height: 1.5;
+.userMeta {
+  display: grid;
+  min-width: 120px;
+}
+
+.userMeta strong,
+.userMeta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userMeta strong {
   font-size: 13px;
+}
+
+.userMeta span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.iconButton {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(59, 130, 246, 0.10);
+}
+
+.iconButton img {
+  width: 18px;
+  height: 18px;
 }
 
 .content {
@@ -159,6 +207,86 @@ textarea {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.loginPage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.loginCard {
+  width: min(560px, 100%);
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 34px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+}
+
+.loginBrand {
+  display: inline-flex;
+  margin-bottom: 18px;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.loginCard h1 {
+  max-width: 520px;
+}
+
+.loginForm {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.loginForm label {
+  display: grid;
+  gap: 8px;
+}
+
+.loginForm label span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.loginForm input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  outline: none;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.loginForm input:focus {
+  border-color: rgba(59, 130, 246, 0.55);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.10);
+}
+
+.loginError {
+  padding: 12px 14px;
+  border-radius: 16px;
+  color: var(--danger);
+  background: rgba(235, 87, 87, 0.10);
+  font-weight: 800;
+}
+
+.loginButton {
+  min-height: 50px;
+  justify-content: center;
+}
+
+.loginButton:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .pageHeader,
@@ -205,6 +333,10 @@ h1 {
 h2 {
   font-size: 22px;
   margin-bottom: 0;
+}
+
+h3 {
+  line-height: 1.2;
 }
 
 p {
@@ -288,6 +420,10 @@ p {
   margin-bottom: 18px;
 }
 
+.employeeTop {
+  min-height: 66px;
+}
+
 .panelHeader span,
 .recommendationTop span,
 .recommendationTop b,
@@ -327,6 +463,11 @@ p {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-bottom: 24px;
+  align-items: stretch;
+}
+
+.employeeCardsGrid {
+  grid-auto-rows: 1fr;
 }
 
 .smallCards {
@@ -340,14 +481,26 @@ p {
   padding: 20px;
 }
 
+.employeeCard {
+  min-height: 334px;
+  display: flex;
+  flex-direction: column;
+}
+
 .employeeCard h3,
 .recommendationCard h3,
 .slotCard h3 {
   margin-bottom: 6px;
 }
 
+.employeeCard p {
+  margin-bottom: 0;
+}
+
 .employeeMeta {
+  min-height: 76px;
   display: flex;
+  align-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
   margin: 16px 0;
@@ -427,6 +580,9 @@ p {
 
 .primaryButton,
 .ghostButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border-radius: 16px;
   padding: 12px 16px;
   font-weight: 800;
@@ -444,8 +600,19 @@ p {
 }
 
 .primaryButton:hover,
-.ghostButton:hover {
+.ghostButton:hover,
+.iconButton:hover {
   transform: translateY(-1px);
+}
+
+.cardButton {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.cardButton img,
+.iconTextButton img {
+  filter: brightness(0) invert(1);
 }
 
 .ghostButton {
@@ -655,25 +822,18 @@ dd {
 }
 
 @media (max-width: 1180px) {
-  .appShell {
+  .topbar {
     grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    position: static;
-    height: auto;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
+    gap: 12px;
+    align-items: stretch;
   }
 
   .nav {
-    display: flex;
-    min-width: max-content;
+    justify-content: flex-start;
   }
 
-  .sidebarHint {
-    display: none;
+  .userBox {
+    justify-content: space-between;
   }
 
   .statsGrid {
@@ -687,11 +847,11 @@ dd {
 
 @media (max-width: 760px) {
   .content,
-  .sidebar {
+  .topbar {
     padding: 16px;
   }
 
-  .brandSub {
+  .navButton span {
     display: none;
   }
 
@@ -708,6 +868,15 @@ dd {
   .cardsGrid,
   .smallCards {
     grid-template-columns: 1fr;
+  }
+
+  .employeeCard {
+    min-height: auto;
+  }
+
+  .employeeTop,
+  .employeeMeta {
+    min-height: 0;
   }
 
   .availabilityWrap {

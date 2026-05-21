@@ -1,24 +1,20 @@
 const navItems = [
-  { id: 'dashboard', label: 'Дашборд' },
-  { id: 'employees', label: 'Сотрудники' },
-  { id: 'conflicts', label: 'Конфликты' },
-  { id: 'availability', label: 'Доступность' },
-  { id: 'recommendations', label: 'Рекомендации' }
+  { id: 'dashboard', label: 'Дашборд', icon: 'home.svg' },
+  { id: 'employees', label: 'Сотрудники', icon: 'candidates.svg' },
+  { id: 'conflicts', label: 'Конфликты', icon: 'notifications.svg' },
+  { id: 'availability', label: 'Доступность', icon: 'calendar.svg' },
+  { id: 'recommendations', label: 'Рекомендации', icon: 'brief.svg' }
 ];
 
-export default function Layout({ page, setPage, children }) {
+export default function Layout({ page, setPage, children, user, onLogout }) {
   return (
     <div className="appShell">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brandMark">WS</div>
-          <div>
-            <div className="brandTitle">WorkTime Sync</div>
-            <div className="brandSub">Актуальность рабочего времени</div>
-          </div>
+      <header className="topbar">
+        <div className="brandText" onClick={() => setPage('dashboard')} role="button" tabIndex={0}>
+          WorkTime-Sync
         </div>
 
-        <nav className="nav">
+        <nav className="nav" aria-label="Главная навигация">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -26,16 +22,23 @@ export default function Layout({ page, setPage, children }) {
               className={`navButton ${page === item.id ? 'active' : ''}`}
               onClick={() => setPage(item.id)}
             >
-              {item.label}
+              <img src={`/icons/${item.icon}`} alt="" className="navIcon" />
+              <span>{item.label}</span>
             </button>
           ))}
         </nav>
 
-        <div className="sidebarHint">
-          <span>Демо MVP</span>
-          <p>Моковые данные можно заменить ответами FastAPI через src/api/worktimeApi.js.</p>
+        <div className="userBox">
+          <div className="userAvatar">{user.name.slice(0, 1).toUpperCase()}</div>
+          <div className="userMeta">
+            <strong>{user.name}</strong>
+            <span>{user.department}</span>
+          </div>
+          <button className="iconButton" type="button" onClick={onLogout} title="Выйти">
+            <img src="/icons/response.svg" alt="" />
+          </button>
         </div>
-      </aside>
+      </header>
 
       <main className="content">{children}</main>
     </div>

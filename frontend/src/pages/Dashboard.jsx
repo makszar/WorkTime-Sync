@@ -8,15 +8,16 @@ export default function Dashboard({ data, setPage }) {
         <div>
           <span className="eyebrow">Командная диагностика</span>
           <h1>Показываем, у кого устарел график, где конфликт и что делать дальше</h1>
-          <p>Главный экран собирает показатели для HR, руководителя и проектного менеджера.</p>
+          <p>На экране руководителя отображается его отдел. В общей базе демо лежит {data.totalSyntheticEmployees || data.summary.total} синтетических сотрудников.</p>
         </div>
-        <button className="primaryButton big" type="button" onClick={() => setPage('recommendations')}>
-          Смотреть действия
+        <button className="primaryButton big iconTextButton" type="button" onClick={() => setPage('recommendations')}>
+          <img src="/icons/notifications.svg" alt="" />
+          <span>Смотреть действия</span>
         </button>
       </div>
 
       <div className="statsGrid">
-        <StatCard label="Сотрудников" value={data.summary.total} hint="В демо-команде" />
+        <StatCard label="Сотрудников" value={data.summary.total} hint="В вашем отделе" />
         <StatCard label="Актуальные графики" value={data.summary.current} hint="Подтверждены и без риска" tone="success" />
         <StatCard label="Устаревшие" value={data.summary.outdated} hint="Больше 90 дней без обновления" tone="warning" />
         <StatCard label="Высокий риск" value={data.summary.highRisk} hint="Нужно проверить первым" tone="danger" />

@@ -2,18 +2,18 @@ import EmployeeCard from '../components/EmployeeCard';
 import StatusBadge from '../components/StatusBadge';
 import { actualityScore, conflictRate, employeeStatus, percent, riskLevel, riskScore } from '../utils/calculations';
 
-export default function Employees({ employees, onOpen }) {
+export default function Employees({ employees, onOpen, department }) {
   return (
     <section className="page fadeIn">
       <div className="pageHeader">
         <div>
           <span className="eyebrow">Сотрудники</span>
           <h1>Карточки и таблица риска</h1>
-          <p>Можно быстро открыть сотрудника и понять, почему система считает график проблемным.</p>
+          <p>Отдел {department}: 5 синтетических сотрудников, которые закреплены за текущим руководителем.</p>
         </div>
       </div>
 
-      <div className="cardsGrid">
+      <div className="cardsGrid employeeCardsGrid">
         {employees.map((employee) => (
           <EmployeeCard employee={employee} key={employee.id} onOpen={onOpen} />
         ))}
@@ -22,7 +22,7 @@ export default function Employees({ employees, onOpen }) {
       <div className="panel tablePanel">
         <div className="panelHeader">
           <h2>Таблица для HR и руководителя</h2>
-          <span>все ключевые поля</span>
+          <span>{employees.length} сотрудников отдела</span>
         </div>
         <div className="tableWrap">
           <table>
