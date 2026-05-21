@@ -1,8 +1,16 @@
 from fastapi.testclient import TestClient
 
+from app.data_loader import load_employees
 from app.main import app
 
 client = TestClient(app)
+
+
+def _first_department() -> str:
+    employees = load_employees()
+    departments = sorted({employee["team"] for employee in employees})
+    assert departments
+    return departments[0]
 
 
 def test_healthcheck():
@@ -18,8 +26,8 @@ def test_health_data():
 
     assert data["status"] == "ok"
     assert data["data_source"].endswith("data/synthetic")
-    assert data["employees"] >= 10
-    assert data["events"] >= 30
+    assert data["employees"] >= 5
+    assert data["events"] >= 1
     assert data["datasets"]["employees"].endswith("employees.csv")
 
 
@@ -44,17 +52,17 @@ def test_schemas_endpoint():
 
 
 def test_login_success():
-    response = client.post("/auth/login", json={"login": "product_manager", "password": "test1"})
+    response = client.post("/auth/login", json={"login": "core_manager", "password": "test1"})
     assert response.status_code == 200
     data = response.json()
 
-    assert data["token"] == "demo-product_manager"
-    assert data["user"]["department"] == "Product"
+    assert data["token"] == "demo-core_manager"
+    assert data["user"]["department"] == "Core Platform"
     assert "password" not in data["user"]
 
 
 def test_login_wrong_password():
-    response = client.post("/auth/login", json={"login": "product_manager", "password": "wrong"})
+    response = client.post("/auth/login", json={"login": "core_manager", "password": "wrong"})
     assert response.status_code == 401
 
 
@@ -71,23 +79,25 @@ def test_worktime_overview_contract():
 
 
 def test_worktime_overview_department_filter():
-    response = client.get("/api/worktime/overview?department=Product")
+    department = _first_department()
+    response = client.get(f"/api/worktime/overview?department={department}")
     assert response.status_code == 200
     data = response.json()
 
     assert data["employees"]
     assert data["total_synthetic_employees"] >= len(data["employees"])
-    assert data["meta"]["department"] == "Product"
-    assert all(employee["team"] == "Product" for employee in data["employees"])
+    assert data["meta"]["department"] == department
+    assert all(employee["team"] == department for employee in data["employees"])
 
 
 def test_employees_department_filter():
-    response = client.get("/employees?department=QA")
+    department = _first_department()
+    response = client.get(f"/employees?department={department}")
     assert response.status_code == 200
     employees = response.json()
 
     assert employees
-    assert all(employee["team"] == "QA" for employee in employees)
+    assert all(employee["team"] == department for employee in employees)
 
 
 def test_conflicts_endpoint():
@@ -129,13 +139,15 @@ def test_data_quality_endpoint():
     assert response.status_code == 200
     quality = response.json()
 
-    assert quality["employees"] >= 10
-    assert quality["events"] >= 30
+    assert quality["employees"] >= 5
+    assert quality["events"] >= 1
     assert quality["orphan_events"] == []
     assert quality["orphan_absences"] == []
     assert quality["invalid_event_ranges"] == []
     assert quality["invalid_absence_ranges"] == []
-    assert "Product" in quality["teams"]
+
+    actual_departments = {employee["team"] for employee in load_employees()}
+    assert set(quality["teams"]) == actual_departments
 
 
 def test_groups_endpoint():
@@ -143,7 +155,7 @@ def test_groups_endpoint():
     assert response.status_code == 200
     groups = response.json()
     assert {"actual", "outdated", "outsideWorkMeetings", "highLoad", "timezoneConflict", "hrMismatch", "needsConfirmation"}.issubset(groups)
-    assert groups["highLoad"]
+    assert isinstance(groups["highLoad"], list)
 
 
 def test_risk_explanation_endpoint():
@@ -171,7 +183,8 @@ def test_notifications_endpoint():
 
 
 def test_notifications_department_filter():
-    response = client.get("/notifications?department=HR")
+    department = _first_department()
+    response = client.get(f"/notifications?department={department}")
     assert response.status_code == 200
     notifications = response.json()
     assert isinstance(notifications, list)

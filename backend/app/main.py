@@ -41,51 +41,43 @@ USERS_PATH = PROJECT_ROOT / "data" / "synthetic" / "users.json"
 DEFAULT_USERS = [
     {
         "id": "u1",
-        "login": "product_manager",
+        "login": "core_manager",
         "password": "test1",
-        "name": "Product Manager",
+        "name": "Core Platform Manager",
         "role": "Руководитель отдела",
-        "department": "Product",
+        "department": "Core Platform",
     },
     {
         "id": "u2",
-        "login": "qa_manager",
+        "login": "product_ui_manager",
         "password": "test2",
-        "name": "QA Manager",
+        "name": "Product UI Manager",
         "role": "Руководитель отдела",
-        "department": "QA",
+        "department": "Product UI",
     },
     {
         "id": "u3",
-        "login": "hr_manager",
+        "login": "people_ops_manager",
         "password": "test3",
-        "name": "HR Manager",
+        "name": "People Ops Manager",
         "role": "HR",
-        "department": "HR",
+        "department": "People Ops",
     },
     {
         "id": "u4",
-        "login": "sales_manager",
+        "login": "delivery_manager",
         "password": "test4",
-        "name": "Sales Manager",
+        "name": "Delivery Manager",
         "role": "Руководитель отдела",
-        "department": "Sales",
+        "department": "Delivery",
     },
     {
         "id": "u5",
-        "login": "support_manager",
+        "login": "quality_manager",
         "password": "test5",
-        "name": "Support Manager",
+        "name": "Quality Manager",
         "role": "Руководитель отдела",
-        "department": "Support",
-    },
-    {
-        "id": "u6",
-        "login": "ops_manager",
-        "password": "test6",
-        "name": "Operations Manager",
-        "role": "Руководитель отдела",
-        "department": "Operations",
+        "department": "Quality",
     },
 ]
 
@@ -98,7 +90,7 @@ class LoginRequest(BaseModel):
 app = FastAPI(
     title="WorkTime Sync Backend",
     description="FastAPI backend для фронтенда WorkTime Sync и аналитики рабочего времени.",
-    version="1.4.0",
+    version="1.4.1",
 )
 
 app.add_middleware(
