@@ -3,6 +3,8 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Type
 
@@ -20,7 +22,7 @@ DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "synthetic"
 FALLBACK_DATA_DIR = BACKEND_DIR / "data"
 
 # Optional override for local experiments:
-# PowerShell: $env:WORKTIME_DATA_DIR="C:\path\to\data\synthetic"
+# PowerShell: $env:WORKTIME_DATA_DIR="C:\path\to\WorkTime-Sync\data\synthetic"
 DATA_DIR = Path(os.getenv("WORKTIME_DATA_DIR", DEFAULT_DATA_DIR)).resolve()
 
 MODEL_BY_DATASET: dict[str, Type[BaseModel]] = {
@@ -31,11 +33,55 @@ MODEL_BY_DATASET: dict[str, Type[BaseModel]] = {
 }
 
 
+def _normalize_identifier(value: Any) -> int:
+    """Convert ids like emp001/evt001/abs001 to backend numeric ids.
+
+    The analytics layer currently works with integer ids, while the shared
+    `data/synthetic` CSV files use human-readable string ids.
+    """
+    if isinstance(value, int):
+        return value
+
+    text = str(value).strip()
+    if text.isdigit():
+        return int(text)
+
+    match = re.search(r"(\d+)$", text)
+    if match:
+        return int(match.group(1))
+
+    raise ValueError(f"Некорректный идентификатор: {value}")
+
+
+def _normalize_datetime(value: Any) -> Any:
+    """Keep datetime strings timezone-neutral for current analytics calculations.
+
+    Source CSV may contain ISO datetimes with offsets, for example
+    2026-05-20T10:00:00+03:00. Current availability calculations compare these
+    values with timezone-neutral demo-week slots, so we preserve the local clock
+    time and remove tzinfo.
+    """
+    if not isinstance(value, str):
+        return value
+
+    text = value.strip()
+    if "T" not in text:
+        return value
+
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return value
+
+    return parsed.replace(tzinfo=None).isoformat(timespec="seconds")
+
+
 def _convert_csv_value(value: str | None) -> Any:
     """Convert simple CSV values to Python values.
 
-    Semicolon-separated cells are used for arrays, for example:
-    work_days = "Mon;Tue;Wed;Thu;Fri".
+    Supported list delimiters for `work_days`:
+    - Mon;Tue;Wed
+    - Mon|Tue|Wed
     """
     if value is None:
         return value
@@ -47,10 +93,40 @@ def _convert_csv_value(value: str | None) -> Any:
     if ";" in text:
         return [item.strip() for item in text.split(";") if item.strip()]
 
+    if "|" in text:
+        return [item.strip() for item in text.split("|") if item.strip()]
+
     if text.isdigit():
         return int(text)
 
     return text
+
+
+def _normalize_row(dataset: str, row: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize shared CSV/JSON data into the backend-ready schema."""
+    normalized = dict(row)
+
+    if dataset == "employees":
+        normalized["id"] = _normalize_identifier(normalized["id"])
+
+        # Some CSV files use a single string for work_days.
+        if isinstance(normalized.get("work_days"), str):
+            normalized["work_days"] = _convert_csv_value(normalized["work_days"])
+
+    elif dataset == "events":
+        normalized["id"] = _normalize_identifier(normalized["id"])
+        normalized["employee_id"] = _normalize_identifier(normalized["employee_id"])
+        normalized["start_datetime"] = _normalize_datetime(normalized["start_datetime"])
+        normalized["end_datetime"] = _normalize_datetime(normalized["end_datetime"])
+
+    elif dataset == "hr_profiles":
+        normalized["employee_id"] = _normalize_identifier(normalized["employee_id"])
+
+    elif dataset == "absences":
+        normalized["id"] = _normalize_identifier(normalized["id"])
+        normalized["employee_id"] = _normalize_identifier(normalized["employee_id"])
+
+    return normalized
 
 
 def _validate_rows(dataset: str, rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -68,9 +144,14 @@ def _validate_rows(dataset: str, rows: List[Dict[str, Any]]) -> List[Dict[str, A
 
     for index, row in enumerate(rows, start=1):
         try:
-            validated.append(model(**row).model_dump())
-        except ValidationError as error:
-            errors.append(f"row {index}: {error.errors()}")
+            normalized = _normalize_row(dataset, row)
+            validated.append(model(**normalized).model_dump())
+        except (ValidationError, ValueError, KeyError) as error:
+            if isinstance(error, ValidationError):
+                details = error.errors()
+            else:
+                details = str(error)
+            errors.append(f"row {index}: {details}")
 
     if errors:
         joined = "; ".join(errors[:3])
