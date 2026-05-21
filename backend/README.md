@@ -52,8 +52,8 @@ POST /upload/{dataset}
 
 - Добавлен `GET /analytics/groups` — группы сотрудников: актуальные, устаревшие, с внешними встречами, высокой загрузкой, конфликтом часового пояса, HR-расхождением, требующие подтверждения.
 - Добавлен `GET /employees/{employee_id}/risk-explanation` — объяснение риска по факторам и формуле.
-- Добавлен `GET /notifications` — умные уведомления для HR, руководителя и PM на основе риска, перегрузки, конфликтов и расхождений.
-- Улучшены demo-данные в `events.json`, чтобы перегрузка сотрудника была видна не только в README, а реально считалась backend-формулой.
+- Добавлен `GET /notifications` — уведомления для HR, руководителя и PM на основе риска, перегрузки, конфликтов и расхождений.
+- Улучшены demo-данные в `events.json`, чтобы перегрузка сотрудника реально считалась backend-формулой.
 - Добавлены `response_model` для ключевых endpoint'ов Swagger.
 - CSV/upload доработан: если загружен CSV, он реально используется вместо JSON; невалидные файлы отклоняются через Pydantic-валидацию.
 - Availability и meeting-slots учитывают рабочие часы, календарные события, focus-блоки, absence и перегруз.
@@ -61,31 +61,48 @@ POST /upload/{dataset}
 
 ## Данные
 
-Основная папка backend-данных:
+Основная папка данных для backend:
 
 ```text
-backend/data/
+data/synthetic/
 ```
 
-Backend использует 4 набора данных:
+Backend ожидает в этой папке backend-ready файлы:
 
 ```text
-backend/data/employees.json
-backend/data/events.json
-backend/data/hr_profiles.json
-backend/data/absences.json
+data/synthetic/employees.json
+data/synthetic/events.json
+data/synthetic/hr_profiles.json
+data/synthetic/absences.json
 ```
 
-Если в `backend/data` есть файл CSV с тем же dataset-name, он имеет приоритет над JSON:
+Также поддерживаются CSV-файлы с такими же dataset-name:
 
 ```text
-backend/data/employees.csv -> читается вместо employees.json
-backend/data/events.csv -> читается вместо events.json
-backend/data/hr_profiles.csv -> читается вместо hr_profiles.json
-backend/data/absences.csv -> читается вместо absences.json
+data/synthetic/employees.csv
+data/synthetic/events.csv
+data/synthetic/hr_profiles.csv
+data/synthetic/absences.csv
 ```
 
-Корневая папка `data/`, если она есть в репозитории, backend сейчас не читает.
+Если в `data/synthetic` есть CSV и JSON для одного dataset, CSV имеет приоритет:
+
+```text
+employees.csv -> читается вместо employees.json
+events.csv -> читается вместо events.json
+hr_profiles.csv -> читается вместо hr_profiles.json
+absences.csv -> читается вместо absences.json
+```
+
+`backend/data/` оставлен только как временный fallback. Это значит, что если нужного файла нет в `data/synthetic`, backend попробует найти его в `backend/data`.
+
+Главный источник данных команды — `data/synthetic`. Для демо и командной работы обновлять нужно именно эту папку, а не `backend/data`.
+
+Можно переопределить источник данных локально через переменную окружения:
+
+```powershell
+$env:WORKTIME_DATA_DIR="C:\path\to\WorkTime-Sync\data\synthetic"
+```
 
 ## Расчёты
 
