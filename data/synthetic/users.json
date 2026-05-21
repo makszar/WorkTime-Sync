@@ -1,0 +1,42 @@
+[
+  {
+    "id": "u1",
+    "login": "zarix",
+    "password": "i9VUibm6",
+    "name": "Зарубин Максим",
+    "role": "Руководитель отдела",
+    "department": "Core Platform"
+  },
+  {
+    "id": "u2",
+    "login": "lixxxa",
+    "password": "test1",
+    "name": "lixxxa",
+    "role": "Руководитель отдела",
+    "department": "Product UI"
+  },
+  {
+    "id": "u3",
+    "login": "baftype",
+    "password": "test2",
+    "name": "baftype",
+    "role": "Руководитель отдела",
+    "department": "People Ops"
+  },
+  {
+    "id": "u4",
+    "login": "ssdshkaaa",
+    "password": "test3",
+    "name": "ssdshkaaa",
+    "role": "Руководитель отдела",
+    "department": "Delivery"
+  },
+  {
+    "id": "u5",
+    "login": "agentemy",
+    "password": "test4",
+    "name": "agentemy",
+    "role": "Руководитель отдела",
+    "department": "Quality"
+  }
+]

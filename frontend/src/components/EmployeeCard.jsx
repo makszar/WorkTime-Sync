@@ -27,8 +27,9 @@ export default function EmployeeCard({ employee, onOpen }) {
         <RiskMeter value={percent(actualityScore(employee))} label="Актуальность" />
       </div>
 
-      <button className="primaryButton" type="button" onClick={() => onOpen(employee.id)}>
-        Открыть карточку
+      <button className="primaryButton cardButton" type="button" onClick={() => onOpen(employee.id)}>
+        <img src="/icons/profile.svg" alt="" />
+        <span>Открыть карточку</span>
       </button>
     </article>
   );

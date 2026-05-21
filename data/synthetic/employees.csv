@@ -1,11 +1,26 @@
 ﻿id,name,team,role,timezone,work_start,work_end,work_days,work_format,last_update_date
-emp001,Анна Иванова,Product,Product Lead,Europe/Moscow,09:00,18:00,Mon|Tue|Wed|Thu|Fri,hybrid,2026-05-10
-emp002,Дмитрий Соколов,Product,Backend Developer,Europe/Moscow,10:00,19:00,Mon|Tue|Wed|Thu|Fri,remote,2025-12-10
-emp003,Елена Петрова,Product,UX/UI Designer,Europe/London,09:00,17:00,Mon|Tue|Wed|Thu|Fri,remote,2026-05-01
-emp004,Иван Ким,QA,QA Engineer,Asia/Almaty,09:00,18:00,Mon|Tue|Wed|Thu|Fri,office,2026-04-25
-emp005,Мария Смирнова,Product,Business Analyst,Europe/Moscow,09:00,18:00,Mon|Tue|Wed|Thu|Fri,hybrid,2026-05-05
-emp006,Павел Орлов,HR,HR Manager,Europe/Moscow,08:00,17:00,Mon|Tue|Wed|Thu|Fri,office,2026-04-29
-emp007,Алина Волкова,Sales,Sales Manager,Europe/Moscow,09:00,18:00,Mon|Tue|Wed|Thu|Fri,remote,2026-03-30
-emp008,Сергей Морозов,Support,Support Specialist,Asia/Yekaterinburg,11:00,20:00,Mon|Tue|Wed|Thu|Fri,remote,2026-01-30
-emp009,Ольга Федорова,Operations,Operations Coordinator,Europe/Kaliningrad,08:00,16:00,Mon|Tue|Wed|Thu|Fri,office,2026-05-12
-emp010,Тимур Ахметов,Product,Project Manager,Europe/Moscow,09:00,18:00,Mon|Tue|Wed|Thu|Fri,hybrid,2026-05-14
+1,Илья Романов,Core Platform,Backend-разработчик,Asia/Yekaterinburg,10:00,19:00,Mon;Tue;Wed;Thu;Fri,remote,2026-01-30
+2,Никита Орлов,Core Platform,DevOps-инженер,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,hybrid,2026-05-08
+3,София Ветрова,Core Platform,Системный аналитик,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,office,2026-04-28
+4,Артём Лазарев,Core Platform,Backend-разработчик,Asia/Dubai,11:00,20:00,Mon;Tue;Wed;Thu;Fri,remote,2026-02-10
+5,Глеб Соколов,Core Platform,Инженер интеграций,Europe/Moscow,08:00,17:00,Mon;Tue;Wed;Thu;Fri,hybrid,2025-12-20
+6,Мария Ким,Product UI,Frontend-разработчик,Europe/Moscow,08:00,17:00,Mon;Tue;Wed;Thu;Fri,office,2026-04-20
+7,Ксения Павлова,Product UI,UX/UI-дизайнер,Europe/Moscow,10:00,19:00,Mon;Tue;Wed;Thu;Fri,hybrid,2026-05-12
+8,Тимур Ахметов,Product UI,Frontend-разработчик,Asia/Yekaterinburg,11:00,20:00,Mon;Tue;Wed;Thu;Fri,remote,2026-03-01
+9,Алина Громова,Product UI,Product designer,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,office,2026-05-03
+10,Роман Беляев,Product UI,Верстальщик,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu,hybrid,2026-02-05
+11,Анна Морозова,People Ops,HR-специалист,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,hybrid,2026-05-02
+12,Виктория Ершова,People Ops,HRBP,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,office,2026-01-15
+13,Павел Миронов,People Ops,People analyst,Asia/Dubai,10:00,19:00,Mon;Tue;Wed;Thu;Fri,remote,2026-04-15
+14,Юлия Захарова,People Ops,Рекрутер,Europe/Moscow,08:00,17:00,Mon;Tue;Wed;Thu;Fri,hybrid,2026-05-14
+15,Руслан Каримов,People Ops,HR-координатор,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,office,2026-03-25
+16,Дмитрий Волков,Delivery,Проектный менеджер,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,hybrid,2025-12-15
+17,Полина Синицына,Delivery,Scrum master,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,office,2026-05-11
+18,Денис Ковалёв,Delivery,Delivery manager,Asia/Yekaterinburg,11:00,20:00,Mon;Tue;Wed;Thu;Fri,remote,2026-02-18
+19,Вероника Тарасова,Delivery,Координатор релизов,Europe/Moscow,08:00,17:00,Mon;Tue;Wed;Thu;Fri,hybrid,2026-04-29
+20,Кирилл Егоров,Delivery,Project coordinator,Europe/Moscow,09:00,18:00,Tue;Wed;Thu;Fri,office,2026-05-01
+21,Олег Сафин,Quality,QA-инженер,Asia/Dubai,11:00,20:00,Mon;Tue;Wed;Thu;Fri,remote,2026-03-12
+22,Елена Трофимова,Quality,QA lead,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,hybrid,2026-05-07
+23,Сергей Фомин,Quality,Автотестировщик,Europe/Moscow,08:00,17:00,Mon;Tue;Wed;Thu;Fri,remote,2025-11-25
+24,Ирина Нестерова,Quality,Manual QA,Europe/Moscow,09:00,18:00,Mon;Tue;Wed;Thu;Fri,office,2026-04-18
+25,Валерия Осипова,Quality,Тест-аналитик,Europe/Moscow,10:00,19:00,Mon;Tue;Wed;Thu;Fri,hybrid,2026-05-13

@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+from typing import Any
+
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from app.analytics import (
     build_availability,
@@ -26,10 +31,62 @@ from app.data_loader import (
 )
 from app.models import AvailabilityDay, Conflict, DataMismatch, MeetingSlot, Notification, Recommendation, RiskExplanation
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+USERS_PATH = PROJECT_ROOT / "data" / "synthetic" / "users.json"
+
+DEFAULT_USERS = [
+    {
+        "id": "u1",
+        "login": "zarix",
+        "password": "i9VUibm6",
+        "name": "Зарубин Максим",
+        "role": "Руководитель отдела",
+        "department": "Core Platform",
+    },
+    {
+        "id": "u2",
+        "login": "lixxxa",
+        "password": "test1",
+        "name": "lixxxa",
+        "role": "Руководитель отдела",
+        "department": "Product UI",
+    },
+    {
+        "id": "u3",
+        "login": "baftype",
+        "password": "test2",
+        "name": "baftype",
+        "role": "Руководитель отдела",
+        "department": "People Ops",
+    },
+    {
+        "id": "u4",
+        "login": "ssdshkaaa",
+        "password": "test3",
+        "name": "ssdshkaaa",
+        "role": "Руководитель отдела",
+        "department": "Delivery",
+    },
+    {
+        "id": "u5",
+        "login": "agentemy",
+        "password": "test4",
+        "name": "agentemy",
+        "role": "Руководитель отдела",
+        "department": "Quality",
+    },
+]
+
+
+class LoginRequest(BaseModel):
+    login: str
+    password: str
+
+
 app = FastAPI(
     title="WorkTime Sync Backend",
     description="FastAPI backend для фронтенда WorkTime Sync и аналитики рабочего времени.",
-    version="1.2.0",
+    version="1.3.0",
 )
 
 app.add_middleware(
@@ -39,6 +96,44 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def public_user(user: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in user.items() if key != "password"}
+
+
+def load_users() -> list[dict[str, Any]]:
+    if not USERS_PATH.exists():
+        return DEFAULT_USERS
+
+    with USERS_PATH.open("r", encoding="utf-8") as file:
+        users = json.load(file)
+
+    if not isinstance(users, list):
+        raise HTTPException(status_code=500, detail="users.json должен содержать список профилей")
+
+    return users
+
+
+def filter_by_department(
+    department: str | None,
+    employees: list[dict[str, Any]],
+    events: list[dict[str, Any]],
+    hr_profiles: list[dict[str, Any]],
+    absences: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    if not department:
+        return employees, events, hr_profiles, absences
+
+    scoped_employees = [employee for employee in employees if employee.get("team") == department]
+    employee_ids = {int(employee["id"]) for employee in scoped_employees}
+
+    return (
+        scoped_employees,
+        [event for event in events if int(event["employee_id"]) in employee_ids],
+        [profile for profile in hr_profiles if int(profile["employee_id"]) in employee_ids],
+        [absence for absence in absences if int(absence["employee_id"]) in employee_ids],
+    )
 
 
 def get_data():
@@ -58,13 +153,37 @@ def get_data():
     return employees, events, hr_profiles, absences
 
 
+@app.post("/auth/login")
+def login(payload: LoginRequest):
+    requested_login = payload.login.strip()
+    users = load_users()
+    user = next(
+        (
+            item
+            for item in users
+            if item.get("login") == requested_login and item.get("password") == payload.password
+        ),
+        None,
+    )
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
+
+    return {
+        "token": f"demo-{user['login']}",
+        "user": public_user(user),
+    }
+
+
 @app.get("/")
 def root():
     return {
         "service": "WorkTime Sync Backend",
         "docs": "/docs",
         "frontend_endpoint": "/api/worktime/overview",
+        "auth_endpoint": "/auth/login",
         "endpoints": [
+            "/auth/login",
             "/api/worktime/overview",
             "/employees",
             "/employees/{employee_id}",
@@ -88,21 +207,30 @@ def healthcheck():
 
 
 @app.get("/api/worktime/overview")
-def get_worktime_overview():
+def get_worktime_overview(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
-    return build_worktime_overview(employees, events, hr_profiles, absences)
+    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
+    result = build_worktime_overview(*scoped)
+    result["total_synthetic_employees"] = len(employees)
+    result["departments"] = [
+        {"name": team, "count": sum(1 for employee in employees if employee.get("team") == team)}
+        for team in sorted({employee.get("team") for employee in employees})
+    ]
+    return result
 
 
 @app.get("/employees")
-def get_employees():
+def get_employees(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
-    return build_employee_list(employees, events, hr_profiles, absences)
+    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_employee_list(*scoped)
 
 
 @app.get("/employees/frontend")
-def get_frontend_employees():
+def get_frontend_employees(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
-    return build_worktime_overview(employees, events, hr_profiles, absences)["employees"]
+    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_worktime_overview(*scoped)["employees"]
 
 
 @app.get("/employees/{employee_id}")
@@ -128,51 +256,59 @@ def get_employee_risk_explanation(employee_id: int):
 
 
 @app.get("/analytics/summary")
-def get_analytics_summary():
+def get_analytics_summary(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
-    return build_summary(employees, events, hr_profiles, absences)
+    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_summary(*scoped)
 
 
 @app.get("/analytics/conflicts", response_model=list[Conflict])
-def get_analytics_conflicts():
-    employees, events, _, _ = get_data()
-    return build_conflicts(employees, events)
+def get_analytics_conflicts(department: str | None = None):
+    employees, events, hr_profiles, absences = get_data()
+    scoped_employees, scoped_events, _, _ = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_conflicts(scoped_employees, scoped_events)
 
 
 @app.get("/analytics/data-mismatches", response_model=list[DataMismatch])
-def get_analytics_data_mismatches():
-    employees, _, hr_profiles, _ = get_data()
-    return build_data_mismatches(employees, hr_profiles)
+def get_analytics_data_mismatches(department: str | None = None):
+    employees, events, hr_profiles, absences = get_data()
+    scoped_employees, _, scoped_hr_profiles, _ = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_data_mismatches(scoped_employees, scoped_hr_profiles)
 
 
 @app.get("/analytics/availability", response_model=list[AvailabilityDay])
-def get_analytics_availability():
+def get_analytics_availability(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
-    return build_availability(employees, events, hr_profiles, absences)
+    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_availability(*scoped)
 
 
 @app.get("/analytics/groups")
-def get_analytics_groups():
+def get_analytics_groups(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
-    return build_groups(employees, events, hr_profiles, absences)
+    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_groups(*scoped)
 
 
 @app.get("/recommendations", response_model=list[Recommendation])
-def get_recommendations():
+def get_recommendations(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
-    return build_recommendations(employees, events, hr_profiles, absences)
+    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_recommendations(*scoped)
 
 
 @app.get("/notifications", response_model=list[Notification])
-def get_notifications():
+def get_notifications(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
-    return build_notifications(employees, events, hr_profiles, absences)
+    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_notifications(*scoped)
 
 
 @app.get("/meeting-slots", response_model=list[MeetingSlot])
-def get_meeting_slots():
+def get_meeting_slots(department: str | None = None):
     employees, events, hr_profiles, absences = get_data()
-    return build_best_slots(employees, events, hr_profiles, absences)
+    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
+    return build_best_slots(*scoped)
 
 
 @app.post("/upload/{dataset}")

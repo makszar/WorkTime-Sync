@@ -1,45 +1,29 @@
-# Сводка обновлений WorkTime Sync
+# WorkTime-Sync - обновление под текущую структуру репозитория
 
-## Что изменилось в актуальной версии
+## Что изменено
 
-1. Основной источник данных перенесён в `data/synthetic`.
-2. Backend теперь читает CSV/JSON из `data/synthetic`.
-3. `backend/data` оставлен как fallback.
-4. Добавлена нормализация строковых id:
-   - `emp001`;
-   - `evt001`;
-   - `abs001`.
-5. Добавлена нормализация datetime с timezone offsets.
-6. В данных теперь 10 сотрудников.
-7. В данных 37 календарных событий.
-8. HR-профили и отсутствия хранятся в CSV.
-9. Добавлены/актуализированы backend endpoint'ы:
-   - `/employees/{employee_id}/risk-explanation`;
-   - `/analytics/groups`;
-   - `/notifications`.
-10. Backend поддерживает рекомендации, уведомления, группы и объяснение риска.
-11. Есть GitHub Actions deploy workflow.
-12. Публичный сайт показывает основной MVP: дашборд, сотрудники, карточка, конфликты, доступность, рекомендации.
+- `frontend/src/App.jsx` - добавлен экран логина, хранение текущего пользователя, загрузка данных с учётом отдела пользователя.
+- `frontend/src/components/Layout.jsx` - боковой сайдбар заменён верхним хедером, убран знак WS и подпись под логотипом, оставлен текстовый логотип WorkTime-Sync.
+- `frontend/src/components/EmployeeCard.jsx` - кнопка карточки получила SVG-иконку, карточки подготовлены к одинаковой высоте.
+- `frontend/src/pages/Employees.jsx` - страница показывает отдел текущего руководителя и 5 закреплённых сотрудников.
+- `frontend/src/pages/Dashboard.jsx` - обновлены подписи под демо на 25 синтетических сотрудников.
+- `frontend/src/api/worktimeApi.js` - фронт сначала пробует FastAPI, при локальном запуске без бэка откатывается на mockData.
+- `frontend/src/data/mockData.js` - добавлены 5 пользователей и 25 синтетических сотрудников по 5 отделам.
+- `frontend/src/styles.css` - верхний хедер, экран логина, выравнивание карточек сотрудников, адаптив.
+- `frontend/public/icons/*.svg` - добавлены переданные SVG-иконки для навигации и кнопок.
+- `backend/app/main.py` - добавлен `/auth/login`, фильтрация данных по отделу через query-параметр `department`.
+- `data/synthetic/users.json` - 5 профилей руководителей.
+- `data/synthetic/employees.csv` - 25 сотрудников по 5 отделам.
+- `data/synthetic/events.csv`, `data/synthetic/absences.csv`, `data/synthetic/hr_profiles.csv` - сценарии для кейса: устаревший график, перегруз, встречи вне рабочего времени, отсутствие, конфликт с HR-данными.
 
-## Какие файлы обновлять в репозитории
+## Распределение аккаунтов
 
-Рекомендуемые пути:
+- `zarix / i9VUibm6` - Core Platform
+- `lixxxa / test1` - Product UI
+- `baftype / test2` - People Ops
+- `ssdshkaaa / test3` - Delivery
+- `agentemy / test4` - Quality
 
-```text
-README.md
-presentation/presentation_draft.md
-tests/test_cases.md
-docs/missing_information.md
-docs/repo_update_summary.md
-```
+## Куда переносить
 
-Файл `README.md` нужно заменить в корне репозитория.
-
-Остальные файлы лучше положить в соответствующие папки:
-
-```text
-presentation/presentation_draft.md
-tests/test_cases.md
-docs/missing_information.md
-docs/repo_update_summary.md
-```
+Содержимое архива нужно накатывать в корень репозитория `makszar/WorkTime-Sync` с заменой файлов.
