@@ -89,11 +89,11 @@
 
 | Логин | Пароль | Отдел |
 |---|---|---|
-| `core_manager` | `test1` | Core Platform |
-| `product_ui_manager` | `test2` | Product UI |
-| `people_ops_manager` | `test3` | People Ops |
-| `delivery_manager` | `test4` | Delivery |
-| `quality_manager` | `test5` | Quality |
+| `zarix` | `i9VUibm6` | Core Platform |
+| `lixxxa` | `test1` | Product UI |
+| `baftype` | `test2` | People Ops |
+| `ssdshkaaa` | `test3` | Delivery |
+| `agentemy` | `test4` | Quality |
 
 После входа frontend запрашивает `GET /api/worktime/overview?department=<department>`.
 
@@ -220,7 +220,7 @@ Endpoint `GET /analytics/data-quality` проверяет события без 
 ## Слайд 18. Демо-сценарий
 
 1. Открыть сайт или локальный frontend.
-2. Войти под `core_manager / test1`.
+2. Войти под `zarix / i9VUibm6`.
 3. Показать, что открываются сотрудники только Core Platform.
 4. Открыть дашборд отдела.
 5. Показать сотрудника с высоким риском.

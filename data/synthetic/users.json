@@ -1,41 +1,41 @@
 [
   {
     "id": "u1",
-    "login": "core_manager",
-    "password": "test1",
-    "name": "Core Platform Manager",
+    "login": "zarix",
+    "password": "i9VUibm6",
+    "name": "Зарубин Максим",
     "role": "Руководитель отдела",
     "department": "Core Platform"
   },
   {
     "id": "u2",
-    "login": "product_ui_manager",
-    "password": "test2",
-    "name": "Product UI Manager",
+    "login": "lixxxa",
+    "password": "test1",
+    "name": "lixxxa",
     "role": "Руководитель отдела",
     "department": "Product UI"
   },
   {
     "id": "u3",
-    "login": "people_ops_manager",
-    "password": "test3",
-    "name": "People Ops Manager",
-    "role": "HR",
+    "login": "baftype",
+    "password": "test2",
+    "name": "baftype",
+    "role": "Руководитель отдела",
     "department": "People Ops"
   },
   {
     "id": "u4",
-    "login": "delivery_manager",
-    "password": "test4",
-    "name": "Delivery Manager",
+    "login": "ssdshkaaa",
+    "password": "test3",
+    "name": "ssdshkaaa",
     "role": "Руководитель отдела",
     "department": "Delivery"
   },
   {
     "id": "u5",
-    "login": "quality_manager",
-    "password": "test5",
-    "name": "Quality Manager",
+    "login": "agentemy",
+    "password": "test4",
+    "name": "agentemy",
     "role": "Руководитель отдела",
     "department": "Quality"
   }

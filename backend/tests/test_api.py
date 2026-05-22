@@ -52,17 +52,17 @@ def test_schemas_endpoint():
 
 
 def test_login_success():
-    response = client.post("/auth/login", json={"login": "core_manager", "password": "test1"})
+    response = client.post("/auth/login", json={"login": "zarix", "password": "i9VUibm6"})
     assert response.status_code == 200
     data = response.json()
 
-    assert data["token"] == "demo-core_manager"
+    assert data["token"] == "demo-zarix"
     assert data["user"]["department"] == "Core Platform"
     assert "password" not in data["user"]
 
 
 def test_login_wrong_password():
-    response = client.post("/auth/login", json={"login": "core_manager", "password": "wrong"})
+    response = client.post("/auth/login", json={"login": "zarix", "password": "wrong"})
     assert response.status_code == 401
 
 
@@ -188,3 +188,30 @@ def test_notifications_department_filter():
     assert response.status_code == 200
     notifications = response.json()
     assert isinstance(notifications, list)
+
+
+def test_demo_dataset_has_25_employees_and_5_departments():
+    employees = load_employees()
+    departments = sorted({employee["team"] for employee in employees})
+
+    assert len(employees) == 25
+    assert departments == ["Core Platform", "Delivery", "People Ops", "Product UI", "Quality"]
+    assert all(sum(1 for employee in employees if employee["team"] == department) == 5 for department in departments)
+
+
+def test_required_demo_logins():
+    profiles = [
+        ("zarix", "i9VUibm6", "Core Platform"),
+        ("lixxxa", "test1", "Product UI"),
+        ("baftype", "test2", "People Ops"),
+        ("ssdshkaaa", "test3", "Delivery"),
+        ("agentemy", "test4", "Quality"),
+    ]
+
+    for login, password, department in profiles:
+        response = client.post("/auth/login", json={"login": login, "password": password})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["user"]["login"] == login
+        assert data["user"]["department"] == department
+        assert "password" not in data["user"]

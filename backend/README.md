@@ -45,21 +45,20 @@ POST /upload/{dataset}
 Большинство аналитических endpoint'ов поддерживают query-параметр:
 
 ```text
-?department=Product
-?department=QA
-?department=HR
-?department=Sales
-?department=Support
-?department=Operations
+?department=Core%20Platform
+?department=Product%20UI
+?department=People%20Ops
+?department=Delivery
+?department=Quality
 ```
 
 Примеры:
 
 ```text
-GET /api/worktime/overview?department=Product
-GET /employees?department=QA
-GET /notifications?department=HR
-GET /meeting-slots?department=Product
+GET /api/worktime/overview?department=Product%20UI
+GET /employees?department=Quality
+GET /notifications?department=People%20Ops
+GET /meeting-slots?department=Product%20UI
 ```
 
 ## Demo-login
@@ -70,18 +69,18 @@ GET /meeting-slots?department=Product
 data/synthetic/users.json
 ```
 
-Примеры:
+Актуальные профили:
 
 ```text
-product_manager / test1
-qa_manager / test2
-hr_manager / test3
-sales_manager / test4
-support_manager / test5
-ops_manager / test6
+zarix / i9VUibm6 -> Core Platform
+lixxxa / test1 -> Product UI
+baftype / test2 -> People Ops
+ssdshkaaa / test3 -> Delivery
+agentemy / test4 -> Quality
 ```
 
 `POST /auth/login` возвращает demo-token и пользователя без пароля.
+
 
 ## Данные
 
@@ -167,13 +166,13 @@ Upload безопасный:
 cd backend
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8040 --reload
 ```
 
 Swagger:
 
 ```text
-http://127.0.0.1:8000/docs
+http://127.0.0.1:8040/docs
 ```
 
 ## Тесты

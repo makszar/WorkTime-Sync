@@ -9,9 +9,9 @@
 | Что открыть | URL |
 |---|---|
 | Frontend | `http://localhost:5173` |
-| Swagger | `http://127.0.0.1:8000/docs` |
-| Healthcheck | `http://127.0.0.1:8000/health` |
-| Data health | `http://127.0.0.1:8000/health/data` |
+| Swagger | `http://127.0.0.1:8040/docs` |
+| Healthcheck | `http://127.0.0.1:8040/health` |
+| Data health | `http://127.0.0.1:8040/health/data` |
 
 ---
 
@@ -58,7 +58,7 @@
 | Тип | API / UI |
 | Приоритет | высокий |
 
-**Шаги через UI:** открыть frontend, ввести `core_manager`, пароль `test1`, нажать “Войти”.
+**Шаги через UI:** открыть frontend, ввести `zarix`, пароль `i9VUibm6`, нажать “Войти”.
 
 **Ожидаемый результат:** вход успешен, пользователь относится к отделу `Core Platform`, frontend открывает дашборд отдела.
 
@@ -100,7 +100,7 @@
 | Тип | API |
 | Приоритет | высокий |
 
-**Шаги:** выполнить `GET /api/worktime/overview?department=Product%20UI`.
+**Шаги:** выполнить `GET /api/worktime/overview?department=Product%20UI%20UI%20UI`.
 
 **Ожидаемый результат:** ответ содержит `employees`, `events`, `roadmap`, `summary`, `recommendations`, `bestSlots`, `notifications`, `groups`, `meta`, `departments`, `total_synthetic_employees`.
 

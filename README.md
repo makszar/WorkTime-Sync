@@ -143,17 +143,16 @@ data/synthetic/
 
 ## Demo-аккаунты
 
+В MVP 5 руководителей и 25 синтетических сотрудников. Каждый руководитель видит 5 сотрудников своего отдела.
+
 | Логин | Пароль | Роль | Отдел |
 |---|---|---|---|
-| `core_manager` | `test1` | Руководитель отдела | Core Platform |
-| `product_ui_manager` | `test2` | Руководитель отдела | Product UI |
-| `people_ops_manager` | `test3` | HR | People Ops |
-| `delivery_manager` | `test4` | Руководитель отдела | Delivery |
-| `quality_manager` | `test5` | Руководитель отдела | Quality |
+| `zarix` | `i9VUibm6` | Руководитель отдела | Core Platform |
+| `lixxxa` | `test1` | Руководитель отдела | Product UI |
+| `baftype` | `test2` | Руководитель отдела | People Ops |
+| `ssdshkaaa` | `test3` | Руководитель отдела | Delivery |
+| `agentemy` | `test4` | Руководитель отдела | Quality |
 
-После входа frontend передаёт отдел пользователя в backend, и backend возвращает данные только по этому department.
-
----
 
 ## Архитектура работы
 
@@ -300,7 +299,7 @@ npm.cmd run dev
 Создать `frontend/.env`:
 
 ```env
-VITE_API_BASE_URL=http://127.0.0.1:8000
+VITE_API_BASE_URL=http://127.0.0.1:8040
 VITE_USE_MOCK_DATA=false
 ```
 
@@ -332,7 +331,7 @@ cd backend
 | Шаг | Что показать | Зачем |
 |---:|---|---|
 | 1 | открыть сайт или локальный frontend | показать работающий продукт |
-| 2 | войти под `core_manager / test1` | показать роли и доступ к своему отделу |
+| 2 | войти под `zarix / i9VUibm6` | показать роли и доступ к своему отделу |
 | 3 | открыть дашборд | показать состояние отдела |
 | 4 | перейти в сотрудников | показать карточки риска |
 | 5 | открыть сотрудника с высоким риском | объяснить проблему на конкретном примере |
@@ -382,3 +381,16 @@ cd backend
 6. сделать AI-ассистента поверх рассчитанных метрик;
 7. добавить экспорт отчётов;
 8. расширить frontend-экраны для `groups`, `notifications` и `data-quality`.
+
+## Запуск на сервере
+
+Backend рассчитан на запуск на порту `8040`:
+
+```bash
+cd /var/www/worktimesync.ru/backend
+source .venv/bin/activate
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8040
+curl http://127.0.0.1:8040/health
+```
+
+Frontend в production собирается с `frontend/.env.production`, где `VITE_API_BASE_URL` пустой, чтобы запросы шли через текущий домен.

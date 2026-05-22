@@ -41,44 +41,44 @@ USERS_PATH = PROJECT_ROOT / "data" / "synthetic" / "users.json"
 DEFAULT_USERS = [
     {
         "id": "u1",
-        "login": "core_manager",
-        "password": "test1",
-        "name": "Core Platform Manager",
+        "login": "zarix",
+        "password": "i9VUibm6",
+        "name": "Зарубин Максим",
         "role": "Руководитель отдела",
-        "department": "Core Platform",
+        "department": "Core Platform"
     },
     {
         "id": "u2",
-        "login": "product_ui_manager",
-        "password": "test2",
-        "name": "Product UI Manager",
+        "login": "lixxxa",
+        "password": "test1",
+        "name": "lixxxa",
         "role": "Руководитель отдела",
-        "department": "Product UI",
+        "department": "Product UI"
     },
     {
         "id": "u3",
-        "login": "people_ops_manager",
-        "password": "test3",
-        "name": "People Ops Manager",
-        "role": "HR",
-        "department": "People Ops",
+        "login": "baftype",
+        "password": "test2",
+        "name": "baftype",
+        "role": "Руководитель отдела",
+        "department": "People Ops"
     },
     {
         "id": "u4",
-        "login": "delivery_manager",
-        "password": "test4",
-        "name": "Delivery Manager",
+        "login": "ssdshkaaa",
+        "password": "test3",
+        "name": "ssdshkaaa",
         "role": "Руководитель отдела",
-        "department": "Delivery",
+        "department": "Delivery"
     },
     {
         "id": "u5",
-        "login": "quality_manager",
-        "password": "test5",
-        "name": "Quality Manager",
+        "login": "agentemy",
+        "password": "test4",
+        "name": "agentemy",
         "role": "Руководитель отдела",
-        "department": "Quality",
-    },
+        "department": "Quality"
+    }
 ]
 
 
@@ -90,7 +90,7 @@ class LoginRequest(BaseModel):
 app = FastAPI(
     title="WorkTime Sync Backend",
     description="FastAPI backend для фронтенда WorkTime Sync и аналитики рабочего времени.",
-    version="1.4.1",
+    version="1.4.2",
 )
 
 app.add_middleware(
@@ -166,13 +166,13 @@ def get_data():
 
 @app.post("/auth/login")
 def login(payload: LoginRequest):
-    requested_login = payload.login.strip()
+    requested_login = payload.login.strip().lower()
     users = load_users()
     user = next(
         (
             item
             for item in users
-            if item.get("login") == requested_login and item.get("password") == payload.password
+            if str(item.get("login", "")).lower() == requested_login and item.get("password") == payload.password
         ),
         None,
     )
@@ -255,6 +255,7 @@ def get_worktime_overview(department: str | None = None):
     source_info = get_data_source_info()
 
     result["total_synthetic_employees"] = len(employees)
+    result["total_demo_people"] = len(employees) + len(load_users())
     result["departments"] = departments_from_employees(employees)
     result["meta"] = {
         "backend_version": app.version,
