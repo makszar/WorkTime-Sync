@@ -1,186 +1,453 @@
-# Что отсутствует или требует уточнения по текущему состоянию WorkTime Sync
+# Missing information и задачи следующего этапа WorkTime Sync
 
-## Уже реализовано
+Этот файл фиксирует, что уже реализовано, что отсутствует, и какие задачи нужно передать frontend/backend-команде на следующий этап.
 
-### Frontend
+---
 
-- React + Vite интерфейс.
-- Дашборд.
-- Список сотрудников.
-- Карточка сотрудника.
-- Конфликты.
-- Командная доступность.
-- Рекомендации.
-- Подключение к backend через `/api/worktime/overview`.
-- Публичный сайт `https://worktimesync.ru/`.
+## 1. Краткое состояние проекта
 
-### Backend
+| Область | Статус |
+|---|---|
+| Frontend | React + Vite, основные экраны MVP реализованы |
+| Backend | FastAPI, аналитика и API реализованы |
+| Данные | `data/synthetic/*.csv` |
+| Login | demo-login реализован |
+| Department-фильтр | реализован |
+| Риски/конфликты/доступность | реализованы |
+| Recommendations/notifications | реализованы в backend/API |
+| Личный кабинет сотрудника | не реализован |
+| Полный руководитель | не реализован отдельным интерфейсом |
+| HR-dashboard | не реализован отдельным интерфейсом |
+| Задачи от руководителя/HR | не реализованы |
+| Подтверждение графика сотрудником | не реализовано |
+| Риск с весами отделов | не реализован, сейчас формула общая |
+| Production-БД | не реализована |
+| Реальные интеграции | не реализованы |
 
-- FastAPI backend.
-- `GET /health`.
-- `GET /api/worktime/overview`.
-- `GET /employees`.
-- `GET /employees/frontend`.
-- `GET /employees/{employee_id}`.
-- `GET /employees/{employee_id}/risk-explanation`.
-- `GET /analytics/summary`.
-- `GET /analytics/conflicts`.
-- `GET /analytics/data-mismatches`.
-- `GET /analytics/availability`.
-- `GET /analytics/groups`.
-- `GET /recommendations`.
-- `GET /notifications`.
-- `GET /meeting-slots`.
-- `POST /upload/{dataset}`.
-- CSV/JSON data loader.
-- Основной источник данных `data/synthetic`.
-- Fallback на `backend/data`.
-- Нормализация id вида `emp001`, `evt001`, `abs001`.
-- Нормализация ISO datetime с timezone offsets.
-- Pydantic-валидация.
-- Расчёт актуальности, загрузки, конфликтов и риска.
-- Группы сотрудников.
-- Объяснение риска.
-- Уведомления.
-- Backend-тесты.
-- GitHub Actions деплой через `deploy.yml`.
+---
 
-### Data
+## 2. Главная новая задача после митапа
 
-- `data/synthetic/employees.csv`.
-- `data/synthetic/events.csv`.
-- `data/synthetic/hr_profiles.csv`.
-- `data/synthetic/absences.csv`.
-- 10 сотрудников.
-- 37 событий.
-- 6 команд.
-- Отсутствия vacation/sick_leave.
+Нужно развить проект из аналитического дашборда в систему взаимодействия ролей:
 
-## Что требует уточнения или доработки
+```text
+аналитика → задача → подтверждение сотрудником → актуализация графика
+```
 
-### 1. README в корне
+Новая логика должна быть такой:
 
-Корневой README нужно держать синхронизированным с фактическим API.
+1. полный руководитель видит всю компанию;
+2. руководитель отдела видит только свой отдел;
+3. HR видит все отделы, но с фокусом на HR-данные, подтверждения и расхождения;
+4. сотрудник видит только свой личный кабинет;
+5. руководитель/HR может создать задачу сотруднику;
+6. сотрудник подтверждает задачу, отклоняет её или оставляет комментарий;
+7. статус возвращается руководителю/HR.
 
-Особенно важно указать:
+---
 
-- `data/synthetic` как основной источник данных;
-- 10 сотрудников вместо старых 6;
-- новые endpoint'ы:
-  - `/employees/{employee_id}/risk-explanation`;
-  - `/analytics/groups`;
-  - `/notifications`;
-- что `backend/data` теперь fallback.
+## 3. Роли и права доступа
 
-### 2. Frontend не показывает все backend-возможности
+| Роль | Scope | Что видит | Что делает |
+|---|---|---|---|
+| `executive` | `all` | все отделы и всех сотрудников | смотрит глобальную аналитику и сравнение отделов |
+| `department_manager` | `department` | только свой отдел | создаёт задачи сотрудникам, контролирует графики и нагрузку |
+| `hr` | `all` | всех сотрудников с HR-фокусом | проверяет HR-расхождения, графики, timezone, подтверждения |
+| `employee` | `self` | только себя | подтверждает график, отвечает на задачи, оставляет комментарии |
 
-Backend уже умеет:
+---
 
-- risk explanation;
-- groups;
-- notifications;
-- data mismatches.
+# 4. Задачи для backend
 
-Но в текущем frontend явно показаны только:
+## 4.1. Расширить users.json
 
-- дашборд;
-- сотрудники;
-- карточка;
-- конфликты;
-- доступность;
-- рекомендации.
+**Файл:** `data/synthetic/users.json`
 
-Можно добавить frontend-экраны:
+Нужно добавить/обновить поля:
 
-- “Группы”;
-- “Уведомления”;
-- “Расхождения HR”;
-- “Почему такой риск”.
+| Поле | Обязательно? | Назначение |
+|---|---|---|
+| `id` | да | id пользователя |
+| `login` | да | логин |
+| `password` | да | пароль для demo |
+| `name` | да | имя |
+| `role` | да | `executive`, `department_manager`, `hr`, `employee` |
+| `scope` | да | `all`, `department`, `self` |
+| `department` | для manager/employee | отдел |
+| `employee_id` | для employee | связь с employees.csv |
 
-### 3. Настоящая база данных
+**Важно:** существующие руководители отделов должны продолжить работать.
 
-Сейчас основной источник данных — CSV/JSON в `data/synthetic`.
+---
 
-Для production нужно заменить файловое хранилище на:
+## 4.2. Добавить role/scope-фильтрацию
 
-- PostgreSQL;
-- SQLite;
-- другую БД.
+**Файл:** `backend/app/main.py`
 
-Но текущая архитектура уже подготовлена: data layer можно заменить без переписывания всей аналитики.
+Сейчас есть фильтр по department. Нужно расширить его до role/scope.
 
-### 4. Реальные интеграции
+Предлагаемая функция:
 
-Сейчас календарь, HR, task-tracker и отсутствия имитируются через CSV/JSON.
+```python
+def apply_user_scope(user, employees, events, hr_profiles, absences):
+    ...
+```
 
-Нужно подключить:
+Логика:
 
-- Google Calendar;
-- HRM;
-- Jira/YouTrack;
-- табель;
-- корпоративные уведомления.
+| Role | Данные |
+|---|---|
+| `executive` | все данные |
+| `hr` | все данные |
+| `department_manager` | только `employee.team == user.department` |
+| `employee` | только `employee.id == user.employee_id` |
 
-### 5. Авторизация и роли
+Для MVP можно передавать данные пользователя через query-параметры. JWT пока не обязателен.
 
-В кейсе есть роли:
+---
 
-- сотрудник;
-- HR;
-- руководитель;
-- PM;
-- администратор;
-- аналитик.
+## 4.3. Добавить tasks dataset
 
-Сейчас роли используются в логике рекомендаций/уведомлений, но полноценной авторизации и прав доступа пока нет.
+**Файл:** `data/synthetic/tasks.json` или `data/synthetic/tasks.csv`
 
-### 6. UI для загрузки данных
+Минимальная структура задачи:
 
-Backend endpoint `POST /upload/{dataset}` есть.
+| Поле | Тип | Назначение |
+|---|---|---|
+| `id` | int/string | id задачи |
+| `employee_id` | int | кому назначена |
+| `created_by_user_id` | string | кто создал |
+| `created_by_role` | string | роль создателя |
+| `department` | string | отдел |
+| `type` | string | тип задачи |
+| `title` | string | название |
+| `description` | string | описание |
+| `due_date` | string | срок |
+| `status` | string | pending / confirmed / rejected / done / expired |
+| `employee_comment` | string | комментарий сотрудника |
+| `created_at` | string | дата создания |
+| `updated_at` | string | дата обновления |
 
-Нужен frontend-экран, где пользователь может загрузить:
+Типы задач:
 
-- employees.csv;
-- events.csv;
-- hr_profiles.csv;
-- absences.csv.
+| Type | Назначение |
+|---|---|
+| `confirm_schedule` | подтвердить график |
+| `review_hr_profile` | проверить HR-данные |
+| `reschedule_meeting` | перенести встречу |
+| `review_load` | проверить перегрузку |
+| `update_timezone` | обновить часовой пояс |
 
-### 7. Уведомления
+---
 
-Backend формирует уведомления, но пока это не реальные push/email/Telegram-уведомления.
+## 4.4. Добавить task API
 
-Следующий шаг:
+Новые endpoint’ы:
 
-- отправка email;
-- Telegram-бот;
-- Slack/Teams;
-- push в интерфейсе.
+| Endpoint | Метод | Кто использует | Назначение |
+|---|---|---|---|
+| `/tasks` | GET | executive, HR, manager | список задач с фильтрацией |
+| `/tasks/my` | GET | employee | задачи текущего сотрудника |
+| `/tasks` | POST | executive, HR, manager | создать задачу |
+| `/tasks/{task_id}` | GET | все роли по правам | открыть задачу |
+| `/tasks/{task_id}/status` | PATCH | employee / creator | сменить статус |
+| `/employees/{employee_id}/confirm-schedule` | PATCH | employee / HR | подтвердить график |
 
-### 8. AI-ассистент
+---
 
-В кейсе можно развить AI-слой.
+## 4.5. Добавить подтверждение графика
 
-Сейчас есть объяснимые правила и risk explanation, но нет отдельного чат-ассистента.
+Endpoint:
 
-### 9. История изменений
+```text
+PATCH /employees/{employee_id}/confirm-schedule
+```
 
-Пока нет истории изменений графиков.
+Что должен делать:
+
+- фиксировать дату подтверждения;
+- закрывать задачу типа `confirm_schedule`, если она есть;
+- сохранять комментарий сотрудника, если передан;
+- возвращать обновлённый статус подтверждения.
+
+---
+
+## 4.6. Добавить риск с весами по отделам
+
+**Файл:** `backend/app/analytics.py`
+
+Актуальность графика не менять:
+
+```text
+A = max(0, 1 - days_since_update / 90)
+```
+
+Риск:
+
+```text
+R = wA * (1 - A)
+  + wC * C
+  + wL * L
+  + wT * timezone_mismatch
+  + wH * hr_mismatch
+```
+
+Веса:
+
+| Отдел | `wA` | `wC` | `wL` | `wT` | `wH` |
+|---|---:|---:|---:|---:|---:|
+| Core Platform | 0.25 | 0.25 | 0.30 | 0.10 | 0.10 |
+| Product UI | 0.25 | 0.30 | 0.25 | 0.10 | 0.10 |
+| People Ops | 0.30 | 0.15 | 0.20 | 0.10 | 0.25 |
+| Delivery | 0.20 | 0.30 | 0.30 | 0.10 | 0.10 |
+| Quality | 0.20 | 0.25 | 0.35 | 0.10 | 0.10 |
+
+Fallback для неизвестного отдела:
+
+```text
+0.30, 0.25, 0.25, 0.10, 0.10
+```
+
+---
+
+## 4.7. Расширить risk explanation
+
+Endpoint:
+
+```text
+GET /employees/{employee_id}/risk-explanation
+```
+
+Добавить в ответ:
+
+| Поле | Зачем |
+|---|---|
+| `department` | отдел сотрудника |
+| `weights` | веса риска для отдела |
+| `departmentLogic` | краткое объяснение весов отдела |
+| `formulaWithWeights` | формула с конкретными весами |
+| `scheduleConfirmationStatus` | подтверждён ли график |
+
+---
+
+# 5. Задачи для frontend
+
+## 5.1. Добавить routing по ролям
+
+**Файлы:**
+
+```text
+frontend/src/App.jsx
+frontend/src/components/Layout.jsx
+frontend/src/api/worktimeApi.js
+```
+
+После login frontend должен смотреть:
+
+```js
+user.role
+user.scope
+user.department
+user.employee_id
+```
+
+И открывать нужный интерфейс:
+
+| Role | Главный экран |
+|---|---|
+| `executive` | `ExecutiveDashboard` |
+| `department_manager` | текущий `Dashboard` отдела |
+| `hr` | `HRDashboard` |
+| `employee` | `EmployeeCabinet` |
+
+---
+
+## 5.2. Добавить экран полного руководителя
+
+Файл:
+
+```text
+frontend/src/pages/ExecutiveDashboard.jsx
+```
+
+Показывать:
+
+- все отделы;
+- общее количество сотрудников;
+- средний риск по компании;
+- отделы с высоким риском;
+- топ сотрудников по риску;
+- общее количество конфликтов;
+- среднюю загрузку;
+- сравнение отделов;
+- переход к конкретному отделу.
+
+---
+
+## 5.3. Обновить интерфейс руководителя отдела
+
+Текущий дашборд оставить как основу.
+
+Добавить:
+
+- кнопку “Создать задачу” в карточке сотрудника;
+- кнопку “Запросить подтверждение графика”;
+- блок “Статус подтверждения графиков”;
+- список задач отдела;
+- фильтр задач по статусу;
+- отображение, кто подтвердил график, а кто нет.
+
+---
+
+## 5.4. Добавить HRDashboard
+
+Файл:
+
+```text
+frontend/src/pages/HRDashboard.jsx
+```
+
+Показывать:
+
+- все устаревшие графики;
+- HR/data mismatches;
+- timezone conflicts;
+- сотрудники без подтверждения;
+- отсутствия;
+- data-quality;
+- HR-задачи;
+- возможность создать задачу сотруднику.
+
+---
+
+## 5.5. Добавить личный кабинет сотрудника
+
+Файл:
+
+```text
+frontend/src/pages/EmployeeCabinet.jsx
+```
+
+Показывать:
+
+| Блок | Что внутри |
+|---|---|
+| Мой график | дни, часы, формат, часовой пояс |
+| Моя актуальность | дата обновления, актуальность, риск |
+| Мои события | встречи и конфликты |
+| Мои задачи | задачи от руководителя/HR |
+| Действия | подтвердить график, запросить изменение, оставить комментарий |
+
+Кнопки:
+
+- “Подтвердить график”;
+- “Запросить изменение”;
+- “Принять задачу”;
+- “Отклонить с комментарием”.
+
+---
+
+## 5.6. Добавить компоненты задач
+
+Новые компоненты:
+
+```text
+frontend/src/components/TaskCard.jsx
+frontend/src/components/TaskForm.jsx
+frontend/src/components/TaskStatusBadge.jsx
+frontend/src/components/RoleBadge.jsx
+```
+
+---
+
+## 5.7. Обновить frontend API client
+
+**Файл:** `frontend/src/api/worktimeApi.js`
+
+Добавить функции:
+
+```js
+export async function loadTasks(user) {}
+export async function loadMyTasks(user) {}
+export async function createTask(payload) {}
+export async function updateTaskStatus(taskId, payload) {}
+export async function confirmSchedule(employeeId, payload) {}
+export async function loadRiskExplanation(employeeId) {}
+```
+
+---
+
+# 6. Остальные missing / ограничения проекта
+
+## 6.1. Production-авторизация
+
+Сейчас login demo-уровня. Нужно не говорить, что это production-auth.
+
+| Сейчас | Нужно дальше |
+|---|---|
+| demo users в `users.json` | база пользователей |
+| plain password | хеширование |
+| demo-token | JWT/session |
+| role как поле | RBAC/ABAC |
+
+## 6.2. База данных
+
+Сейчас CSV/JSON. Дальше: SQLite для MVP+ или PostgreSQL для production.
+
+## 6.3. Реальные интеграции
+
+Сейчас источники имитируются через synthetic data.
+
+| Источник | Сейчас | Дальше |
+|---|---|---|
+| календарь | `events.csv` | Google Calendar / Outlook |
+| HR | `hr_profiles.csv` | HRM |
+| задачи | будущий `tasks.json` | Jira / YouTrack |
+| табель | `absences.csv` | система учёта времени |
+| уведомления | `/notifications` | email / Telegram / Slack |
+
+## 6.4. История изменений
 
 Нужно хранить:
 
 - кто изменил график;
 - когда;
 - что было до/после;
-- причина изменения.
+- комментарий;
+- кто подтвердил.
 
-### 10. Тестовое покрытие
+## 6.5. AI-ассистент
 
-Backend-тесты есть, но можно расширить:
+Сейчас есть объяснимые рекомендации и risk explanation, но нет отдельного AI-chat.
 
-- загрузка CSV;
-- загрузка JSON;
-- невалидные файлы;
-- groups;
-- notifications;
-- risk explanation;
-- public deployment smoke-test.
+---
+
+## 7. Что важно не сломать
+
+| Уже есть | Не ломать |
+|---|---|
+| `/auth/login` | сохранить совместимость |
+| `/api/worktime/overview?department=...` | оставить для руководителей отделов |
+| текущие страницы frontend | не удалять |
+| fallback на mock | оставить |
+| `schedule_actuality` | не менять |
+| поля employees/events/hr_profiles/absences | не переименовывать |
+| data-quality | сохранить |
+| backend tests | расширить, не удалить |
+
+---
+
+## 8. Критерии готовности следующего этапа
+
+| Блок | Критерий |
+|---|---|
+| Роли | разные роли видят разные интерфейсы |
+| Полный руководитель | видит все отделы и общую аналитику |
+| Руководитель отдела | видит только свой отдел |
+| HR | видит HR-проблемы всех отделов |
+| Сотрудник | видит только себя и свои задачи |
+| Задачи | руководитель/HR создаёт задачу, сотрудник отвечает |
+| Подтверждение графика | сотрудник может подтвердить график |
+| Риск | считается с весами отдела |
+| Risk explanation | показывает веса и объяснение |
+| Старый MVP | продолжает работать |

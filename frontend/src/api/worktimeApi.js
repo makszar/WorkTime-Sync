@@ -49,7 +49,8 @@ function buildMockOverview(user) {
       name,
       count: employees.filter((employee) => employee.team === name).length
     })),
-    totalSyntheticEmployees: employees.length
+    totalSyntheticEmployees: employees.length,
+    totalDemoPeople: employees.length + users.length
   };
 }
 
@@ -93,7 +94,8 @@ function normalizeOverview(payload, user) {
       name,
       count: (payload.employees || []).filter((employee) => employee.team === name).length
     })),
-    totalSyntheticEmployees: payload.totalSyntheticEmployees || payload.total_synthetic_employees || (payload.employees || []).length
+    totalSyntheticEmployees: payload.totalSyntheticEmployees || payload.total_synthetic_employees || (payload.employees || []).length,
+    totalDemoPeople: payload.totalDemoPeople || payload.total_demo_people || ((payload.totalSyntheticEmployees || payload.total_synthetic_employees || (payload.employees || []).length) + 5)
   };
 }
 

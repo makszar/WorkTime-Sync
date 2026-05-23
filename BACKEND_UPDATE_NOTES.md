@@ -27,9 +27,9 @@ cd backend
 Проверить вручную:
 
 ```text
-http://127.0.0.1:8000/health/data
-http://127.0.0.1:8000/analytics/data-quality
-http://127.0.0.1:8000/data/source
-http://127.0.0.1:8000/schemas
-http://127.0.0.1:8000/api/worktime/overview?department=Product
+http://127.0.0.1:8040/health/data
+http://127.0.0.1:8040/analytics/data-quality
+http://127.0.0.1:8040/data/source
+http://127.0.0.1:8040/schemas
+http://127.0.0.1:8040/api/worktime/overview?department=Product%20UI
 ```
