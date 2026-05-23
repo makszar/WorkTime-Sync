@@ -1,0 +1,18 @@
+[
+  {
+    "employee_id": 2,
+    "confirmed_by_user_id": "u1",
+    "confirmed_at": "2026-05-19T12:30:00",
+    "comment": "График подтверждён руководителем отдела.",
+    "status": "confirmed",
+    "updated_at": "2026-05-19T12:30:00"
+  },
+  {
+    "employee_id": 5,
+    "confirmed_by_user_id": "",
+    "confirmed_at": "",
+    "comment": "",
+    "status": "pending",
+    "updated_at": "2026-05-19T10:00:00"
+  }
+]

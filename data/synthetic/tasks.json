@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "employee_id": 5,
+    "created_by_user_id": "u1",
+    "created_by_role": "department_manager",
+    "department": "Core Platform",
+    "type": "confirm_schedule",
+    "title": "Подтвердить рабочий график",
+    "description": "Проверьте рабочие дни, часы, формат и часовой пояс. Подтвердите, что график актуален.",
+    "due_date": "2026-05-24",
+    "status": "pending",
+    "employee_comment": "",
+    "created_at": "2026-05-19T10:00:00",
+    "updated_at": "2026-05-19T10:00:00"
+  },
+  {
+    "id": 2,
+    "employee_id": 12,
+    "created_by_user_id": "u_hr",
+    "created_by_role": "hr",
+    "department": "People Ops",
+    "type": "review_hr_profile",
+    "title": "Проверить HR-профиль",
+    "description": "Есть расхождение между рабочим графиком и HR-данными.",
+    "due_date": "2026-05-23",
+    "status": "pending",
+    "employee_comment": "",
+    "created_at": "2026-05-19T11:00:00",
+    "updated_at": "2026-05-19T11:00:00"
+  },
+  {
+    "id": 3,
+    "employee_id": 23,
+    "created_by_user_id": "u5",
+    "created_by_role": "department_manager",
+    "department": "Quality",
+    "type": "review_load",
+    "title": "Проверить нагрузку",
+    "description": "Календарь близок к перегрузке. Нужно подтвердить текущую занятость.",
+    "due_date": "2026-05-24",
+    "status": "pending",
+    "employee_comment": "",
+    "created_at": "2026-05-19T12:00:00",
+    "updated_at": "2026-05-19T12:00:00"
+  }
+]

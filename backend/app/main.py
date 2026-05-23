@@ -1,385 +1,203 @@
 from __future__ import annotations
-
 import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-from app.analytics import (
-    build_availability,
-    build_best_slots,
-    build_conflicts,
-    build_data_mismatches,
-    build_employee_card,
-    build_employee_list,
-    build_groups,
-    build_notifications,
-    build_recommendations,
-    build_risk_explanation,
-    build_summary,
-    build_worktime_overview,
-)
-from app.data_loader import (
-    get_data_source_info,
-    get_schema_definitions,
-    load_absences,
-    load_employees,
-    load_events,
-    load_hr_profiles,
-    save_uploaded_table,
-)
+from app.analytics import build_availability, build_best_slots, build_company_analytics, build_conflicts, build_data_mismatches, build_employee_card, build_employee_list, build_groups, build_hr_dashboard, build_notifications, build_recommendations, build_risk_explanation, build_summary, build_worktime_overview
+from app.data_loader import get_data_source_info, get_schema_definitions, load_absences, load_employees, load_events, load_hr_profiles, load_schedule_confirmations, load_tasks, save_schedule_confirmations, save_tasks, save_uploaded_table
 from app.data_quality import build_data_quality
 from app.models import AvailabilityDay, Conflict, DataMismatch, MeetingSlot, Notification, Recommendation, RiskExplanation
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-USERS_PATH = PROJECT_ROOT / "data" / "synthetic" / "users.json"
-
-DEFAULT_USERS = [
-    {
-        "id": "u1",
-        "login": "core_manager",
-        "password": "test1",
-        "name": "Core Platform Manager",
-        "role": "Руководитель отдела",
-        "department": "Core Platform",
-    },
-    {
-        "id": "u2",
-        "login": "product_ui_manager",
-        "password": "test2",
-        "name": "Product UI Manager",
-        "role": "Руководитель отдела",
-        "department": "Product UI",
-    },
-    {
-        "id": "u3",
-        "login": "people_ops_manager",
-        "password": "test3",
-        "name": "People Ops Manager",
-        "role": "HR",
-        "department": "People Ops",
-    },
-    {
-        "id": "u4",
-        "login": "delivery_manager",
-        "password": "test4",
-        "name": "Delivery Manager",
-        "role": "Руководитель отдела",
-        "department": "Delivery",
-    },
-    {
-        "id": "u5",
-        "login": "quality_manager",
-        "password": "test5",
-        "name": "Quality Manager",
-        "role": "Руководитель отдела",
-        "department": "Quality",
-    },
-]
-
-
-class LoginRequest(BaseModel):
-    login: str
-    password: str
-
-
-app = FastAPI(
-    title="WorkTime Sync Backend",
-    description="FastAPI backend для фронтенда WorkTime Sync и аналитики рабочего времени.",
-    version="1.4.1",
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-def public_user(user: dict[str, Any]) -> dict[str, Any]:
-    return {key: value for key, value in user.items() if key != "password"}
-
-
-def load_users() -> list[dict[str, Any]]:
-    if not USERS_PATH.exists():
-        return DEFAULT_USERS
-
-    with USERS_PATH.open("r", encoding="utf-8") as file:
-        users = json.load(file)
-
-    if not isinstance(users, list):
-        raise HTTPException(status_code=500, detail="users.json должен содержать список профилей")
-
+PROJECT_ROOT=Path(__file__).resolve().parents[2]
+USERS_PATH=PROJECT_ROOT/'data'/'synthetic'/'users.json'
+DEFAULT_USERS=[{'id':'u0','login':'executive_demo','password':'test0','name':'Executive Demo','role':'executive','role_label':'Полный руководитель','scope':'all','department':None,'employee_id':None},{'id':'u_hr','login':'hr_demo','password':'testhr','name':'HR Demo','role':'hr','role_label':'HR','scope':'all','department':None,'employee_id':None},{'id':'u1','login':'zarix','password':'i9VUibm6','name':'Зарубин Максим','role':'department_manager','role_label':'Руководитель отдела','scope':'department','department':'Core Platform','employee_id':None},{'id':'u2','login':'lixxxa','password':'test1','name':'lixxxa','role':'department_manager','role_label':'Руководитель отдела','scope':'department','department':'Product UI','employee_id':None},{'id':'u3','login':'baftype','password':'test2','name':'baftype','role':'department_manager','role_label':'Руководитель отдела','scope':'department','department':'People Ops','employee_id':None},{'id':'u4','login':'ssdshkaaa','password':'test3','name':'ssdshkaaa','role':'department_manager','role_label':'Руководитель отдела','scope':'department','department':'Delivery','employee_id':None},{'id':'u5','login':'agentemy','password':'test4','name':'agentemy','role':'department_manager','role_label':'Руководитель отдела','scope':'department','department':'Quality','employee_id':None},{'id':'emp5','login':'gleb_employee','password':'emp5','name':'Глеб Соколов','role':'employee','role_label':'Сотрудник','scope':'self','department':'Core Platform','employee_id':5}]
+class LoginRequest(BaseModel): login:str; password:str
+class TaskCreateRequest(BaseModel): employee_id:int; type:str; title:str; description:str; due_date:str
+class TaskStatusRequest(BaseModel): status:str; employee_comment:str=''
+class ConfirmScheduleRequest(BaseModel): comment:str=''
+app=FastAPI(title='WorkTime Sync Backend',description='FastAPI backend для фронтенда WorkTime Sync и аналитики рабочего времени.',version='2.2.0')
+app.add_middleware(CORSMiddleware,allow_origins=['*'],allow_credentials=True,allow_methods=['*'],allow_headers=['*'])
+def now_iso(): return datetime.now().isoformat(timespec='seconds')
+def public_user(u): return {k:v for k,v in u.items() if k!='password'}
+def load_users():
+    if not USERS_PATH.exists(): return DEFAULT_USERS
+    users=json.loads(USERS_PATH.read_text(encoding='utf-8'))
+    if not isinstance(users,list): raise HTTPException(status_code=500,detail='users.json должен содержать список профилей')
     return users
-
-
-def filter_by_department(
-    department: str | None,
-    employees: list[dict[str, Any]],
-    events: list[dict[str, Any]],
-    hr_profiles: list[dict[str, Any]],
-    absences: list[dict[str, Any]],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
-    if not department:
-        return employees, events, hr_profiles, absences
-
-    scoped_employees = [employee for employee in employees if employee.get("team") == department]
-    employee_ids = {int(employee["id"]) for employee in scoped_employees}
-
-    return (
-        scoped_employees,
-        [event for event in events if int(event["employee_id"]) in employee_ids],
-        [profile for profile in hr_profiles if int(profile["employee_id"]) in employee_ids],
-        [absence for absence in absences if int(absence["employee_id"]) in employee_ids],
-    )
-
-
-def departments_from_employees(employees: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return [
-        {"name": team, "count": sum(1 for employee in employees if employee.get("team") == team)}
-        for team in sorted({employee.get("team") for employee in employees if employee.get("team")})
-    ]
-
-
+def get_user(user_id): return next((u for u in load_users() if u.get('id')==user_id),None) if user_id else None
+def require_user(user_id):
+    u=get_user(user_id)
+    if not u: raise HTTPException(status_code=401,detail='Неизвестный пользователь или не передан user_id')
+    return u
+def filter_by_department(department,employees,events,hr_profiles,absences):
+    if not department: return employees,events,hr_profiles,absences
+    em=[e for e in employees if e.get('team')==department]; ids={int(e['id']) for e in em}
+    return em,[x for x in events if int(x['employee_id']) in ids],[x for x in hr_profiles if int(x['employee_id']) in ids],[x for x in absences if int(x['employee_id']) in ids]
+def filter_by_employee_id(employee_id,employees,events,hr_profiles,absences):
+    em=[e for e in employees if int(e['id'])==int(employee_id)]; ids={int(e['id']) for e in em}
+    return em,[x for x in events if int(x['employee_id']) in ids],[x for x in hr_profiles if int(x['employee_id']) in ids],[x for x in absences if int(x['employee_id']) in ids]
+def apply_user_scope(user,employees,events,hr_profiles,absences,department=None):
+    if user:
+        if user.get('role') in {'executive','hr'} or user.get('scope')=='all': return employees,events,hr_profiles,absences
+        if user.get('role')=='department_manager' or user.get('scope')=='department': return filter_by_department(user.get('department'),employees,events,hr_profiles,absences)
+        if user.get('role')=='employee' or user.get('scope')=='self': return filter_by_employee_id(int(user.get('employee_id') or 0),employees,events,hr_profiles,absences)
+    return filter_by_department(department,employees,events,hr_profiles,absences)
+def departments_from_employees(employees): return [{'name':t,'count':sum(1 for e in employees if e.get('team')==t)} for t in sorted({e.get('team') for e in employees if e.get('team')})]
 def get_data():
-    """For MVP we reread JSON/CSV files on every request.
-
-    This makes demos and uploads simple: after replacing a file, the next API
-    call immediately uses the new data.
-    """
-    try:
-        employees = load_employees()
-        events = load_events()
-        hr_profiles = load_hr_profiles()
-        absences = load_absences()
-    except (FileNotFoundError, ValueError) as error:
-        raise HTTPException(status_code=500, detail=str(error)) from error
-
-    return employees, events, hr_profiles, absences
-
-
-@app.post("/auth/login")
-def login(payload: LoginRequest):
-    requested_login = payload.login.strip()
-    users = load_users()
-    user = next(
-        (
-            item
-            for item in users
-            if item.get("login") == requested_login and item.get("password") == payload.password
-        ),
-        None,
-    )
-
-    if not user:
-        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
-
-    return {
-        "token": f"demo-{user['login']}",
-        "user": public_user(user),
-    }
-
-
-@app.get("/")
-def root():
-    return {
-        "service": "WorkTime Sync Backend",
-        "docs": "/docs",
-        "frontend_endpoint": "/api/worktime/overview",
-        "auth_endpoint": "/auth/login",
-        "endpoints": [
-            "/auth/login",
-            "/health",
-            "/health/data",
-            "/data/source",
-            "/schemas",
-            "/api/worktime/overview",
-            "/employees",
-            "/employees/{employee_id}",
-            "/employees/{employee_id}/risk-explanation",
-            "/analytics/summary",
-            "/analytics/conflicts",
-            "/analytics/data-mismatches",
-            "/analytics/data-quality",
-            "/analytics/availability",
-            "/analytics/groups",
-            "/recommendations",
-            "/notifications",
-            "/meeting-slots",
-            "/upload/{dataset}",
-        ],
-    }
-
-
-@app.get("/health")
-def healthcheck():
-    return {"status": "ok"}
-
-
-@app.get("/health/data")
+    try: return load_employees(),load_events(),load_hr_profiles(),load_absences()
+    except (FileNotFoundError,ValueError) as e: raise HTTPException(status_code=500,detail=str(e)) from e
+def get_extended_data():
+    employees,events,hr_profiles,absences=get_data()
+    try: tasks=load_tasks(); confirmations=load_schedule_confirmations()
+    except (FileNotFoundError,ValueError) as e: raise HTTPException(status_code=500,detail=str(e)) from e
+    return employees,events,hr_profiles,absences,tasks,confirmations
+def can_access_employee(user,employee):
+    if user.get('role') in {'executive','hr'} or user.get('scope')=='all': return True
+    if user.get('role')=='department_manager': return employee.get('team')==user.get('department')
+    if user.get('role')=='employee': return int(employee['id'])==int(user.get('employee_id') or -1)
+    return False
+def can_view_task(user,task):
+    if user.get('role') in {'executive','hr'} or user.get('scope')=='all': return True
+    if user.get('role')=='department_manager': return task.get('department')==user.get('department')
+    if user.get('role')=='employee': return int(task['employee_id'])==int(user.get('employee_id') or -1)
+    return False
+def can_create_task_for_employee(user,employee): return user.get('role') in {'executive','hr','department_manager'} and can_access_employee(user,employee)
+def can_update_task(user,task,next_status):
+    if user.get('role') in {'executive','hr'}: return True
+    if user.get('role')=='department_manager': return task.get('department')==user.get('department')
+    if user.get('role')=='employee': return int(task['employee_id'])==int(user.get('employee_id') or -1) and next_status in {'confirmed','rejected'}
+    return False
+def next_task_id(tasks): return max([int(t['id']) for t in tasks],default=0)+1
+@app.post('/auth/login')
+def login(payload:LoginRequest):
+    user=next((u for u in load_users() if u.get('login')==payload.login.strip() and u.get('password')==payload.password),None)
+    if not user: raise HTTPException(status_code=401,detail='Неверный логин или пароль')
+    return {'token':f"demo-{user['login']}",'user':public_user(user)}
+@app.get('/')
+def root(): return {'service':'WorkTime Sync Backend','docs':'/docs','version':app.version,'frontend_endpoint':'/api/worktime/overview','auth_endpoint':'/auth/login'}
+@app.get('/health')
+def healthcheck(): return {'status':'ok'}
+@app.get('/health/data')
 def health_data():
-    employees, events, hr_profiles, absences = get_data()
-    source_info = get_data_source_info()
-    return {
-        "status": "ok",
-        "data_source": source_info["active_source"],
-        "employees": len(employees),
-        "events": len(events),
-        "hr_profiles": len(hr_profiles),
-        "absences": len(absences),
-        "datasets": source_info["datasets"],
-    }
-
-
-@app.get("/data/source")
-def get_data_source():
-    return get_data_source_info()
-
-
-@app.get("/schemas")
-def get_schemas():
-    return get_schema_definitions()
-
-
-@app.get("/api/worktime/overview")
-def get_worktime_overview(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    result = build_worktime_overview(*scoped)
-    source_info = get_data_source_info()
-
-    result["total_synthetic_employees"] = len(employees)
-    result["departments"] = departments_from_employees(employees)
-    result["meta"] = {
-        "backend_version": app.version,
-        "data_source": source_info["active_source"],
-        "department": department,
-        "employees_count": len(scoped[0]),
-        "events_count": len(scoped[1]),
-        "hr_profiles_count": len(scoped[2]),
-        "absences_count": len(scoped[3]),
-        "total_employees_count": len(employees),
-        "generated_at": datetime.now().isoformat(timespec="seconds"),
-    }
-    return result
-
-
-@app.get("/employees")
-def get_employees(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_employee_list(*scoped)
-
-
-@app.get("/employees/frontend")
-def get_frontend_employees(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_worktime_overview(*scoped)["employees"]
-
-
-@app.get("/employees/{employee_id}")
-def get_employee(employee_id: int):
-    employees, events, hr_profiles, absences = get_data()
-    card = build_employee_card(employee_id, employees, events, hr_profiles, absences)
-
-    if not card:
-        raise HTTPException(status_code=404, detail="Сотрудник не найден")
-
-    return card
-
-
-@app.get("/employees/{employee_id}/risk-explanation", response_model=RiskExplanation)
-def get_employee_risk_explanation(employee_id: int):
-    employees, events, hr_profiles, absences = get_data()
-    explanation = build_risk_explanation(employee_id, employees, events, hr_profiles, absences)
-
-    if not explanation:
-        raise HTTPException(status_code=404, detail="Сотрудник не найден")
-
-    return explanation
-
-
-@app.get("/analytics/summary")
-def get_analytics_summary(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_summary(*scoped)
-
-
-@app.get("/analytics/conflicts", response_model=list[Conflict])
-def get_analytics_conflicts(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped_employees, scoped_events, _, _ = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_conflicts(scoped_employees, scoped_events)
-
-
-@app.get("/analytics/data-mismatches", response_model=list[DataMismatch])
-def get_analytics_data_mismatches(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped_employees, _, scoped_hr_profiles, _ = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_data_mismatches(scoped_employees, scoped_hr_profiles)
-
-
-@app.get("/analytics/data-quality")
+    e,ev,hr,a,t,c=get_extended_data(); src=get_data_source_info()
+    return {'status':'ok','data_source':src['active_source'],'employees':len(e),'events':len(ev),'hr_profiles':len(hr),'absences':len(a),'tasks':len(t),'schedule_confirmations':len(c),'datasets':src['datasets']}
+@app.get('/data/source')
+def get_data_source(): return get_data_source_info()
+@app.get('/schemas')
+def get_schemas(): return get_schema_definitions()
+@app.get('/api/worktime/overview')
+def get_worktime_overview(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a,t,c=get_extended_data(); user=get_user(user_id); scoped=apply_user_scope(user,e,ev,hr,a,department); res=build_worktime_overview(*scoped); ids={int(x['id']) for x in scoped[0]}; scoped_tasks=[x for x in t if int(x['employee_id']) in ids]; src=get_data_source_info()
+    res.update({'tasks':scoped_tasks,'total_synthetic_employees':len(e),'departments':departments_from_employees(e),'currentUser':public_user(user) if user else None,'meta':{'backend_version':app.version,'data_source':src['active_source'],'department':department,'user_id':user_id,'scope':user.get('scope') if user else None,'role':user.get('role') if user else None,'employees_count':len(scoped[0]),'events_count':len(scoped[1]),'hr_profiles_count':len(scoped[2]),'absences_count':len(scoped[3]),'tasks_count':len(scoped_tasks),'total_employees_count':len(e),'generated_at':now_iso()}}); return res
+@app.get('/employees')
+def get_employees(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); return build_employee_list(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))
+@app.get('/employees/frontend')
+def get_frontend_employees(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); return build_worktime_overview(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))['employees']
+@app.get('/employees/me')
+def get_my_employee(user_id:str):
+    user=require_user(user_id)
+    if user.get('role')!='employee': raise HTTPException(status_code=403,detail='Личный кабинет доступен только роли employee')
+    e,ev,hr,a,t,c=get_extended_data(); eid=int(user.get('employee_id') or 0); card=build_employee_card(eid,e,ev,hr,a)
+    if not card: raise HTTPException(status_code=404,detail='Сотрудник не найден')
+    card['tasks']=[x for x in t if int(x['employee_id'])==eid]; card['scheduleConfirmationStatus']=next((x.get('status') for x in c if int(x['employee_id'])==eid),'not_confirmed'); return card
+@app.get('/employees/{employee_id}')
+def get_employee(employee_id:int,user_id:str|None=None):
+    e,ev,hr,a=get_data(); emp=next((x for x in e if int(x['id'])==employee_id),None)
+    if not emp: raise HTTPException(status_code=404,detail='Сотрудник не найден')
+    user=get_user(user_id)
+    if user and not can_access_employee(user,emp): raise HTTPException(status_code=403,detail='Нет доступа к этому сотруднику')
+    return build_employee_card(employee_id,e,ev,hr,a)
+@app.get('/employees/{employee_id}/risk-explanation',response_model=RiskExplanation)
+def get_employee_risk_explanation(employee_id:int,user_id:str|None=None):
+    e,ev,hr,a,t,c=get_extended_data(); emp=next((x for x in e if int(x['id'])==employee_id),None)
+    if not emp: raise HTTPException(status_code=404,detail='Сотрудник не найден')
+    user=get_user(user_id)
+    if user and not can_access_employee(user,emp): raise HTTPException(status_code=403,detail='Нет доступа к этому сотруднику')
+    return build_risk_explanation(employee_id,e,ev,hr,a,c)
+@app.patch('/employees/{employee_id}/confirm-schedule')
+def confirm_employee_schedule(employee_id:int,payload:ConfirmScheduleRequest,user_id:str):
+    user=require_user(user_id); e,ev,hr,a,t,c=get_extended_data(); emp=next((x for x in e if int(x['id'])==employee_id),None)
+    if not emp: raise HTTPException(status_code=404,detail='Сотрудник не найден')
+    if not can_access_employee(user,emp): raise HTTPException(status_code=403,detail='Нет доступа к подтверждению графика')
+    ts=now_iso(); rec={'employee_id':employee_id,'confirmed_by_user_id':user['id'],'confirmed_at':ts,'comment':payload.comment,'status':'confirmed','updated_at':ts}; old=next((x for x in c if int(x['employee_id'])==employee_id),None)
+    if old: old.update(rec)
+    else: c.append(rec)
+    for task in t:
+        if int(task['employee_id'])==employee_id and task.get('type')=='confirm_schedule' and task.get('status')=='pending': task['status']='confirmed'; task['employee_comment']=payload.comment; task['updated_at']=ts
+    save_schedule_confirmations(c); save_tasks(t); return rec
+@app.get('/analytics/summary')
+def get_analytics_summary(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); return build_summary(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))
+@app.get('/analytics/company')
+def get_analytics_company(user_id:str):
+    user=require_user(user_id)
+    if user.get('role') not in {'executive','hr'}: raise HTTPException(status_code=403,detail='Company analytics доступны только executive или HR')
+    return build_company_analytics(*get_data())
+@app.get('/analytics/hr-dashboard')
+def get_hr_dashboard(user_id:str):
+    user=require_user(user_id)
+    if user.get('role') not in {'hr','executive'}: raise HTTPException(status_code=403,detail='HR dashboard доступен только HR или executive')
+    return build_hr_dashboard(*get_extended_data())
+@app.get('/analytics/conflicts',response_model=list[Conflict])
+def get_analytics_conflicts(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); se,sev,_,_=apply_user_scope(get_user(user_id),e,ev,hr,a,department); return build_conflicts(se,sev)
+@app.get('/analytics/data-mismatches',response_model=list[DataMismatch])
+def get_analytics_data_mismatches(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); se,_,shr,_=apply_user_scope(get_user(user_id),e,ev,hr,a,department); return build_data_mismatches(se,shr)
+@app.get('/analytics/data-quality')
 def get_analytics_data_quality():
-    employees, events, hr_profiles, absences = get_data()
-    return build_data_quality(employees, events, hr_profiles, absences, get_data_source_info())
-
-
-@app.get("/analytics/availability", response_model=list[AvailabilityDay])
-def get_analytics_availability(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_availability(*scoped)
-
-
-@app.get("/analytics/groups")
-def get_analytics_groups(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_groups(*scoped)
-
-
-@app.get("/recommendations", response_model=list[Recommendation])
-def get_recommendations(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_recommendations(*scoped)
-
-
-@app.get("/notifications", response_model=list[Notification])
-def get_notifications(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_notifications(*scoped)
-
-
-@app.get("/meeting-slots", response_model=list[MeetingSlot])
-def get_meeting_slots(department: str | None = None):
-    employees, events, hr_profiles, absences = get_data()
-    scoped = filter_by_department(department, employees, events, hr_profiles, absences)
-    return build_best_slots(*scoped)
-
-
-@app.post("/upload/{dataset}")
-async def upload_dataset(dataset: str, file: UploadFile = File(...)):
-    suffix = "." + file.filename.rsplit(".", 1)[-1].lower() if file.filename and "." in file.filename else ""
-
-    try:
-        path = save_uploaded_table(dataset, suffix, await file.read())
-    except ValueError as error:
-        raise HTTPException(status_code=400, detail=str(error)) from error
-
-    return {
-        "status": "uploaded",
-        "dataset": dataset,
-        "filename": path.name,
-        "message": "Файл сохранён и проверен. Следующий запрос к API перечитает данные.",
-    }
+    e,ev,hr,a,t,c=get_extended_data(); return build_data_quality(e,ev,hr,a,get_data_source_info(),t,c)
+@app.get('/analytics/availability',response_model=list[AvailabilityDay])
+def get_analytics_availability(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); return build_availability(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))
+@app.get('/analytics/groups')
+def get_analytics_groups(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); return build_groups(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))
+@app.get('/recommendations',response_model=list[Recommendation])
+def get_recommendations(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); return build_recommendations(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))
+@app.get('/notifications',response_model=list[Notification])
+def get_notifications(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); return build_notifications(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))
+@app.get('/meeting-slots',response_model=list[MeetingSlot])
+def get_meeting_slots(department:str|None=None,user_id:str|None=None):
+    e,ev,hr,a=get_data(); return build_best_slots(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))
+@app.get('/tasks')
+def get_tasks(user_id:str,status:str|None=None,department:str|None=None):
+    user=require_user(user_id); items=[t for t in load_tasks() if can_view_task(user,t)]
+    if status: items=[t for t in items if t.get('status')==status]
+    if department: items=[t for t in items if t.get('department')==department]
+    return items
+@app.get('/tasks/my')
+def get_my_tasks(user_id:str):
+    user=require_user(user_id)
+    if user.get('role')!='employee': raise HTTPException(status_code=403,detail='/tasks/my доступен только сотрудникам')
+    return [t for t in load_tasks() if int(t['employee_id'])==int(user.get('employee_id') or 0)]
+@app.post('/tasks')
+def create_task(payload:TaskCreateRequest,user_id:str):
+    user=require_user(user_id); employees,_,_,_=get_data(); emp=next((e for e in employees if int(e['id'])==payload.employee_id),None)
+    if not emp: raise HTTPException(status_code=404,detail='Сотрудник не найден')
+    if not can_create_task_for_employee(user,emp): raise HTTPException(status_code=403,detail='Нет прав создать задачу этому сотруднику')
+    tasks=load_tasks(); ts=now_iso(); task={'id':max([int(t['id']) for t in tasks],default=0)+1,'employee_id':payload.employee_id,'created_by_user_id':user['id'],'created_by_role':user['role'],'department':emp['team'],'type':payload.type,'title':payload.title,'description':payload.description,'due_date':payload.due_date,'status':'pending','employee_comment':'','created_at':ts,'updated_at':ts}; tasks.append(task); save_tasks(tasks); return task
+@app.get('/tasks/{task_id}')
+def get_task(task_id:int,user_id:str):
+    user=require_user(user_id); task=next((t for t in load_tasks() if int(t['id'])==task_id),None)
+    if not task: raise HTTPException(status_code=404,detail='Задача не найдена')
+    if not can_view_task(user,task): raise HTTPException(status_code=403,detail='Нет доступа к задаче')
+    return task
+@app.patch('/tasks/{task_id}/status')
+def update_task_status(task_id:int,payload:TaskStatusRequest,user_id:str):
+    user=require_user(user_id); tasks=load_tasks(); task=next((t for t in tasks if int(t['id'])==task_id),None)
+    if not task: raise HTTPException(status_code=404,detail='Задача не найдена')
+    if not can_update_task(user,task,payload.status): raise HTTPException(status_code=403,detail='Нет прав изменить статус задачи')
+    task['status']=payload.status; task['employee_comment']=payload.employee_comment; task['updated_at']=now_iso(); save_tasks(tasks); return task
+@app.post('/upload/{dataset}')
+async def upload_dataset(dataset:str,file:UploadFile=File(...)):
+    suffix='.'+file.filename.rsplit('.',1)[-1].lower() if file.filename and '.' in file.filename else ''
+    try: path=save_uploaded_table(dataset,suffix,await file.read())
+    except ValueError as e: raise HTTPException(status_code=400,detail=str(e)) from e
+    return {'status':'uploaded','dataset':dataset,'filename':path.name,'message':'Файл сохранён и проверен. Следующий запрос к API перечитает данные.'}

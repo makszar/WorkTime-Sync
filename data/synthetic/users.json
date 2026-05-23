@@ -1,42 +1,112 @@
 [
   {
+    "id": "u0",
+    "login": "executive_demo",
+    "password": "test0",
+    "name": "Executive Demo",
+    "role": "executive",
+    "role_label": "Полный руководитель",
+    "scope": "all",
+    "department": null,
+    "employee_id": null
+  },
+  {
+    "id": "u_hr",
+    "login": "hr_demo",
+    "password": "testhr",
+    "name": "HR Demo",
+    "role": "hr",
+    "role_label": "HR",
+    "scope": "all",
+    "department": null,
+    "employee_id": null
+  },
+  {
     "id": "u1",
-    "login": "core_manager",
-    "password": "test1",
-    "name": "Core Platform Manager",
-    "role": "Руководитель отдела",
-    "department": "Core Platform"
+    "login": "zarix",
+    "password": "i9VUibm6",
+    "name": "Зарубин Максим",
+    "role": "department_manager",
+    "role_label": "Руководитель отдела",
+    "scope": "department",
+    "department": "Core Platform",
+    "employee_id": null
   },
   {
     "id": "u2",
-    "login": "product_ui_manager",
-    "password": "test2",
-    "name": "Product UI Manager",
-    "role": "Руководитель отдела",
-    "department": "Product UI"
+    "login": "lixxxa",
+    "password": "test1",
+    "name": "lixxxa",
+    "role": "department_manager",
+    "role_label": "Руководитель отдела",
+    "scope": "department",
+    "department": "Product UI",
+    "employee_id": null
   },
   {
     "id": "u3",
-    "login": "people_ops_manager",
-    "password": "test3",
-    "name": "People Ops Manager",
-    "role": "HR",
-    "department": "People Ops"
+    "login": "baftype",
+    "password": "test2",
+    "name": "baftype",
+    "role": "department_manager",
+    "role_label": "Руководитель отдела",
+    "scope": "department",
+    "department": "People Ops",
+    "employee_id": null
   },
   {
     "id": "u4",
-    "login": "delivery_manager",
-    "password": "test4",
-    "name": "Delivery Manager",
-    "role": "Руководитель отдела",
-    "department": "Delivery"
+    "login": "ssdshkaaa",
+    "password": "test3",
+    "name": "ssdshkaaa",
+    "role": "department_manager",
+    "role_label": "Руководитель отдела",
+    "scope": "department",
+    "department": "Delivery",
+    "employee_id": null
   },
   {
     "id": "u5",
-    "login": "quality_manager",
-    "password": "test5",
-    "name": "Quality Manager",
-    "role": "Руководитель отдела",
-    "department": "Quality"
+    "login": "agentemy",
+    "password": "test4",
+    "name": "agentemy",
+    "role": "department_manager",
+    "role_label": "Руководитель отдела",
+    "scope": "department",
+    "department": "Quality",
+    "employee_id": null
+  },
+  {
+    "id": "emp5",
+    "login": "gleb_employee",
+    "password": "emp5",
+    "name": "Глеб Соколов",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Core Platform",
+    "employee_id": 5
+  },
+  {
+    "id": "emp12",
+    "login": "victoria_employee",
+    "password": "emp12",
+    "name": "Виктория Ершова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "People Ops",
+    "employee_id": 12
+  },
+  {
+    "id": "emp23",
+    "login": "sergey_employee",
+    "password": "emp23",
+    "name": "Сергей Фомин",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Quality",
+    "employee_id": 23
   }
 ]

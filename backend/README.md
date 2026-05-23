@@ -1,97 +1,22 @@
 # WorkTime Sync Backend
 
-Текущая версия backend: **1.4.0**.
+Backend — аналитический и workflow-контур WorkTime Sync.
 
-## Главное
+Текущая версия: **2.2.0**.
 
-Backend теперь закрывает не только базовый API, но и слой проверки данных:
+## Что добавлено
 
-- основной источник данных: `data/synthetic/`;
-- fallback: `backend/data/`;
-- demo-login: `POST /auth/login`;
-- фильтрация по отделу: `?department=Product`;
-- диагностика данных: `/health/data`, `/data/source`, `/schemas`, `/analytics/data-quality`;
-- безопасный upload: старый рабочий файл не удаляется, если новый файл не прошёл валидацию;
-- GitHub Actions workflow для backend-тестов: `.github/workflows/backend-ci.yml`.
+- роли `executive`, `department_manager`, `hr`, `employee`;
+- scope-фильтрация `all`, `department`, `self`;
+- `tasks.json` и task API;
+- `schedule_confirmations.json` и подтверждение графика;
+- риск с весами по отделам;
+- расширенный `risk-explanation`;
+- `/analytics/company` для полного руководителя;
+- `/analytics/hr-dashboard` для HR;
+- `/employees/me` для сотрудника.
 
-## Endpoint'ы
-
-```text
-POST /auth/login
-GET /
-GET /health
-GET /health/data
-GET /data/source
-GET /schemas
-GET /api/worktime/overview
-GET /employees
-GET /employees/frontend
-GET /employees/{employee_id}
-GET /employees/{employee_id}/risk-explanation
-GET /analytics/summary
-GET /analytics/conflicts
-GET /analytics/data-mismatches
-GET /analytics/data-quality
-GET /analytics/availability
-GET /analytics/groups
-GET /recommendations
-GET /notifications
-GET /meeting-slots
-POST /upload/{dataset}
-```
-
-## Фильтр отдела
-
-Большинство аналитических endpoint'ов поддерживают query-параметр:
-
-```text
-?department=Product
-?department=QA
-?department=HR
-?department=Sales
-?department=Support
-?department=Operations
-```
-
-Примеры:
-
-```text
-GET /api/worktime/overview?department=Product
-GET /employees?department=QA
-GET /notifications?department=HR
-GET /meeting-slots?department=Product
-```
-
-## Demo-login
-
-Пользователи лежат в:
-
-```text
-data/synthetic/users.json
-```
-
-Примеры:
-
-```text
-product_manager / test1
-qa_manager / test2
-hr_manager / test3
-sales_manager / test4
-support_manager / test5
-ops_manager / test6
-```
-
-`POST /auth/login` возвращает demo-token и пользователя без пароля.
-
-## Данные
-
-Главный источник данных:
-
-```text
-data/synthetic/
-```
-
-Backend ожидает:
+## Основные данные
 
 ```text
 data/synthetic/employees.csv
@@ -99,67 +24,64 @@ data/synthetic/events.csv
 data/synthetic/hr_profiles.csv
 data/synthetic/absences.csv
 data/synthetic/users.json
+data/synthetic/tasks.json
+data/synthetic/schedule_confirmations.json
 ```
 
-Также поддерживаются JSON-файлы с такими же dataset-name. Если CSV и JSON есть одновременно, CSV имеет приоритет.
+## Роли
 
-Loader поддерживает текущий формат synthetic CSV:
+| Role | Scope | Что видит |
+|---|---|---|
+| `executive` | `all` | всю компанию |
+| `hr` | `all` | всех сотрудников с HR-фокусом |
+| `department_manager` | `department` | только свой отдел |
+| `employee` | `self` | только себя |
+
+## Новые endpoint'ы
+
+```http
+GET /tasks
+GET /tasks/my
+POST /tasks
+GET /tasks/{task_id}
+PATCH /tasks/{task_id}/status
+PATCH /employees/{employee_id}/confirm-schedule
+GET /employees/me
+GET /analytics/company
+GET /analytics/hr-dashboard
+```
+
+## Scope-примеры
 
 ```text
-emp001 -> 1
-evt001 -> 1
-abs001 -> 1
-Mon|Tue|Wed|Thu|Fri -> ["Mon", "Tue", "Wed", "Thu", "Fri"]
-2026-05-20T10:00:00+03:00 -> 2026-05-20T10:00:00
+GET /api/worktime/overview?user_id=u0      # executive, вся компания
+GET /api/worktime/overview?user_id=u1      # Core Platform manager
+GET /api/worktime/overview?user_id=emp5    # один сотрудник
 ```
 
-## Диагностика данных
-
-### `GET /health/data`
-
-Проверяет, что backend реально загрузил данные.
-
-### `GET /data/source`
-
-Показывает, какие файлы реально используются.
-
-### `GET /schemas`
-
-Показывает ожидаемые колонки CSV/JSON.
-
-### `GET /analytics/data-quality`
-
-Проверяет:
-
-- orphan events;
-- orphan absences;
-- HR-профили без сотрудников;
-- сотрудники без HR-профиля;
-- дубликаты id;
-- некорректные интервалы событий;
-- некорректные интервалы отсутствий.
-
-## Upload
+Старый department-фильтр сохранён:
 
 ```text
-POST /upload/{dataset}
+GET /api/worktime/overview?department=Core%20Platform
 ```
 
-Поддерживаемые dataset:
+## Риск с весами отделов
 
 ```text
-employees
-events
-hr_profiles
-absences
+R = wA * (1 - A)
+  + wC * C
+  + wL * L
+  + wT * timezone_mismatch
+  + wH * hr_mismatch
 ```
 
-Upload безопасный:
-
-1. файл сохраняется во временный путь;
-2. валидируется;
-3. только после успешной проверки заменяет старый файл;
-4. если файл невалидный, старый рабочий файл остаётся на месте.
+| Отдел | wA | wC | wL | wT | wH |
+|---|---:|---:|---:|---:|---:|
+| Core Platform | 0.25 | 0.25 | 0.30 | 0.10 | 0.10 |
+| Product UI | 0.25 | 0.30 | 0.25 | 0.10 | 0.10 |
+| People Ops | 0.30 | 0.15 | 0.20 | 0.10 | 0.25 |
+| Delivery | 0.20 | 0.30 | 0.30 | 0.10 | 0.10 |
+| Quality | 0.20 | 0.25 | 0.35 | 0.10 | 0.10 |
 
 ## Запуск
 
@@ -170,17 +92,9 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-Swagger:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
 ## Тесты
 
 ```powershell
 cd backend
 .\.venv\Scripts\python.exe -m pytest
 ```
-
-Тесты проверяют API, login, department-фильтр, loader, data-quality, безопасный upload и реальные файлы `data/synthetic`.
