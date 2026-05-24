@@ -1,11 +1,35 @@
 [
   {
-    "employee_id": 2,
-    "confirmed_by_user_id": "u1",
-    "confirmed_at": "2026-05-19T12:30:00",
-    "comment": "График подтверждён руководителем отдела.",
+    "employee_id": 1,
+    "confirmed_by_user_id": "emp1",
+    "confirmed_at": "2026-05-19T10:00:00",
+    "comment": "График актуален.",
     "status": "confirmed",
-    "updated_at": "2026-05-19T12:30:00"
+    "updated_at": "2026-05-19T10:00:00"
+  },
+  {
+    "employee_id": 2,
+    "confirmed_by_user_id": "emp2",
+    "confirmed_at": "2026-05-20T10:00:00",
+    "comment": "График актуален.",
+    "status": "confirmed",
+    "updated_at": "2026-05-20T10:00:00"
+  },
+  {
+    "employee_id": 3,
+    "confirmed_by_user_id": "",
+    "confirmed_at": "",
+    "comment": "",
+    "status": "pending",
+    "updated_at": "2026-05-18T10:00:00"
+  },
+  {
+    "employee_id": 4,
+    "confirmed_by_user_id": "emp4",
+    "confirmed_at": "2026-05-19T10:00:00",
+    "comment": "График актуален.",
+    "status": "confirmed",
+    "updated_at": "2026-05-19T10:00:00"
   },
   {
     "employee_id": 5,
@@ -13,6 +37,86 @@
     "confirmed_at": "",
     "comment": "",
     "status": "pending",
+    "updated_at": "2026-05-20T10:00:00"
+  },
+  {
+    "employee_id": 6,
+    "confirmed_by_user_id": "emp6",
+    "confirmed_at": "2026-05-18T10:00:00",
+    "comment": "График актуален.",
+    "status": "confirmed",
+    "updated_at": "2026-05-18T10:00:00"
+  },
+  {
+    "employee_id": 7,
+    "confirmed_by_user_id": "",
+    "confirmed_at": "",
+    "comment": "График не соответствует фактическому режиму.",
+    "status": "rejected",
     "updated_at": "2026-05-19T10:00:00"
+  },
+  {
+    "employee_id": 8,
+    "confirmed_by_user_id": "emp8",
+    "confirmed_at": "2026-05-20T10:00:00",
+    "comment": "График актуален.",
+    "status": "confirmed",
+    "updated_at": "2026-05-20T10:00:00"
+  },
+  {
+    "employee_id": 9,
+    "confirmed_by_user_id": "",
+    "confirmed_at": "",
+    "comment": "",
+    "status": "pending",
+    "updated_at": "2026-05-18T10:00:00"
+  },
+  {
+    "employee_id": 10,
+    "confirmed_by_user_id": "",
+    "confirmed_at": "",
+    "comment": "Прошу изменить рабочие часы.",
+    "status": "change_requested",
+    "updated_at": "2026-05-19T10:00:00"
+  },
+  {
+    "employee_id": 11,
+    "confirmed_by_user_id": "emp11",
+    "confirmed_at": "2026-05-20T10:00:00",
+    "comment": "График актуален.",
+    "status": "confirmed",
+    "updated_at": "2026-05-20T10:00:00"
+  },
+  {
+    "employee_id": 12,
+    "confirmed_by_user_id": "",
+    "confirmed_at": "",
+    "comment": "",
+    "status": "pending",
+    "updated_at": "2026-05-18T10:00:00"
+  },
+  {
+    "employee_id": 13,
+    "confirmed_by_user_id": "emp13",
+    "confirmed_at": "2026-05-19T10:00:00",
+    "comment": "График актуален.",
+    "status": "confirmed",
+    "updated_at": "2026-05-19T10:00:00"
+  },
+  {
+    "employee_id": 14,
+    "confirmed_by_user_id": "emp14",
+    "confirmed_at": "2026-05-20T10:00:00",
+    "comment": "График актуален.",
+    "status": "confirmed",
+    "updated_at": "2026-05-20T10:00:00"
+  },
+  {
+    "employee_id": 15,
+    "confirmed_by_user_id": "",
+    "confirmed_at": "",
+    "comment": "",
+    "status": "pending",
+    "updated_at": "2026-05-18T10:00:00"
   }
 ]

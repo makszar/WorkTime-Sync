@@ -1,95 +1,45 @@
 # WorkTime Sync Backend
 
-Backend — аналитический и workflow-контур WorkTime Sync.
+Backend версия: **2.3.0**.
 
-Текущая версия: **2.2.0**.
+Добавлены задачи по встречам, расширенная проверка tasks, enriched task responses и workflow для `EmployeeCabinet`, `HRDashboard` и `ExecutiveDashboard`.
 
-## Что добавлено
-
-- роли `executive`, `department_manager`, `hr`, `employee`;
-- scope-фильтрация `all`, `department`, `self`;
-- `tasks.json` и task API;
-- `schedule_confirmations.json` и подтверждение графика;
-- риск с весами по отделам;
-- расширенный `risk-explanation`;
-- `/analytics/company` для полного руководителя;
-- `/analytics/hr-dashboard` для HR;
-- `/employees/me` для сотрудника.
-
-## Основные данные
+## Новые типы задач
 
 ```text
-data/synthetic/employees.csv
-data/synthetic/events.csv
-data/synthetic/hr_profiles.csv
-data/synthetic/absences.csv
-data/synthetic/users.json
-data/synthetic/tasks.json
-data/synthetic/schedule_confirmations.json
+confirm_schedule
+review_hr_profile
+review_load
+update_timezone
+meeting_confirmation
+reschedule_meeting
+meeting_outside_work_approval
 ```
 
-## Роли
+## Новые поля задач
 
-| Role | Scope | Что видит |
-|---|---|---|
-| `executive` | `all` | всю компанию |
-| `hr` | `all` | всех сотрудников с HR-фокусом |
-| `department_manager` | `department` | только свой отдел |
-| `employee` | `self` | только себя |
+```json
+{
+  "related_event_id": 2,
+  "meeting_action": "approve_outside_work",
+  "suggested_start_datetime": "2026-05-20T16:00:00",
+  "suggested_end_datetime": "2026-05-20T16:45:00"
+}
+```
 
-## Новые endpoint'ы
+Backend проверяет, что событие существует, относится к тому же сотруднику, а для `meeting_outside_work_approval` действительно выходит за рабочий график.
+
+## Endpoint'ы
 
 ```http
-GET /tasks
-GET /tasks/my
-POST /tasks
-GET /tasks/{task_id}
-PATCH /tasks/{task_id}/status
-PATCH /employees/{employee_id}/confirm-schedule
-GET /employees/me
-GET /analytics/company
-GET /analytics/hr-dashboard
-```
-
-## Scope-примеры
-
-```text
-GET /api/worktime/overview?user_id=u0      # executive, вся компания
-GET /api/worktime/overview?user_id=u1      # Core Platform manager
-GET /api/worktime/overview?user_id=emp5    # один сотрудник
-```
-
-Старый department-фильтр сохранён:
-
-```text
-GET /api/worktime/overview?department=Core%20Platform
-```
-
-## Риск с весами отделов
-
-```text
-R = wA * (1 - A)
-  + wC * C
-  + wL * L
-  + wT * timezone_mismatch
-  + wH * hr_mismatch
-```
-
-| Отдел | wA | wC | wL | wT | wH |
-|---|---:|---:|---:|---:|---:|
-| Core Platform | 0.25 | 0.25 | 0.30 | 0.10 | 0.10 |
-| Product UI | 0.25 | 0.30 | 0.25 | 0.10 | 0.10 |
-| People Ops | 0.30 | 0.15 | 0.20 | 0.10 | 0.25 |
-| Delivery | 0.20 | 0.30 | 0.30 | 0.10 | 0.10 |
-| Quality | 0.20 | 0.25 | 0.35 | 0.10 | 0.10 |
-
-## Запуск
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8040 --reload
+GET /tasks?user_id=u1
+GET /tasks/my?user_id=emp5
+POST /tasks?user_id=u1
+PATCH /tasks/{task_id}/status?user_id=emp5
+GET /employees/me?user_id=emp5
+GET /analytics/company?user_id=u0
+GET /analytics/hr-dashboard?user_id=u_hr
+GET /analytics/data-quality
 ```
 
 ## Тесты

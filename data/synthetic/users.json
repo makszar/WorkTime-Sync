@@ -77,8 +77,52 @@
     "employee_id": null
   },
   {
+    "id": "emp1",
+    "login": "employee1",
+    "password": "emp1",
+    "name": "Илья Романов",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Core Platform",
+    "employee_id": 1
+  },
+  {
+    "id": "emp2",
+    "login": "employee2",
+    "password": "emp2",
+    "name": "Никита Орлов",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Core Platform",
+    "employee_id": 2
+  },
+  {
+    "id": "emp3",
+    "login": "employee3",
+    "password": "emp3",
+    "name": "София Ветрова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Core Platform",
+    "employee_id": 3
+  },
+  {
+    "id": "emp4",
+    "login": "employee4",
+    "password": "emp4",
+    "name": "Артём Лазарев",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Core Platform",
+    "employee_id": 4
+  },
+  {
     "id": "emp5",
-    "login": "gleb_employee",
+    "login": "employee5",
     "password": "emp5",
     "name": "Глеб Соколов",
     "role": "employee",
@@ -88,8 +132,74 @@
     "employee_id": 5
   },
   {
+    "id": "emp6",
+    "login": "employee6",
+    "password": "emp6",
+    "name": "Мария Ким",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Product UI",
+    "employee_id": 6
+  },
+  {
+    "id": "emp7",
+    "login": "employee7",
+    "password": "emp7",
+    "name": "Ксения Павлова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Product UI",
+    "employee_id": 7
+  },
+  {
+    "id": "emp8",
+    "login": "employee8",
+    "password": "emp8",
+    "name": "Тимур Ахметов",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Product UI",
+    "employee_id": 8
+  },
+  {
+    "id": "emp9",
+    "login": "employee9",
+    "password": "emp9",
+    "name": "Алина Громова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Product UI",
+    "employee_id": 9
+  },
+  {
+    "id": "emp10",
+    "login": "employee10",
+    "password": "emp10",
+    "name": "Роман Беляев",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Product UI",
+    "employee_id": 10
+  },
+  {
+    "id": "emp11",
+    "login": "employee11",
+    "password": "emp11",
+    "name": "Анна Морозова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "People Ops",
+    "employee_id": 11
+  },
+  {
     "id": "emp12",
-    "login": "victoria_employee",
+    "login": "employee12",
     "password": "emp12",
     "name": "Виктория Ершова",
     "role": "employee",
@@ -99,8 +209,118 @@
     "employee_id": 12
   },
   {
+    "id": "emp13",
+    "login": "employee13",
+    "password": "emp13",
+    "name": "Павел Миронов",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "People Ops",
+    "employee_id": 13
+  },
+  {
+    "id": "emp14",
+    "login": "employee14",
+    "password": "emp14",
+    "name": "Юлия Захарова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "People Ops",
+    "employee_id": 14
+  },
+  {
+    "id": "emp15",
+    "login": "employee15",
+    "password": "emp15",
+    "name": "Руслан Каримов",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "People Ops",
+    "employee_id": 15
+  },
+  {
+    "id": "emp16",
+    "login": "employee16",
+    "password": "emp16",
+    "name": "Дмитрий Волков",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Delivery",
+    "employee_id": 16
+  },
+  {
+    "id": "emp17",
+    "login": "employee17",
+    "password": "emp17",
+    "name": "Полина Синицына",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Delivery",
+    "employee_id": 17
+  },
+  {
+    "id": "emp18",
+    "login": "employee18",
+    "password": "emp18",
+    "name": "Денис Ковалёв",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Delivery",
+    "employee_id": 18
+  },
+  {
+    "id": "emp19",
+    "login": "employee19",
+    "password": "emp19",
+    "name": "Вероника Тарасова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Delivery",
+    "employee_id": 19
+  },
+  {
+    "id": "emp20",
+    "login": "employee20",
+    "password": "emp20",
+    "name": "Кирилл Егоров",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Delivery",
+    "employee_id": 20
+  },
+  {
+    "id": "emp21",
+    "login": "employee21",
+    "password": "emp21",
+    "name": "Олег Сафин",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Quality",
+    "employee_id": 21
+  },
+  {
+    "id": "emp22",
+    "login": "employee22",
+    "password": "emp22",
+    "name": "Елена Трофимова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Quality",
+    "employee_id": 22
+  },
+  {
     "id": "emp23",
-    "login": "sergey_employee",
+    "login": "employee23",
     "password": "emp23",
     "name": "Сергей Фомин",
     "role": "employee",
@@ -108,5 +328,38 @@
     "scope": "self",
     "department": "Quality",
     "employee_id": 23
+  },
+  {
+    "id": "emp24",
+    "login": "employee24",
+    "password": "emp24",
+    "name": "Ирина Нестерова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Quality",
+    "employee_id": 24
+  },
+  {
+    "id": "emp25",
+    "login": "employee25",
+    "password": "emp25",
+    "name": "Валерия Осипова",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Quality",
+    "employee_id": 25
+  },
+  {
+    "id": "emp5_demo",
+    "login": "gleb_employee",
+    "password": "emp5",
+    "name": "Глеб Соколов",
+    "role": "employee",
+    "role_label": "Сотрудник",
+    "scope": "self",
+    "department": "Core Platform",
+    "employee_id": 5
   }
 ]
