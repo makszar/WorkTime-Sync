@@ -1,86 +1,93 @@
-# Сводка текущего состояния WorkTime Sync
+# WorkTime Sync — repo update summary V2.9
 
-## Что изменилось
+## Проверенные файлы
 
-Репозиторий обновлён до backend V2.2.
-
-Backend уже реализовал:
-
-- роли `executive`, `hr`, `department_manager`, `employee`;
-- scope-доступ `all`, `department`, `self`;
-- `tasks.json`;
-- `schedule_confirmations.json`;
-- task API;
-- подтверждение графика;
-- `/employees/me`;
-- `/analytics/company`;
-- `/analytics/hr-dashboard`;
-- риск с весами отделов;
-- расширенный risk explanation.
+- `README.md`
+- `backend/app/main.py`
+- `frontend/src/api/worktimeApi.js`
+- `frontend/src/App.jsx`
+- `frontend/src/components/TaskCard.jsx`
+- `frontend/src/components/TaskForm.jsx`
+- `frontend/src/pages/Availability.jsx`
+- `frontend/src/components/AvailabilityGrid.jsx`
 
 ---
 
-## Что пока не сделано
+## Текущее состояние
 
-Главный gap — frontend.
+Проект находится в состоянии **MVP V2.9**.
 
-Сейчас frontend всё ещё работает как старый MVP:
+### Backend
 
-- login;
-- dashboard;
-- employees;
-- profile;
-- conflicts;
-- availability;
-- recommendations.
+Backend `2.9.0`.
 
-Не хватает:
+Реализовано:
 
-- role-based UI;
-- executive dashboard;
+- FastAPI API;
+- `/api` routes и старые routes без `/api`;
+- demo-token auth;
+- role/scope access;
+- tasks API;
+- meeting tasks;
+- schedule confirmations;
+- task history;
+- `POST /api/tasks/{task_id}/apply`;
+- `POST /api/tasks/generate-from-conflicts`;
+- `save_events`;
+- analytics endpoints;
 - HR dashboard;
-- employee cabinet;
-- task UI;
-- create task UI;
-- meeting task UI;
-- confirm schedule UI;
-- frontend API через `user_id`.
+- company analytics;
+- data-quality.
+
+### Frontend
+
+Frontend `v2.9`.
+
+Реализовано:
+
+- login screen;
+- role-based routing;
+- Executive dashboard;
+- HR dashboard;
+- Employee cabinet;
+- Tasks page;
+- Employees;
+- Employee profile;
+- Conflicts;
+- Availability;
+- Recommendations;
+- API client through `/api/...`.
 
 ---
 
-## Что нужно сделать с данными
+## Главные изменения относительно предыдущих версий
 
-Нужно добавить:
-
-- employee-аккаунты для большего числа сотрудников;
-- больше задач;
-- разные статусы задач;
-- задачи по встречам;
-- больше подтверждений графика;
-- `related_event_id` для задач по встречам.
-
----
-
-## Самый важный следующий шаг
-
-1. Расширить synthetic data.
-2. Доработать backend для задач по встречам.
-3. Подключить frontend к backend V2.2.
-4. Сделать личный кабинет сотрудника.
-5. Сделать UI задач для руководителя/HR/сотрудника.
+1. Backend поднят до V2.9.
+2. Frontend использует `/api/...` paths.
+3. Добавлены aliases backend routes с `/api`.
+4. Исправлена основная причина потенциальных 405/404 при deploy.
+5. Добавлена логика применения решения по задаче.
+6. Добавлена автогенерация задач по конфликтам.
+7. README обновлён под актуальное состояние.
 
 ---
 
-## Как объяснять команде
+## Текущие риски
 
-Backend-команда:
+1. UI кнопок задач ещё не полностью понятный.
+2. Для `meeting_outside_work_approval` нет удобного сценария “Предложить другое время”.
+3. В событиях может отображаться только день недели, а не дата.
+4. Карта доступности показывает count и missing, но не полноценный список свободных сотрудников.
+5. Нужно проверить deploy и nginx.
+6. Нужно проверить права записи на сервере.
+7. Нужны ручные end-to-end тесты.
 
-> Backend V2.2 уже реализовал роли и задачи. Теперь нужно добавить задачи по встречам: новые task types, `related_event_id`, валидацию событий, расширение data-quality и тесты.
+---
 
-Frontend-команда:
+## Рекомендация
 
-> Нужно перестроить интерфейс под роли и подключить новые endpoint’ы: `/employees/me`, `/tasks`, `/tasks/my`, `/analytics/company`, `/analytics/hr-dashboard`, `/confirm-schedule`.
+До защиты не расширять продукт новыми большими модулями. Сфокусироваться на:
 
-Data-команда:
-
-> Нужно расширить `users.json`, `tasks.json`, `schedule_confirmations.json`, добавить сценарии задач по встречам и разные статусы.
+```text
+UX задач → даты событий → доступность → deploy → demo сценарий
+```
