@@ -1,90 +1,86 @@
-# Сводка нового этапа WorkTime Sync
+# Сводка текущего состояния WorkTime Sync
 
-## Что поменялось в постановке задачи
+## Что изменилось
 
-После первого митапа команда решила развивать WorkTime Sync как систему взаимодействия ролей, а не только как аналитический дашборд.
+Репозиторий обновлён до backend V2.2.
 
-Новая цепочка:
+Backend уже реализовал:
 
-```text
-аналитика → задача → подтверждение сотрудником → актуализация графика
-```
-
----
-
-## Новые роли
-
-| Роль | Что делает |
-|---|---|
-| Полный руководитель | видит всю компанию и сравнение отделов |
-| Руководитель отдела | управляет своим отделом |
-| HR | контролирует HR-данные и подтверждения |
-| Сотрудник | подтверждает свой график и отвечает на задачи |
+- роли `executive`, `hr`, `department_manager`, `employee`;
+- scope-доступ `all`, `department`, `self`;
+- `tasks.json`;
+- `schedule_confirmations.json`;
+- task API;
+- подтверждение графика;
+- `/employees/me`;
+- `/analytics/company`;
+- `/analytics/hr-dashboard`;
+- риск с весами отделов;
+- расширенный risk explanation.
 
 ---
 
-## Что уже есть
+## Что пока не сделано
 
-| Блок | Статус |
-|---|---|
-| demo-login | есть |
-| department-фильтр | есть |
-| дашборд отдела | есть |
-| сотрудники | есть |
-| конфликты | есть |
-| доступность | есть |
-| рекомендации | есть |
-| notifications API | есть |
-| risk explanation API | есть |
-| data-quality API | есть |
+Главный gap — frontend.
 
----
+Сейчас frontend всё ещё работает как старый MVP:
 
-## Что нужно добавить
+- login;
+- dashboard;
+- employees;
+- profile;
+- conflicts;
+- availability;
+- recommendations.
 
-| Блок | Нужно сделать |
-|---|---|
-| users.json | расширить role/scope/employee_id |
-| backend scope | executive/hr/manager/employee |
-| tasks | добавить dataset и API |
-| employee cabinet | личный кабинет сотрудника |
-| executive dashboard | обзор всей компании |
-| HR dashboard | HR-контроль |
-| confirm schedule | подтверждение графика |
-| risk weights | веса риска по отделам |
-| tests | тесты ролей, задач и подтверждений |
+Не хватает:
+
+- role-based UI;
+- executive dashboard;
+- HR dashboard;
+- employee cabinet;
+- task UI;
+- create task UI;
+- meeting task UI;
+- confirm schedule UI;
+- frontend API через `user_id`.
 
 ---
 
-## Главный принцип
+## Что нужно сделать с данными
 
-Новая логика не должна ломать текущий MVP.
+Нужно добавить:
 
-Сохранить:
-
-- текущие страницы frontend;
-- `/auth/login`;
-- `/api/worktime/overview?department=...`;
-- текущие аналитические endpoint’ы;
-- fallback на mock;
-- текущую метрику `schedule_actuality`;
-- data-quality;
-- backend-тесты.
+- employee-аккаунты для большего числа сотрудников;
+- больше задач;
+- разные статусы задач;
+- задачи по встречам;
+- больше подтверждений графика;
+- `related_event_id` для задач по встречам.
 
 ---
 
-## Что объяснять команде
+## Самый важный следующий шаг
 
-Frontend-команде:
-
-> Нужно добавить разные интерфейсы под роли и личный кабинет сотрудника, но сохранить текущий дашборд отдела как основу для department_manager.
-
-Backend-команде:
-
-> Нужно расширить users.json, добавить role/scope-фильтрацию, tasks API, confirm-schedule endpoint и веса риска по отделам, не ломая текущие endpoint’ы.
+1. Расширить synthetic data.
+2. Доработать backend для задач по встречам.
+3. Подключить frontend к backend V2.2.
+4. Сделать личный кабинет сотрудника.
+5. Сделать UI задач для руководителя/HR/сотрудника.
 
 ---
 
-## Что объяснять жюри
+## Как объяснять команде
 
-> Мы строим систему не только для анализа, но и для закрытия проблем: руководитель или HR видит риск, создаёт задачу сотруднику, сотрудник подтверждает график или оставляет комментарий, после чего данные становятся актуальнее.
+Backend-команда:
+
+> Backend V2.2 уже реализовал роли и задачи. Теперь нужно добавить задачи по встречам: новые task types, `related_event_id`, валидацию событий, расширение data-quality и тесты.
+
+Frontend-команда:
+
+> Нужно перестроить интерфейс под роли и подключить новые endpoint’ы: `/employees/me`, `/tasks`, `/tasks/my`, `/analytics/company`, `/analytics/hr-dashboard`, `/confirm-schedule`.
+
+Data-команда:
+
+> Нужно расширить `users.json`, `tasks.json`, `schedule_confirmations.json`, добавить сценарии задач по встречам и разные статусы.
