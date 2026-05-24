@@ -6,7 +6,7 @@ const DEFAULT_FORM = {
   type: 'confirm_schedule',
   title: '',
   description: '',
-  due_date: '2026-05-25',
+  due_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   related_event_id: '',
   meeting_action: '',
   suggested_start_datetime: '',

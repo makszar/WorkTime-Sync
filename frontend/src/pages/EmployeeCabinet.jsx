@@ -4,24 +4,6 @@ import ScheduleConfirmationCard from '../components/ScheduleConfirmationCard';
 import TaskCard from '../components/TaskCard';
 import { actualityScore, loadRate, percent, riskScore } from '../utils/calculations';
 
-function formatEventTime(event) {
-  if (event.day || event.time) return [event.day, event.time].filter(Boolean).join(', ');
-  if (event.start_datetime && event.end_datetime) {
-    const start = new Date(event.start_datetime);
-    const end = new Date(event.end_datetime);
-    return `${start.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}-${end.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
-  }
-  return event.start_datetime || 'Время не указано';
-}
-
-function mergeEventsWithMeetingTasks(events, meetingTasks) {
-  const byId = new Map((events || []).map((event) => [String(event.id), event]));
-  (meetingTasks || []).forEach((task) => {
-    if (task.related_event?.id !== undefined) byId.set(String(task.related_event.id), task.related_event);
-  });
-  return [...byId.values()];
-}
-
 function extractEmployee(cabinet) {
   return cabinet?.frontend_employee || cabinet?.employee || null;
 }
@@ -32,8 +14,7 @@ export default function EmployeeCabinet({ cabinet, user, onConfirmSchedule, onTa
   const tasks = cabinet?.tasks || [];
   const pendingTasks = cabinet?.pendingTasks || tasks.filter((task) => task.status === 'pending');
   const meetingTasks = cabinet?.meetingTasks || tasks.filter((task) => task.type?.includes('meeting'));
-  const baseEvents = cabinet?.upcomingEvents || cabinet?.events || [];
-  const events = mergeEventsWithMeetingTasks(baseEvents, meetingTasks);
+  const events = cabinet?.upcomingEvents || cabinet?.events || [];
 
   if (!employee) {
     return <div className="centerState">Личный кабинет сотрудника не найден.</div>;
@@ -102,7 +83,7 @@ export default function EmployeeCabinet({ cabinet, user, onConfirmSchedule, onTa
             {events.slice(0, 6).map((event) => (
               <div className="eventItem" key={event.id}>
                 <strong>{event.title}</strong>
-                <span>{formatEventTime(event)}</span>
+                <span>{event.day || event.start_datetime}</span>
                 <p>{event.reason || event.type || 'Событие календаря'}</p>
               </div>
             ))}

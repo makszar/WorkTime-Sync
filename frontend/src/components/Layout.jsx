@@ -44,7 +44,7 @@ export default function Layout({ page, setPage, children, user, onLogout }) {
     <div className="appShell">
       <header className="topbar">
         <div className="brandBlock" onClick={() => setPage(homePageFor(user))} role="button" tabIndex={0}>
-          <span className="brandText">WorkTime-Sync</span><span className="versionBadge">v2.8</span>
+          <span className="brandText">WorkTime-Sync</span><span className="versionBadge">v2.9</span>
         </div>
 
         <nav className="nav" aria-label="Главная навигация">

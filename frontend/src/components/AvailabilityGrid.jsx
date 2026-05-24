@@ -1,20 +1,7 @@
 import { buildAvailability } from '../utils/calculations';
 
-function normalizeAvailabilityRows(rows, employees) {
-  if (Array.isArray(rows) && rows.length) return rows;
-  return buildAvailability(employees);
-}
-
-function slotTitle(slot) {
-  const details = slot.missingDetails || [];
-  if (details.length) {
-    return details.map((item) => `${item.employee}: ${item.reason}`).join('\n');
-  }
-  return `Доступно: ${slot.count}. Выпадают: ${slot.missing?.join(', ') || 'никто'}`;
-}
-
-export default function AvailabilityGrid({ employees, availability }) {
-  const rows = normalizeAvailabilityRows(availability, employees);
+export default function AvailabilityGrid({ employees, rows: backendRows }) {
+  const rows = backendRows?.length ? backendRows : buildAvailability(employees);
   const hours = rows[0]?.slots.map((slot) => slot.hour) || [];
 
   return (
@@ -30,7 +17,7 @@ export default function AvailabilityGrid({ employees, availability }) {
           {row.slots.map((slot) => (
             <div
               className={`availabilityCell ${slot.type}`}
-              title={slotTitle(slot)}
+              title={`Доступно: ${slot.count}. Выпадают: ${(slot.missingDetails || []).map((item) => `${item.employee}: ${item.reason}`).join('; ') || slot.missing?.join(', ') || 'никто'}`}
               key={`${row.day}-${slot.hour}`}
             >
               {slot.count}

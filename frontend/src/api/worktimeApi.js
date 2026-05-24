@@ -432,17 +432,6 @@ export async function confirmSchedule(user, employeeId, payload) {
   return { employee_id: employeeId, status: 'confirmed', comment: payload.comment || '' };
 }
 
-export async function loadAvailability(user) {
-  if (!FORCE_MOCK_DATA) {
-    try {
-      return await request(`/api/analytics/availability${userQuery(user)}`, { headers: authHeaders(user) });
-    } catch {
-      // fallback
-    }
-  }
-  return null;
-}
-
 export async function loadRiskExplanation(user, employeeId) {
   if (!FORCE_MOCK_DATA) {
     try {
@@ -461,4 +450,38 @@ export async function loadRiskExplanation(user, employeeId) {
     factors: [],
     recommendedActions: employee?.exceptions || []
   };
+}
+
+
+export async function loadAvailability(user) {
+  if (!FORCE_MOCK_DATA) {
+    try {
+      return await request(`/api/analytics/availability${userQuery(user)}`, { headers: authHeaders(user) });
+    } catch {
+      // fallback
+    }
+  }
+  return null;
+}
+
+export async function generateTasksFromConflicts(user, payload = {}) {
+  if (!FORCE_MOCK_DATA) {
+    return request(`/api/tasks/generate-from-conflicts${userQuery(user)}`, {
+      method: 'POST',
+      headers: authHeaders(user),
+      body: JSON.stringify(payload)
+    });
+  }
+  return { created: 0, tasks: [] };
+}
+
+export async function applyTaskDecision(user, taskId, payload = { action: 'apply' }) {
+  if (!FORCE_MOCK_DATA) {
+    return request(`/api/tasks/${taskId}/apply${userQuery(user)}`, {
+      method: 'POST',
+      headers: authHeaders(user),
+      body: JSON.stringify(payload)
+    });
+  }
+  return { status: 'applied', task: { id: taskId, status: 'done' } };
 }

@@ -7,7 +7,7 @@
     "department": "Core Platform",
     "type": "confirm_schedule",
     "title": "Подтвердить рабочий график",
-    "description": "Подтвердить рабочий график. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "Проверьте рабочие дни, часы, формат и часовой пояс.",
     "due_date": "2026-05-24",
     "status": "pending",
     "employee_comment": "",
@@ -16,7 +16,17 @@
     "related_event_id": null,
     "meeting_action": null,
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T10:00:00",
+        "changed_by_user_id": "u1",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      }
+    ]
   },
   {
     "id": 2,
@@ -26,16 +36,34 @@
     "department": "People Ops",
     "type": "confirm_schedule",
     "title": "Подтвердить HR-график",
-    "description": "Подтвердить HR-график. Сформировано для демонстрации workflow WorkTime Sync.",
-    "due_date": "2026-05-24",
+    "description": "График давно не подтверждался. Нужен комментарий сотрудника.",
+    "due_date": "2026-05-23",
     "status": "confirmed",
-    "employee_comment": "График актуален.",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "employee_comment": "График актуален, работаю по нему.",
+    "created_at": "2026-05-19T11:00:00",
+    "updated_at": "2026-05-20T10:00:00",
     "related_event_id": null,
     "meeting_action": null,
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T11:00:00",
+        "changed_by_user_id": "u_hr",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      },
+      {
+        "changed_at": "2026-05-20T10:00:00",
+        "changed_by_user_id": "emp12",
+        "old_status": "pending",
+        "new_status": "confirmed",
+        "action": "status_changed",
+        "comment": "График актуален, работаю по нему."
+      }
+    ]
   },
   {
     "id": 3,
@@ -45,16 +73,26 @@
     "department": "Delivery",
     "type": "confirm_schedule",
     "title": "Актуализировать график перед релизом",
-    "description": "Актуализировать график перед релизом. Сформировано для демонстрации workflow WorkTime Sync.",
-    "due_date": "2026-05-24",
+    "description": "Нужно подтвердить рабочие часы на релизной неделе.",
+    "due_date": "2026-05-22",
     "status": "pending",
     "employee_comment": "",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T12:00:00",
+    "updated_at": "2026-05-19T12:00:00",
     "related_event_id": null,
     "meeting_action": null,
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T12:00:00",
+        "changed_by_user_id": "u4",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      }
+    ]
   },
   {
     "id": 4,
@@ -64,16 +102,34 @@
     "department": "Quality",
     "type": "confirm_schedule",
     "title": "Подтвердить график QA",
-    "description": "Подтвердить график QA. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "График давно не обновлялся, нужно подтвердить актуальность.",
     "due_date": "2026-05-24",
     "status": "rejected",
     "employee_comment": "Фактически работаю с 09:00, прошу изменить график.",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T13:00:00",
+    "updated_at": "2026-05-20T09:00:00",
     "related_event_id": null,
     "meeting_action": null,
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T13:00:00",
+        "changed_by_user_id": "u5",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      },
+      {
+        "changed_at": "2026-05-20T09:00:00",
+        "changed_by_user_id": "emp23",
+        "old_status": "pending",
+        "new_status": "rejected",
+        "action": "status_changed",
+        "comment": "Фактически работаю с 09:00, прошу изменить график."
+      }
+    ]
   },
   {
     "id": 5,
@@ -83,16 +139,26 @@
     "department": "People Ops",
     "type": "review_hr_profile",
     "title": "Сверить HR-профиль",
-    "description": "Сверить HR-профиль. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "Проверить рабочий формат и часы в HR-профиле.",
     "due_date": "2026-05-24",
     "status": "pending",
     "employee_comment": "",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T14:00:00",
+    "updated_at": "2026-05-19T14:00:00",
     "related_event_id": null,
     "meeting_action": null,
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T14:00:00",
+        "changed_by_user_id": "u_hr",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      }
+    ]
   },
   {
     "id": 6,
@@ -102,16 +168,34 @@
     "department": "People Ops",
     "type": "update_timezone",
     "title": "Проверить часовой пояс",
-    "description": "Проверить часовой пояс. Сформировано для демонстрации workflow WorkTime Sync.",
-    "due_date": "2026-05-24",
+    "description": "Нужно подтвердить timezone сотрудника.",
+    "due_date": "2026-05-25",
     "status": "done",
     "employee_comment": "Часовой пояс подтверждён.",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-18T15:00:00",
+    "updated_at": "2026-05-20T11:00:00",
     "related_event_id": null,
     "meeting_action": null,
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-18T15:00:00",
+        "changed_by_user_id": "u_hr",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      },
+      {
+        "changed_at": "2026-05-20T11:00:00",
+        "changed_by_user_id": "emp13",
+        "old_status": "pending",
+        "new_status": "done",
+        "action": "status_changed",
+        "comment": "Часовой пояс подтверждён."
+      }
+    ]
   },
   {
     "id": 7,
@@ -121,16 +205,34 @@
     "department": "Quality",
     "type": "review_hr_profile",
     "title": "Проверить отсутствие и HR-данные",
-    "description": "Проверить отсутствие и HR-данные. Сформировано для демонстрации workflow WorkTime Sync.",
-    "due_date": "2026-05-24",
+    "description": "Нужно проверить больничный и его отражение в HR.",
+    "due_date": "2026-05-21",
     "status": "rejected",
     "employee_comment": "Данные по больничному указаны неверно.",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-18T10:00:00",
+    "updated_at": "2026-05-19T18:00:00",
     "related_event_id": null,
     "meeting_action": null,
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-18T10:00:00",
+        "changed_by_user_id": "u_hr",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      },
+      {
+        "changed_at": "2026-05-19T18:00:00",
+        "changed_by_user_id": "emp24",
+        "old_status": "pending",
+        "new_status": "rejected",
+        "action": "status_changed",
+        "comment": "Данные по больничному указаны неверно."
+      }
+    ]
   },
   {
     "id": 8,
@@ -140,16 +242,26 @@
     "department": "Core Platform",
     "type": "review_load",
     "title": "Проверить загрузку инженера",
-    "description": "Проверить загрузку инженера. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "Календарь заполнен длинными блоками встреч.",
     "due_date": "2026-05-24",
     "status": "pending",
     "employee_comment": "",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T16:00:00",
+    "updated_at": "2026-05-19T16:00:00",
     "related_event_id": null,
     "meeting_action": null,
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T16:00:00",
+        "changed_by_user_id": "u1",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      }
+    ]
   },
   {
     "id": 9,
@@ -159,16 +271,34 @@
     "department": "Product UI",
     "type": "review_load",
     "title": "Снизить количество встреч",
-    "description": "Снизить количество встреч. Сформировано для демонстрации workflow WorkTime Sync.",
-    "due_date": "2026-05-24",
+    "description": "Высокая занятость в календаре Product UI.",
+    "due_date": "2026-05-23",
     "status": "done",
     "employee_comment": "Часть встреч перенесена.",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T16:20:00",
+    "updated_at": "2026-05-20T11:20:00",
     "related_event_id": null,
     "meeting_action": null,
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T16:20:00",
+        "changed_by_user_id": "u2",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      },
+      {
+        "changed_at": "2026-05-20T11:20:00",
+        "changed_by_user_id": "emp8",
+        "old_status": "pending",
+        "new_status": "done",
+        "action": "status_changed",
+        "comment": "Часть встреч перенесена."
+      }
+    ]
   },
   {
     "id": 10,
@@ -178,16 +308,26 @@
     "department": "Core Platform",
     "type": "meeting_outside_work_approval",
     "title": "Согласовать встречу вне рабочего времени",
-    "description": "Согласовать встречу вне рабочего времени. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "Интеграционный стендап выходит за рамки графика.",
     "due_date": "2026-05-20",
     "status": "pending",
     "employee_comment": "",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T17:00:00",
+    "updated_at": "2026-05-19T17:00:00",
     "related_event_id": 2,
     "meeting_action": "approve_outside_work",
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T17:00:00",
+        "changed_by_user_id": "u1",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      }
+    ]
   },
   {
     "id": 11,
@@ -197,16 +337,34 @@
     "department": "Core Platform",
     "type": "reschedule_meeting",
     "title": "Перенести позднюю встречу",
-    "description": "Перенести позднюю встречу. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "Синхронизация с продуктом назначена после окончания рабочего дня.",
     "due_date": "2026-05-20",
     "status": "reschedule_requested",
     "employee_comment": "Предлагаю перенести на 19 мая 15:00.",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T17:10:00",
+    "updated_at": "2026-05-20T08:30:00",
     "related_event_id": 1,
     "meeting_action": "reschedule",
     "suggested_start_datetime": "2026-05-19T15:00:00",
-    "suggested_end_datetime": "2026-05-19T15:45:00"
+    "suggested_end_datetime": "2026-05-19T15:45:00",
+    "history": [
+      {
+        "changed_at": "2026-05-19T17:10:00",
+        "changed_by_user_id": "u1",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      },
+      {
+        "changed_at": "2026-05-20T08:30:00",
+        "changed_by_user_id": "emp1",
+        "old_status": "pending",
+        "new_status": "reschedule_requested",
+        "action": "status_changed",
+        "comment": "Предлагаю перенести на 19 мая 15:00."
+      }
+    ]
   },
   {
     "id": 12,
@@ -216,16 +374,34 @@
     "department": "Product UI",
     "type": "meeting_confirmation",
     "title": "Подтвердить участие в дизайн-ревью",
-    "description": "Подтвердить участие в дизайн-ревью. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "Нужно подтвердить участие во встрече и формат участия.",
     "due_date": "2026-05-20",
     "status": "confirmed",
     "employee_comment": "Подтверждаю участие.",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T17:20:00",
+    "updated_at": "2026-05-20T09:30:00",
     "related_event_id": 3,
     "meeting_action": "confirm",
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T17:20:00",
+        "changed_by_user_id": "u2",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      },
+      {
+        "changed_at": "2026-05-20T09:30:00",
+        "changed_by_user_id": "emp6",
+        "old_status": "pending",
+        "new_status": "confirmed",
+        "action": "status_changed",
+        "comment": "Подтверждаю участие."
+      }
+    ]
   },
   {
     "id": 13,
@@ -235,16 +411,26 @@
     "department": "People Ops",
     "type": "meeting_outside_work_approval",
     "title": "Согласовать позднюю HR-встречу",
-    "description": "Согласовать позднюю HR-встречу. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "Калибровка HR-данных выходит за рабочий график.",
     "due_date": "2026-05-22",
     "status": "pending",
     "employee_comment": "",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T17:30:00",
+    "updated_at": "2026-05-19T17:30:00",
     "related_event_id": 5,
     "meeting_action": "approve_outside_work",
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T17:30:00",
+        "changed_by_user_id": "u_hr",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      }
+    ]
   },
   {
     "id": 14,
@@ -254,16 +440,34 @@
     "department": "Quality",
     "type": "reschedule_meeting",
     "title": "Перенести QA-статус",
-    "description": "Перенести QA-статус. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "QA-статус заканчивается после рабочего времени.",
     "due_date": "2026-05-20",
     "status": "rejected",
     "employee_comment": "Не могу перенести, нужна синхронизация с внешней командой.",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T17:40:00",
+    "updated_at": "2026-05-20T10:20:00",
     "related_event_id": 10,
     "meeting_action": "reschedule",
     "suggested_start_datetime": "2026-05-19T16:00:00",
-    "suggested_end_datetime": "2026-05-19T16:45:00"
+    "suggested_end_datetime": "2026-05-19T16:45:00",
+    "history": [
+      {
+        "changed_at": "2026-05-19T17:40:00",
+        "changed_by_user_id": "u5",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      },
+      {
+        "changed_at": "2026-05-20T10:20:00",
+        "changed_by_user_id": "emp21",
+        "old_status": "pending",
+        "new_status": "rejected",
+        "action": "status_changed",
+        "comment": "Не могу перенести, нужна синхронизация с внешней командой."
+      }
+    ]
   },
   {
     "id": 15,
@@ -273,190 +477,29 @@
     "department": "Quality",
     "type": "meeting_confirmation",
     "title": "Подтвердить участие в разборе дефектов",
-    "description": "Подтвердить участие в разборе дефектов. Сформировано для демонстрации workflow WorkTime Sync.",
+    "description": "Разбор дефектов назначен утром на границе рабочего графика.",
     "due_date": "2026-05-21",
     "status": "pending",
     "employee_comment": "",
-    "created_at": "2026-05-19T10:00:00",
-    "updated_at": "2026-05-19T10:00:00",
+    "created_at": "2026-05-19T17:50:00",
+    "updated_at": "2026-05-19T17:50:00",
     "related_event_id": 11,
     "meeting_action": "confirm",
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-19T17:50:00",
+        "changed_by_user_id": "u5",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      }
+    ]
   },
   {
     "id": 16,
-    "employee_id": 17,
-    "created_by_user_id": "u4",
-    "created_by_role": "department_manager",
-    "department": "Delivery",
-    "type": "confirm_schedule",
-    "title": "Подтвердить график после спринта",
-    "description": "Подтвердить, что рабочий график актуален после завершения спринта.",
-    "due_date": "2026-05-24",
-    "status": "confirmed",
-    "employee_comment": "График актуален.",
-    "created_at": "2026-05-20T10:00:00",
-    "updated_at": "2026-05-20T11:00:00",
-    "related_event_id": null,
-    "meeting_action": null,
-    "suggested_start_datetime": null,
-    "suggested_end_datetime": null
-  },
-  {
-    "id": 17,
-    "employee_id": 18,
-    "created_by_user_id": "u4",
-    "created_by_role": "department_manager",
-    "department": "Delivery",
-    "type": "update_timezone",
-    "title": "Уточнить часовой пояс Delivery",
-    "description": "Проверить актуальный часовой пояс и рабочие часы из-за регулярных встреч вне рабочего времени.",
-    "due_date": "2026-05-23",
-    "status": "pending",
-    "employee_comment": "",
-    "created_at": "2026-05-20T10:00:00",
-    "updated_at": "2026-05-20T10:00:00",
-    "related_event_id": null,
-    "meeting_action": null,
-    "suggested_start_datetime": null,
-    "suggested_end_datetime": null
-  },
-  {
-    "id": 18,
-    "employee_id": 20,
-    "created_by_user_id": "u4",
-    "created_by_role": "department_manager",
-    "department": "Delivery",
-    "type": "confirm_schedule",
-    "title": "Подтвердить неполную рабочую неделю",
-    "description": "Подтвердить график с рабочими днями со вторника по пятницу.",
-    "due_date": "2026-05-24",
-    "status": "pending",
-    "employee_comment": "",
-    "created_at": "2026-05-20T10:00:00",
-    "updated_at": "2026-05-20T10:00:00",
-    "related_event_id": null,
-    "meeting_action": null,
-    "suggested_start_datetime": null,
-    "suggested_end_datetime": null
-  },
-  {
-    "id": 19,
-    "employee_id": 22,
-    "created_by_user_id": "u5",
-    "created_by_role": "department_manager",
-    "department": "Quality",
-    "type": "confirm_schedule",
-    "title": "Подтвердить график QA lead",
-    "description": "Подтвердить актуальность графика QA lead перед планированием тестирования релиза.",
-    "due_date": "2026-05-24",
-    "status": "confirmed",
-    "employee_comment": "График актуален.",
-    "created_at": "2026-05-20T09:00:00",
-    "updated_at": "2026-05-20T09:30:00",
-    "related_event_id": null,
-    "meeting_action": null,
-    "suggested_start_datetime": null,
-    "suggested_end_datetime": null
-  },
-  {
-    "id": 20,
-    "employee_id": 25,
-    "created_by_user_id": "u5",
-    "created_by_role": "department_manager",
-    "department": "Quality",
-    "type": "confirm_schedule",
-    "title": "Подтвердить график тест-аналитика",
-    "description": "Подтвердить рабочий график перед согласованием QA-нагрузки.",
-    "due_date": "2026-05-24",
-    "status": "pending",
-    "employee_comment": "",
-    "created_at": "2026-05-20T10:00:00",
-    "updated_at": "2026-05-20T10:00:00",
-    "related_event_id": null,
-    "meeting_action": null,
-    "suggested_start_datetime": null,
-    "suggested_end_datetime": null
-  },
-  {
-    "id": 21,
-    "employee_id": 16,
-    "created_by_user_id": "u4",
-    "created_by_role": "department_manager",
-    "department": "Delivery",
-    "type": "meeting_outside_work_approval",
-    "title": "Согласовать релизную встречу вне графика",
-    "description": "Встреча по планированию релиза стоит после окончания рабочего дня. Нужно подтвердить участие или согласовать перенос.",
-    "due_date": "2026-05-22",
-    "status": "pending",
-    "employee_comment": "",
-    "created_at": "2026-05-20T11:00:00",
-    "updated_at": "2026-05-20T11:00:00",
-    "related_event_id": 8,
-    "meeting_action": "approve_outside_work",
-    "suggested_start_datetime": null,
-    "suggested_end_datetime": null
-  },
-  {
-    "id": 22,
-    "employee_id": 18,
-    "created_by_user_id": "u4",
-    "created_by_role": "department_manager",
-    "department": "Delivery",
-    "type": "reschedule_meeting",
-    "title": "Перенести поздний Delivery sync",
-    "description": "Delivery sync выходит за пределы рабочего времени сотрудника. Предложено перенести встречу на рабочее окно.",
-    "due_date": "2026-05-22",
-    "status": "pending",
-    "employee_comment": "",
-    "created_at": "2026-05-20T11:10:00",
-    "updated_at": "2026-05-20T11:10:00",
-    "related_event_id": 9,
-    "meeting_action": "reschedule",
-    "suggested_start_datetime": "2026-05-20T16:00:00",
-    "suggested_end_datetime": "2026-05-20T16:45:00"
-  },
-  {
-    "id": 23,
-    "employee_id": 22,
-    "created_by_user_id": "u5",
-    "created_by_role": "department_manager",
-    "department": "Quality",
-    "type": "meeting_confirmation",
-    "title": "Подтвердить участие в QA-планировании",
-    "description": "Подтвердить участие в рабочем блоке встреч перед QA-планированием релиза.",
-    "due_date": "2026-05-21",
-    "status": "pending",
-    "employee_comment": "",
-    "created_at": "2026-05-20T11:20:00",
-    "updated_at": "2026-05-20T11:20:00",
-    "related_event_id": 56,
-    "meeting_action": "confirm",
-    "suggested_start_datetime": null,
-    "suggested_end_datetime": null
-  },
-  {
-    "id": 24,
-    "employee_id": 24,
-    "created_by_user_id": "u5",
-    "created_by_role": "department_manager",
-    "department": "Quality",
-    "type": "meeting_confirmation",
-    "title": "Подтвердить участие в планировании тестирования",
-    "description": "Подтвердить участие во встрече по планированию задач тестирования.",
-    "due_date": "2026-05-21",
-    "status": "confirmed",
-    "employee_comment": "Участие подтверждаю.",
-    "created_at": "2026-05-20T11:30:00",
-    "updated_at": "2026-05-20T12:00:00",
-    "related_event_id": 59,
-    "meeting_action": "confirm",
-    "suggested_start_datetime": null,
-    "suggested_end_datetime": null
-  },
-  {
-    "id": 25,
     "employee_id": 5,
     "created_by_user_id": "u1",
     "created_by_role": "department_manager",
@@ -467,11 +510,50 @@
     "due_date": "2026-05-24",
     "status": "pending",
     "employee_comment": "",
-    "created_at": "2026-05-24T20:18:01",
-    "updated_at": "2026-05-24T20:18:01",
+    "created_at": "2026-05-24T20:29:51",
+    "updated_at": "2026-05-24T20:29:51",
     "related_event_id": 2,
     "meeting_action": "approve_outside_work",
     "suggested_start_datetime": null,
-    "suggested_end_datetime": null
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-24T20:29:51",
+        "changed_by_user_id": "u1",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "employee_id": 5,
+    "created_by_user_id": "u1",
+    "created_by_role": "department_manager",
+    "department": "Core Platform",
+    "type": "meeting_outside_work_approval",
+    "title": "Согласовать встречу после графика",
+    "description": "Нужно подтвердить участие во встрече вне рабочего времени.",
+    "due_date": "2026-05-24",
+    "status": "pending",
+    "employee_comment": "",
+    "created_at": "2026-05-24T20:31:00",
+    "updated_at": "2026-05-24T20:31:00",
+    "related_event_id": 2,
+    "meeting_action": "approve_outside_work",
+    "suggested_start_datetime": null,
+    "suggested_end_datetime": null,
+    "history": [
+      {
+        "changed_at": "2026-05-24T20:31:00",
+        "changed_by_user_id": "u1",
+        "old_status": null,
+        "new_status": "pending",
+        "action": "created",
+        "comment": "Задача создана"
+      }
+    ]
   }
 ]
