@@ -9,7 +9,7 @@ export default function Employees({ employees, onOpen, department }) {
         <div>
           <span className="eyebrow">Сотрудники</span>
           <h1>Карточки и таблица риска</h1>
-          <p>Отдел {department}: 5 синтетических сотрудников, которые закреплены за текущим руководителем.</p>
+          <p>{department === 'Все отделы' ? 'Показаны все синтетические сотрудники компании.' : `Отдел ${department}: сотрудники, закреплённые за текущей ролью.`}</p>
         </div>
       </div>
 
@@ -22,7 +22,7 @@ export default function Employees({ employees, onOpen, department }) {
       <div className="panel tablePanel">
         <div className="panelHeader">
           <h2>Таблица для HR и руководителя</h2>
-          <span>{employees.length} сотрудников отдела</span>
+          <span>{employees.length} сотрудников</span>
         </div>
         <div className="tableWrap">
           <table>

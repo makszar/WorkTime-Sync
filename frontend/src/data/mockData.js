@@ -1,43 +1,91 @@
 export const users = [
   {
+    id: 'u0',
+    login: 'executive_demo',
+    password: 'test0',
+    name: 'Executive Demo',
+    role: 'executive',
+    role_label: 'Полный руководитель',
+    scope: 'all',
+    department: null,
+    employee_id: null
+  },
+  {
+    id: 'u_hr',
+    login: 'hr_demo',
+    password: 'testhr',
+    name: 'HR Demo',
+    role: 'hr',
+    role_label: 'HR',
+    scope: 'all',
+    department: null,
+    employee_id: null
+  },
+  {
     id: 'u1',
     login: 'zarix',
     password: 'i9VUibm6',
     name: 'Зарубин Максим',
-    role: 'Руководитель отдела',
-    department: 'Core Platform'
+    role: 'department_manager',
+    role_label: 'Руководитель отдела',
+    scope: 'department',
+    department: 'Core Platform',
+    employee_id: null
   },
   {
     id: 'u2',
     login: 'lixxxa',
     password: 'test1',
     name: 'lixxxa',
-    role: 'Руководитель отдела',
-    department: 'Product UI'
+    role: 'department_manager',
+    role_label: 'Руководитель отдела',
+    scope: 'department',
+    department: 'Product UI',
+    employee_id: null
   },
   {
     id: 'u3',
     login: 'baftype',
     password: 'test2',
     name: 'baftype',
-    role: 'Руководитель отдела',
-    department: 'People Ops'
+    role: 'department_manager',
+    role_label: 'Руководитель отдела',
+    scope: 'department',
+    department: 'People Ops',
+    employee_id: null
   },
   {
     id: 'u4',
     login: 'ssdshkaaa',
     password: 'test3',
     name: 'ssdshkaaa',
-    role: 'Руководитель отдела',
-    department: 'Delivery'
+    role: 'department_manager',
+    role_label: 'Руководитель отдела',
+    scope: 'department',
+    department: 'Delivery',
+    employee_id: null
   },
   {
     id: 'u5',
     login: 'agentemy',
     password: 'test4',
     name: 'agentemy',
-    role: 'Руководитель отдела',
-    department: 'Quality'
+    role: 'department_manager',
+    role_label: 'Руководитель отдела',
+    scope: 'department',
+    department: 'Quality',
+    employee_id: null
+  },
+  {
+    id: 'emp5',
+    login: 'gleb_employee',
+    password: 'emp5',
+    name: 'Глеб Соколов',
+    role: 'employee',
+    role_label: 'Сотрудник',
+    scope: 'self',
+    department: 'Core Platform',
+    employee_id: 5
   }
 ];
 
@@ -686,4 +734,147 @@ export const roadmap = [
     deadline: 'На этой неделе',
     state: 'Планово'
   }
+];
+
+
+export const mockTasks = [
+  {
+    id: 1,
+    employee_id: 1,
+    employee_name: 'Илья Романов',
+    employee_role: 'Backend-разработчик',
+    employee_team: 'Core Platform',
+    created_by_user_id: 'u1',
+    creator_name: 'Зарубин Максим',
+    creator_role_label: 'Руководитель отдела',
+    department: 'Core Platform',
+    type: 'confirm_schedule',
+    title: 'Подтвердить рабочий график',
+    description: 'Нужно подтвердить актуальность графика после смены часового пояса.',
+    due_date: '2026-05-24',
+    status: 'pending',
+    employee_comment: '',
+    related_event_id: null,
+    related_event: null,
+    created_at: '2026-05-19T10:00:00',
+    updated_at: '2026-05-19T10:00:00'
+  },
+  {
+    id: 2,
+    employee_id: 5,
+    employee_name: 'Глеб Соколов',
+    employee_role: 'Инженер интеграций',
+    employee_team: 'Core Platform',
+    created_by_user_id: 'u1',
+    creator_name: 'Зарубин Максим',
+    creator_role_label: 'Руководитель отдела',
+    department: 'Core Platform',
+    type: 'meeting_outside_work_approval',
+    title: 'Согласовать встречу вне рабочего времени',
+    description: 'Встреча выходит за пределы текущего рабочего графика.',
+    due_date: '2026-05-23',
+    status: 'pending',
+    employee_comment: '',
+    related_event_id: 1,
+    related_event: { id: 1, employee_id: 5, title: 'Интеграционный созвон', start_datetime: '2026-05-20T20:30:00', end_datetime: '2026-05-20T21:15:00' },
+    meeting_action: 'approve_outside_work',
+    created_at: '2026-05-19T12:00:00',
+    updated_at: '2026-05-19T12:00:00'
+  },
+  {
+    id: 3,
+    employee_id: 9,
+    employee_name: 'Мария Ким',
+    employee_role: 'Frontend-разработчик',
+    employee_team: 'Product UI',
+    created_by_user_id: 'u2',
+    creator_name: 'lixxxa',
+    creator_role_label: 'Руководитель отдела',
+    department: 'Product UI',
+    type: 'reschedule_meeting',
+    title: 'Согласовать перенос дизайн-ревью',
+    description: 'Предложено перенести встречу на рабочее окно команды.',
+    due_date: '2026-05-25',
+    status: 'reschedule_requested',
+    employee_comment: 'Лучше после 12:00, текущий слот пересекается с личным блоком.',
+    related_event_id: 5,
+    related_event: { id: 5, employee_id: 9, title: 'Дизайн-ревью', start_datetime: '2026-05-21T17:30:00', end_datetime: '2026-05-21T18:30:00' },
+    meeting_action: 'reschedule',
+    suggested_start_datetime: '2026-05-22T12:00:00',
+    suggested_end_datetime: '2026-05-22T13:00:00',
+    created_at: '2026-05-19T12:20:00',
+    updated_at: '2026-05-19T14:10:00'
+  },
+  {
+    id: 4,
+    employee_id: 12,
+    employee_name: 'Анна Морозова',
+    employee_role: 'HR-специалист',
+    employee_team: 'People Ops',
+    created_by_user_id: 'u_hr',
+    creator_name: 'HR Demo',
+    creator_role_label: 'HR',
+    department: 'People Ops',
+    type: 'review_hr_profile',
+    title: 'Проверить расхождение с HR-профилем',
+    description: 'В календарном профиле и HR-данных разные рабочие часы.',
+    due_date: '2026-05-26',
+    status: 'pending',
+    employee_comment: '',
+    related_event_id: null,
+    related_event: null,
+    created_at: '2026-05-18T09:00:00',
+    updated_at: '2026-05-18T09:00:00'
+  },
+  {
+    id: 5,
+    employee_id: 16,
+    employee_name: 'Дмитрий Волков',
+    employee_role: 'Проектный менеджер',
+    employee_team: 'Delivery',
+    created_by_user_id: 'u4',
+    creator_name: 'ssdshkaaa',
+    creator_role_label: 'Руководитель отдела',
+    department: 'Delivery',
+    type: 'review_load',
+    title: 'Проверить перегруз по встречам',
+    description: 'Загрузка близка к полной рабочей неделе.',
+    due_date: '2026-05-22',
+    status: 'done',
+    employee_comment: 'Лишние статусы перенесены.',
+    related_event_id: null,
+    related_event: null,
+    created_at: '2026-05-17T11:00:00',
+    updated_at: '2026-05-18T16:00:00'
+  },
+  {
+    id: 6,
+    employee_id: 21,
+    employee_name: 'Олег Сафин',
+    employee_role: 'QA-инженер',
+    employee_team: 'Quality',
+    created_by_user_id: 'u5',
+    creator_name: 'agentemy',
+    creator_role_label: 'Руководитель отдела',
+    department: 'Quality',
+    type: 'meeting_confirmation',
+    title: 'Подтвердить участие в QA-статусе',
+    description: 'Нужно подтвердить участие или оставить комментарий.',
+    due_date: '2026-05-24',
+    status: 'confirmed',
+    employee_comment: 'Участвую.',
+    related_event_id: 10,
+    related_event: { id: 10, employee_id: 21, title: 'QA-статус', start_datetime: '2026-05-20T20:15:00', end_datetime: '2026-05-20T21:00:00' },
+    meeting_action: 'confirm',
+    created_at: '2026-05-18T13:00:00',
+    updated_at: '2026-05-18T15:00:00'
+  }
+];
+
+export const mockScheduleConfirmations = [
+  { employee_id: 1, status: 'pending', comment: '', updated_at: '2026-05-19T10:00:00' },
+  { employee_id: 3, status: 'confirmed', comment: 'График актуален', updated_at: '2026-05-18T10:00:00' },
+  { employee_id: 5, status: 'change_requested', comment: 'Нужно сместить начало дня', updated_at: '2026-05-18T11:00:00' },
+  { employee_id: 12, status: 'pending', comment: '', updated_at: '2026-05-17T12:00:00' },
+  { employee_id: 21, status: 'confirmed', comment: 'Подтверждаю', updated_at: '2026-05-16T12:00:00' }
 ];
