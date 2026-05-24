@@ -1,45 +1,23 @@
 # WorkTime Sync Backend
 
-Backend версия: **2.3.0**.
+Backend версия: **2.5.0**.
 
-Добавлены задачи по встречам, расширенная проверка tasks, enriched task responses и workflow для `EmployeeCabinet`, `HRDashboard` и `ExecutiveDashboard`.
+Доработки по пункту 9 из `docs/missing_information_UPDATED.md`:
 
-## Новые типы задач
+- `POST /tasks/{task_id}/apply` — финальное применение решения руководителем/HR/executive.
+- `save_events(events)` — сохранение изменённых встреч обратно в active data source.
+- `history` в задачах — журнал действий по задаче.
+- `POST /tasks/generate-from-conflicts` — автогенерация задач по встречам вне рабочего времени.
+- Расширенная `data-quality` диагностика workflow-ошибок.
+- Backend-тесты для apply/generate/history/data-quality.
 
-```text
-confirm_schedule
-review_hr_profile
-review_load
-update_timezone
-meeting_confirmation
-reschedule_meeting
-meeting_outside_work_approval
-```
-
-## Новые поля задач
-
-```json
-{
-  "related_event_id": 2,
-  "meeting_action": "approve_outside_work",
-  "suggested_start_datetime": "2026-05-20T16:00:00",
-  "suggested_end_datetime": "2026-05-20T16:45:00"
-}
-```
-
-Backend проверяет, что событие существует, относится к тому же сотруднику, а для `meeting_outside_work_approval` действительно выходит за рабочий график.
-
-## Endpoint'ы
+## Быстрая проверка
 
 ```http
-GET /tasks?user_id=u1
-GET /tasks/my?user_id=emp5
-POST /tasks?user_id=u1
-PATCH /tasks/{task_id}/status?user_id=emp5
-GET /employees/me?user_id=emp5
-GET /analytics/company?user_id=u0
-GET /analytics/hr-dashboard?user_id=u_hr
+POST /tasks/11/apply?user_id=u1
+POST /tasks/generate-from-conflicts?user_id=u1
 GET /analytics/data-quality
+GET /tasks?user_id=u1
 ```
 
 ## Тесты
