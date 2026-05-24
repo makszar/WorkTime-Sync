@@ -1,266 +1,192 @@
 # Тест-кейсы WorkTime Sync
 
-Файл содержит тест-кейсы для текущего MVP и будущего этапа с ролями, задачами и личными кабинетами.
+Тесты разделены на текущий backend V2.2, frontend-задачи и будущие задачи по встречам.
 
 ---
 
-## 1. Тесты текущего MVP
+## 1. Backend V2.2
 
-### TC-01. Healthcheck backend
+### TC-01. Healthcheck
 
 | Поле | Значение |
 |---|---|
-| Цель | проверить, что backend запущен |
 | Endpoint | `GET /health` |
+| Цель | проверить запуск backend |
 
-Ожидаемый результат:
+Ожидаемый результат: `{"status": "ok"}`.
+
+### TC-02. Health data
+
+Endpoint: `GET /health/data`
+
+Ожидаемый результат: в ответе есть employees, events, hr_profiles, absences, tasks, schedule_confirmations.
+
+### TC-03. Login executive
+
+`POST /auth/login`, логин `executive_demo`, пароль `test0`.
+
+Ожидаемый результат: role = `executive`, scope = `all`, password не возвращается.
+
+### TC-04. Login HR
+
+`POST /auth/login`, логин `hr_demo`, пароль `testhr`.
+
+Ожидаемый результат: role = `hr`, scope = `all`.
+
+### TC-05. Login employee
+
+`POST /auth/login`, логин `gleb_employee`, пароль `emp5`.
+
+Ожидаемый результат: role = `employee`, scope = `self`, employee_id = 5.
+
+### TC-06. Executive overview
+
+Endpoint: `GET /api/worktime/overview?user_id=u0`.
+
+Ожидаемый результат: видны все сотрудники, meta.role = `executive`, meta.scope = `all`.
+
+### TC-07. Manager overview
+
+Endpoint: `GET /api/worktime/overview?user_id=u1`.
+
+Ожидаемый результат: видны только сотрудники Core Platform, tasks относятся только к отделу.
+
+### TC-08. Employee overview
+
+Endpoint: `GET /api/worktime/overview?user_id=emp5`.
+
+Ожидаемый результат: виден только employee_id 5.
+
+### TC-09. Employee cabinet
+
+Endpoint: `GET /employees/me?user_id=emp5`.
+
+Ожидаемый результат: возвращается карточка сотрудника, задачи и scheduleConfirmationStatus.
+
+### TC-10. Tasks for manager
+
+Endpoint: `GET /tasks?user_id=u1`.
+
+Ожидаемый результат: руководитель видит задачи своего отдела и не видит задачи чужих отделов.
+
+### TC-11. My tasks for employee
+
+Endpoint: `GET /tasks/my?user_id=emp5`.
+
+Ожидаемый результат: сотрудник видит только свои задачи.
+
+### TC-12. Create task by manager
+
+Endpoint: `POST /tasks?user_id=u1`.
+
+Payload:
 
 ```json
-{"status": "ok"}
+{
+  "employee_id": 5,
+  "type": "confirm_schedule",
+  "title": "Подтвердить график",
+  "description": "Проверьте актуальность графика.",
+  "due_date": "2026-05-24"
+}
 ```
 
+Ожидаемый результат: задача создана, status = `pending`, department = `Core Platform`.
+
+### TC-13. Manager cannot assign outside department
+
+Руководитель Core Platform пытается создать задачу сотруднику Product UI.
+
+Ожидаемый результат: ошибка `403`.
+
+### TC-14. Employee confirms task
+
+Endpoint: `PATCH /tasks/{task_id}/status?user_id=emp5`.
+
+Payload:
+
+```json
+{
+  "status": "confirmed",
+  "employee_comment": "Подтверждаю."
+}
+```
+
+Ожидаемый результат: статус стал `confirmed`, комментарий сохранился.
+
+### TC-15. Confirm schedule
+
+Endpoint: `PATCH /employees/5/confirm-schedule?user_id=emp5`.
+
+Ожидаемый результат: создаётся/обновляется confirmation, задача `confirm_schedule` становится `confirmed`, если была pending.
+
 ---
 
-### TC-02. Проверка активных данных
+## 2. Тесты задач по встречам
 
-| Поле | Значение |
+### TC-16. Create meeting confirmation task
+
+Создать задачу типа `meeting_confirmation` с `related_event_id`.
+
+Ожидаемый результат: задача создана, `related_event_id` сохранён, событие существует.
+
+### TC-17. Create reschedule meeting task
+
+Создать задачу типа `reschedule_meeting`.
+
+Ожидаемый результат: задача создана, сотрудник видит её в `/tasks/my`.
+
+### TC-18. Invalid related_event_id
+
+Создать задачу с несуществующим `related_event_id`.
+
+Ожидаемый результат: backend возвращает `400`.
+
+### TC-19. Task-event mismatch
+
+Создать задачу сотруднику 5, но указать event другого сотрудника.
+
+Ожидаемый результат: backend возвращает `400`.
+
+### TC-20. Outside-work approval validation
+
+Создать `meeting_outside_work_approval` для события, которое не выходит за рабочий график.
+
+Ожидаемый результат: backend возвращает warning или `400`, в зависимости от выбранной логики.
+
+---
+
+## 3. Frontend tests
+
+### TC-21. Role-based routing
+
+| User | Expected page |
 |---|---|
-| Цель | проверить, что backend читает synthetic data |
-| Endpoint | `GET /health/data` |
+| executive_demo | ExecutiveDashboard |
+| hr_demo | HRDashboard |
+| zarix | Dashboard отдела |
+| gleb_employee | EmployeeCabinet |
 
-Ожидаемый результат:
+### TC-22. Employee sees task
 
-- статус `ok`;
-- источник данных — `data/synthetic`;
-- employees/events/hr_profiles/absences возвращаются корректно.
+Войти как `gleb_employee`, открыть личный кабинет.
 
----
+Ожидаемый результат: видна задача `confirm_schedule`, есть кнопки подтвердить/отклонить.
 
-### TC-03. Login руководителя отдела
+### TC-23. Manager creates meeting task
 
-| Поле | Значение |
-|---|---|
-| Цель | проверить demo-login |
-| Endpoint | `POST /auth/login` |
+Войти как `zarix`, открыть сотрудника Глеба, создать задачу по встрече.
 
-Ожидаемый результат:
+Ожидаемый результат: задача появилась у сотрудника.
 
-- login успешен;
-- возвращается user без password;
-- у пользователя есть department.
+### TC-24. HR dashboard
 
----
+Войти как `hr_demo`, открыть HRDashboard.
 
-### TC-04. Department-фильтр
+Ожидаемый результат: видны HR-расхождения, сотрудники без подтверждения и HR-задачи.
 
-| Поле | Значение |
-|---|---|
-| Цель | проверить, что руководитель видит только свой отдел |
-| Endpoint | `GET /api/worktime/overview?department=Core%20Platform` |
+### TC-25. Executive dashboard
 
-Ожидаемый результат:
+Войти как `executive_demo`, открыть ExecutiveDashboard.
 
-- возвращаются только сотрудники Core Platform;
-- события и рекомендации относятся к этому отделу.
-
----
-
-### TC-05. Конфликты
-
-| Поле | Значение |
-|---|---|
-| Цель | проверить встречи вне рабочего времени |
-| Endpoint | `GET /analytics/conflicts?department=Core%20Platform` |
-
-Ожидаемый результат:
-
-- список конфликтов содержит сотрудника, событие, день, время, причину и severity.
-
----
-
-### TC-06. Доступность
-
-| Поле | Значение |
-|---|---|
-| Цель | проверить карту доступности |
-| Endpoint | `GET /analytics/availability?department=Delivery` |
-
-Ожидаемый результат:
-
-- есть дни и часовые слоты;
-- у слотов есть `count`, `missing`, `missingDetails`.
-
----
-
-### TC-07. Risk explanation
-
-| Поле | Значение |
-|---|---|
-| Цель | проверить объяснение риска |
-| Endpoint | `GET /employees/1/risk-explanation` |
-
-Ожидаемый результат:
-
-- есть итоговый риск;
-- есть факторы;
-- есть recommendedActions.
-
----
-
-### TC-08. Data-quality
-
-| Поле | Значение |
-|---|---|
-| Цель | проверить диагностику данных |
-| Endpoint | `GET /analytics/data-quality` |
-
-Ожидаемый результат:
-
-- endpoint возвращает status;
-- показывает дубликаты, orphan-записи, invalid ranges и warnings.
-
----
-
-## 2. Тесты нового этапа
-
-### TC-09. Вход полного руководителя
-
-| Поле | Значение |
-|---|---|
-| Цель | проверить доступ ко всей компании |
-| Роль | executive |
-
-Ожидаемый результат:
-
-- пользователь видит все отделы;
-- видит всех сотрудников;
-- видит общую аналитику компании.
-
----
-
-### TC-10. Вход HR
-
-| Поле | Значение |
-|---|---|
-| Цель | проверить HR-доступ |
-| Роль | hr |
-
-Ожидаемый результат:
-
-- HR видит сотрудников всех отделов;
-- видит HR-расхождения;
-- видит устаревшие графики;
-- может создать HR-задачу.
-
----
-
-### TC-11. Вход сотрудника
-
-| Поле | Значение |
-|---|---|
-| Цель | проверить личный кабинет |
-| Роль | employee |
-
-Ожидаемый результат:
-
-- сотрудник видит только свой профиль;
-- видит свой график;
-- видит свои задачи;
-- может подтвердить график.
-
----
-
-### TC-12. Создание задачи руководителем
-
-Шаги:
-
-1. Войти как руководитель отдела.
-2. Открыть карточку сотрудника.
-3. Нажать “Создать задачу”.
-4. Выбрать тип `confirm_schedule`.
-5. Отправить задачу.
-
-Ожидаемый результат:
-
-- задача создана;
-- статус `pending`;
-- задача отображается у сотрудника.
-
----
-
-### TC-13. Подтверждение задачи сотрудником
-
-Шаги:
-
-1. Войти как сотрудник.
-2. Открыть “Мои задачи”.
-3. Нажать “Подтвердить”.
-
-Ожидаемый результат:
-
-- статус задачи становится `confirmed`;
-- руководитель видит обновлённый статус.
-
----
-
-### TC-14. Отклонение задачи с комментарием
-
-Шаги:
-
-1. Войти как сотрудник.
-2. Открыть задачу.
-3. Нажать “Отклонить”.
-4. Ввести комментарий.
-
-Ожидаемый результат:
-
-- статус `rejected`;
-- комментарий сохранён;
-- руководитель/HR видит причину.
-
----
-
-### TC-15. Подтверждение графика
-
-Шаги:
-
-1. Войти как сотрудник.
-2. Нажать “Подтвердить график”.
-
-Ожидаемый результат:
-
-- фиксируется дата подтверждения;
-- задача `confirm_schedule` закрывается или подтверждается;
-- руководитель/HR видит статус.
-
----
-
-### TC-16. Риск с весами отдела
-
-Шаги:
-
-1. Открыть сотрудника из Core Platform.
-2. Запросить risk explanation.
-3. Проверить weights.
-
-Ожидаемый результат:
-
-- в ответе есть department;
-- есть weights;
-- сумма весов равна 1;
-- риск рассчитан по весам отдела.
-
----
-
-### TC-17. Совместимость старого API
-
-Шаги:
-
-1. Выполнить `/api/worktime/overview?department=Core%20Platform`.
-2. Выполнить `/employees`.
-3. Выполнить `/recommendations`.
-
-Ожидаемый результат:
-
-- старые endpoint’ы продолжают работать;
-- текущий frontend не ломается.
+Ожидаемый результат: видны все отделы, сравнение отделов, задачи и риски по компании.
