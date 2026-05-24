@@ -13,19 +13,47 @@ const DEFAULT_FORM = {
   suggested_end_datetime: ''
 };
 
-export default function TaskForm({ employees, events = [], onCreate }) {
+const FALLBACK_META = {
+  taskTypes: [
+    { value: 'confirm_schedule', label: 'Подтвердить график', requiresRelatedEvent: false, requiresSuggestedRange: false },
+    { value: 'review_hr_profile', label: 'Проверить HR-профиль', requiresRelatedEvent: false, requiresSuggestedRange: false },
+    { value: 'review_load', label: 'Проверить нагрузку', requiresRelatedEvent: false, requiresSuggestedRange: false },
+    { value: 'update_timezone', label: 'Проверить часовой пояс', requiresRelatedEvent: false, requiresSuggestedRange: false },
+    { value: 'meeting_confirmation', label: 'Подтвердить встречу', requiresRelatedEvent: true, requiresSuggestedRange: false },
+    { value: 'reschedule_meeting', label: 'Перенести встречу', requiresRelatedEvent: true, requiresSuggestedRange: true },
+    { value: 'meeting_outside_work_approval', label: 'Согласовать встречу вне времени', requiresRelatedEvent: true, requiresSuggestedRange: false }
+  ]
+};
+
+function eventTitle(event) {
+  const start = event.start_datetime ? new Date(event.start_datetime) : null;
+  const end = event.end_datetime ? new Date(event.end_datetime) : null;
+  if (start && end && !Number.isNaN(start.getTime())) {
+    return `${event.title} - ${start.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}-${end.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+  }
+  return `${event.title} - ${event.day || ''} ${event.time || ''}`.trim();
+}
+
+export default function TaskForm({ employees, events = [], onCreate, currentUser }) {
   const [form, setForm] = useState(DEFAULT_FORM);
-  const [meta, setMeta] = useState(null);
-  const selectedType = useMemo(() => meta?.taskTypes?.find((item) => item.value === form.type), [meta, form.type]);
+  const [meta, setMeta] = useState(FALLBACK_META);
+  const taskTypes = meta?.taskTypes?.length ? meta.taskTypes : FALLBACK_META.taskTypes;
+  const selectedType = useMemo(() => taskTypes.find((item) => item.value === form.type), [taskTypes, form.type]);
   const employeeEvents = events.filter((event) => Number(event.employeeId ?? event.employee_id) === Number(form.employee_id));
 
   useEffect(() => {
-    loadTasksMeta().then(setMeta).catch(() => setMeta(null));
+    loadTasksMeta().then((payload) => setMeta(payload || FALLBACK_META)).catch(() => setMeta(FALLBACK_META));
   }, []);
 
   useEffect(() => {
     const action = MEETING_ACTION_BY_TYPE[form.type] || '';
-    setForm((current) => ({ ...current, meeting_action: action, related_event_id: action ? current.related_event_id : '' }));
+    setForm((current) => ({
+      ...current,
+      meeting_action: action,
+      related_event_id: action ? current.related_event_id : '',
+      suggested_start_datetime: form.type === 'reschedule_meeting' ? current.suggested_start_datetime : '',
+      suggested_end_datetime: form.type === 'reschedule_meeting' ? current.suggested_end_datetime : ''
+    }));
   }, [form.type]);
 
   function setValue(key, value) {
@@ -51,6 +79,10 @@ export default function TaskForm({ employees, events = [], onCreate }) {
 
   return (
     <form className="taskForm" onSubmit={submit}>
+      <div className="creatorHint">
+        Задачу создаёт: <b>{currentUser?.department || currentUser?.role_label || currentUser?.role || 'текущий пользователь'}</b>
+      </div>
+
       <div className="formGrid">
         <label>
           <span>Сотрудник</span>
@@ -62,14 +94,7 @@ export default function TaskForm({ employees, events = [], onCreate }) {
         <label>
           <span>Тип задачи</span>
           <select value={form.type} onChange={(event) => setValue('type', event.target.value)}>
-            {(meta?.taskTypes || [
-              { value: 'confirm_schedule', label: 'Подтвердить график' },
-              { value: 'review_hr_profile', label: 'Проверить HR-профиль' },
-              { value: 'review_load', label: 'Проверить нагрузку' },
-              { value: 'meeting_confirmation', label: 'Подтвердить встречу' },
-              { value: 'reschedule_meeting', label: 'Перенести встречу' },
-              { value: 'meeting_outside_work_approval', label: 'Согласовать встречу вне времени' }
-            ]).map((type) => <option value={type.value} key={type.value}>{type.label}</option>)}
+            {taskTypes.map((type) => <option value={type.value} key={type.value}>{type.label}</option>)}
           </select>
         </label>
       </div>
@@ -93,8 +118,9 @@ export default function TaskForm({ employees, events = [], onCreate }) {
             <span>Связанная встреча</span>
             <select value={form.related_event_id} onChange={(event) => setValue('related_event_id', event.target.value)} required>
               <option value="">Выберите встречу</option>
-              {employeeEvents.map((event) => <option value={event.id} key={event.id}>{event.title} - {event.day || ''} {event.time || ''}</option>)}
+              {employeeEvents.map((item) => <option value={item.id} key={item.id}>{eventTitle(item)}</option>)}
             </select>
+            {!employeeEvents.length && <small className="fieldHint">Для выбранного сотрудника в текущей выборке нет конфликтных встреч.</small>}
           </label>
         )}
       </div>

@@ -5,7 +5,7 @@ function listFrom(...items) {
   return items.find((item) => Array.isArray(item)) || [];
 }
 
-export default function HRDashboard({ dashboard, overview, user, onTaskStatusChange, onApplyTask, setPage }) {
+export default function HRDashboard({ dashboard, overview, user, onTaskStatusChange, setPage }) {
   const mismatches = listFrom(dashboard?.dataMismatches, dashboard?.data_mismatches, dashboard?.hrMismatches);
   const outdated = listFrom(dashboard?.outdatedEmployees, dashboard?.outdated_employees);
   const withoutConfirm = listFrom(dashboard?.employeesWithoutConfirmation, dashboard?.employees_without_confirmation);
@@ -75,7 +75,7 @@ export default function HRDashboard({ dashboard, overview, user, onTaskStatusCha
         <div className="panelHeader"><h2>Задачи, требующие внимания</h2><span>{pendingTasks.length + rejectedTasks.length}</span></div>
         <div className="cardsGrid smallCards">
           {[...rejectedTasks, ...pendingTasks].slice(0, 6).map((task) => (
-            <TaskCard task={task} user={user} onStatusChange={onTaskStatusChange} onApplyTask={onApplyTask} key={task.id} />
+            <TaskCard task={task} user={user} onStatusChange={onTaskStatusChange} key={task.id} />
           ))}
         </div>
       </article>

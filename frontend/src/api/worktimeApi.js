@@ -1,8 +1,15 @@
 import { employees, calendarEvents, roadmap, users, mockTasks, mockScheduleConfirmations } from '../data/mockData';
-import { summaryMetrics, makeRecommendations, bestSlots, riskScore, loadRate, daysSince, buildAvailabilityWithEvents } from '../utils/calculations';
+import { summaryMetrics, makeRecommendations, bestSlots, riskScore, loadRate, daysSince } from '../utils/calculations';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 const FORCE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
+const BACKEND_PREFIX = '/api';
+
+function apiPath(path) {
+  if (path.startsWith('/api/') || path === '/api') return path;
+  if (path.startsWith('/auth/')) return path;
+  return `${BACKEND_PREFIX}${path}`;
+}
 
 export const TASK_STATUS_LABELS = {
   pending: 'Ожидает действия',
@@ -53,7 +60,9 @@ async function request(path, options = {}) {
   });
 
   if (!response.ok) {
-    let message = `API error: ${response.status}`;
+    let message = response.status === 405
+      ? 'API 405: запрос попал не в backend. Проверьте, что frontend использует /api-маршруты и Nginx проксирует /api/ на FastAPI.'
+      : `API error: ${response.status}`;
     try {
       const payload = await response.json();
       message = payload.detail || message;
@@ -131,7 +140,7 @@ function buildMockOverview(user) {
     roadmap,
     summary: summaryMetrics(scopedEmployees, scopedEvents),
     recommendations: makeRecommendations(scopedEmployees, scopedEvents),
-    bestSlots: bestSlots(scopedEmployees, scopedEvents),
+    bestSlots: bestSlots(scopedEmployees),
     tasks: scopedTasks,
     taskStatusCounts: countByStatus(scopedTasks),
     departments: [...new Set(employees.map((employee) => employee.team))].map((name) => ({
@@ -172,7 +181,7 @@ function normalizeOverview(payload, user) {
     roadmap: payload.roadmap || roadmap,
     summary: normalizeSummary(payload.summary, scopedEmployees, events),
     recommendations: payload.recommendations || makeRecommendations(scopedEmployees, events),
-    bestSlots: payload.bestSlots || payload.best_slots || bestSlots(scopedEmployees, events),
+    bestSlots: payload.bestSlots || payload.best_slots || bestSlots(scopedEmployees),
     tasks: payload.tasks || [],
     taskStatusCounts: payload.taskStatusCounts || countByStatus(payload.tasks || []),
     departments: payload.departments || [...new Set(scopedEmployees.map((employee) => employee.team))].map((name) => ({
@@ -283,55 +292,6 @@ function buildMockEmployeeCabinet(user) {
   };
 }
 
-
-function normalizeAvailabilityRows(rows, fallbackEmployees = []) {
-  if (!Array.isArray(rows) || !rows.length) return [];
-  return rows.map((row) => ({
-    day: row.day,
-    slots: (row.slots || []).map((slot) => ({
-      hour: Number(slot.hour),
-      count: Number(slot.count || 0),
-      type: slot.type || (Number(slot.count || 0) === fallbackEmployees.length ? 'all' : Number(slot.count || 0) >= Math.ceil(fallbackEmployees.length * 0.65) ? 'majority' : 'weak'),
-      missing: slot.missing || [],
-      missingDetails: slot.missingDetails || slot.missing_details || []
-    }))
-  }));
-}
-
-export async function loadAvailability(user, fallbackEmployees = []) {
-  if (!FORCE_MOCK_DATA) {
-    try {
-      const rows = await request(`/analytics/availability${userQuery(user)}`, { headers: authHeaders(user) });
-      return normalizeAvailabilityRows(rows, fallbackEmployees);
-    } catch {
-      // fallback for frontend-only launch
-    }
-  }
-  return normalizeAvailabilityRows(buildAvailabilityWithEvents(fallbackEmployees.length ? fallbackEmployees : scopedEmployeesForUser(user)), fallbackEmployees);
-}
-
-export async function applyTask(user, taskId, payload = { action: 'apply' }) {
-  if (!FORCE_MOCK_DATA) {
-    return request(`/tasks/${taskId}/apply${userQuery(user)}`, {
-      method: 'POST',
-      headers: authHeaders(user),
-      body: JSON.stringify(payload)
-    });
-  }
-  return { status: 'applied', action: payload.action || 'apply', task: { id: taskId, status: 'done' } };
-}
-
-export async function generateTasksFromConflicts(user, payload = {}) {
-  if (!FORCE_MOCK_DATA) {
-    return request(`/tasks/generate-from-conflicts${userQuery(user)}`, {
-      method: 'POST',
-      headers: authHeaders(user),
-      body: JSON.stringify(payload)
-    });
-  }
-  return { created: 0, tasks: [] };
-}
-
 export async function loginUser(credentials) {
   const login = credentials.login.trim();
   const password = credentials.password;
@@ -368,7 +328,7 @@ export async function loadWorktimeData(user) {
 export async function loadCompanyAnalytics(user) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`/analytics/company${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`${apiPath('/analytics/company')}${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -379,7 +339,7 @@ export async function loadCompanyAnalytics(user) {
 export async function loadHrDashboard(user) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`/analytics/hr-dashboard${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`${apiPath('/analytics/hr-dashboard')}${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -390,7 +350,7 @@ export async function loadHrDashboard(user) {
 export async function loadEmployeeCabinet(user) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`/employees/me${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`${apiPath('/employees/me')}${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -401,7 +361,7 @@ export async function loadEmployeeCabinet(user) {
 export async function loadTasks(user, filters = {}) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`/tasks${userQuery(user, filters)}`, { headers: authHeaders(user) });
+      return await request(`${apiPath('/tasks')}${userQuery(user, filters)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -415,7 +375,7 @@ export async function loadTasks(user, filters = {}) {
 export async function loadMyTasks(user) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`/tasks/my${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`${apiPath('/tasks/my')}${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -426,7 +386,7 @@ export async function loadMyTasks(user) {
 export async function loadTasksMeta() {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request('/tasks/meta');
+      return await request(apiPath('/tasks/meta'));
     } catch {
       // fallback
     }
@@ -450,7 +410,7 @@ export async function loadTasksMeta() {
 
 export async function createTask(user, payload) {
   if (!FORCE_MOCK_DATA) {
-    return request(`/tasks${userQuery(user)}`, {
+    return request(`${apiPath('/tasks')}${userQuery(user)}`, {
       method: 'POST',
       headers: authHeaders(user),
       body: JSON.stringify(payload)
@@ -461,7 +421,7 @@ export async function createTask(user, payload) {
 
 export async function updateTaskStatus(user, taskId, payload) {
   if (!FORCE_MOCK_DATA) {
-    return request(`/tasks/${taskId}/status${userQuery(user)}`, {
+    return request(`${apiPath(`/tasks/${taskId}/status`)}${userQuery(user)}`, {
       method: 'PATCH',
       headers: authHeaders(user),
       body: JSON.stringify(payload)
@@ -470,9 +430,43 @@ export async function updateTaskStatus(user, taskId, payload) {
   return { id: taskId, ...payload };
 }
 
+
+export async function applyTask(user, taskId, payload = { action: 'apply' }) {
+  if (!FORCE_MOCK_DATA) {
+    return request(`${apiPath(`/tasks/${taskId}/apply`)}${userQuery(user)}`, {
+      method: 'POST',
+      headers: authHeaders(user),
+      body: JSON.stringify(payload)
+    });
+  }
+  return { status: 'applied', task: { id: taskId, status: 'done' } };
+}
+
+export async function generateConflictTasks(user, payload = {}) {
+  if (!FORCE_MOCK_DATA) {
+    return request(`${apiPath('/tasks/generate-from-conflicts')}${userQuery(user)}`, {
+      method: 'POST',
+      headers: authHeaders(user),
+      body: JSON.stringify(payload)
+    });
+  }
+  return { created: 0, tasks: [] };
+}
+
+export async function loadAvailability(user) {
+  if (!FORCE_MOCK_DATA) {
+    try {
+      return await request(`${apiPath('/analytics/availability')}${userQuery(user)}`, { headers: authHeaders(user) });
+    } catch {
+      // fallback ниже
+    }
+  }
+  return null;
+}
+
 export async function confirmSchedule(user, employeeId, payload) {
   if (!FORCE_MOCK_DATA) {
-    return request(`/employees/${employeeId}/confirm-schedule${userQuery(user)}`, {
+    return request(`${apiPath(`/employees/${employeeId}/confirm-schedule`)}${userQuery(user)}`, {
       method: 'PATCH',
       headers: authHeaders(user),
       body: JSON.stringify(payload)
@@ -484,7 +478,7 @@ export async function confirmSchedule(user, employeeId, payload) {
 export async function loadRiskExplanation(user, employeeId) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`/employees/${employeeId}/risk-explanation${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`${apiPath(`/employees/${employeeId}/risk-explanation`)}${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }

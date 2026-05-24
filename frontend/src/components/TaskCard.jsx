@@ -1,68 +1,66 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import TaskStatusBadge from './TaskStatusBadge';
 import TaskTypeBadge from './TaskTypeBadge';
-
-const APPLY_ROLES = ['executive', 'hr', 'department_manager'];
-const MEETING_TYPES = ['meeting_confirmation', 'reschedule_meeting', 'meeting_outside_work_approval'];
-
-function formatDateTime(value) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-}
 
 function eventLabel(event) {
   if (!event) return '';
   if (event.start_datetime && event.end_datetime) {
-    return `${event.title || 'Встреча'}: ${formatDateTime(event.start_datetime)}-${new Date(event.end_datetime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+    const start = new Date(event.start_datetime);
+    const end = new Date(event.end_datetime);
+    return `${event.title || 'Встреча'}: ${start.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}-${end.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
   }
   return event.title || 'Связанная встреча';
 }
 
-function employeePrimaryAction(task) {
-  if (task.type === 'reschedule_meeting') return 'Согласен на перенос';
-  if (task.type === 'meeting_confirmation') return 'Подтверждаю участие';
-  if (task.type === 'meeting_outside_work_approval') return 'Согласен';
-  if (task.type === 'confirm_schedule') return 'Подтверждаю';
-  return 'Подтвердить';
+function getCreatorDepartment(task) {
+  return task.created_by_department || task.creator_department || task.creatorDepartment || task.createdByDepartment || task.creator_role_label || task.created_by_role || 'Не указан';
 }
 
-function employeeRejectAction(task) {
-  if (task.type === 'meeting_confirmation') return 'Не могу участвовать';
-  if (task.type === 'meeting_outside_work_approval') return 'Не согласен';
-  return 'Отклонить';
+function getEmployeeDepartment(task) {
+  return task.department || task.employee_team || task.employeeTeam || 'Не указан';
 }
 
-function canRequestReschedule(task) {
-  return ['reschedule_meeting', 'meeting_outside_work_approval'].includes(task.type);
-}
-
-function canApply(user, task) {
-  if (!APPLY_ROLES.includes(user?.role)) return false;
-  if (task.status === 'done' || task.status === 'expired' || task.status === 'pending') return false;
-  if (task.type === 'reschedule_meeting') return ['confirmed', 'reschedule_requested'].includes(task.status) && task.related_event_id && task.suggested_start_datetime && task.suggested_end_datetime;
-  if (task.type === 'meeting_outside_work_approval') return ['confirmed', 'rejected', 'reschedule_requested'].includes(task.status);
-  if (task.type === 'meeting_confirmation') return ['confirmed', 'rejected'].includes(task.status);
-  return ['confirmed', 'rejected', 'reschedule_requested'].includes(task.status);
+function isMeetingTask(task) {
+  return task.type?.includes('meeting');
 }
 
 export default function TaskCard({ task, user, onStatusChange, onApplyTask }) {
   const [comment, setComment] = useState('');
-  const [suggestedStart, setSuggestedStart] = useState('');
-  const [suggestedEnd, setSuggestedEnd] = useState('');
-  const canEmployeeAct = user?.role === 'employee' && ['pending', 'reschedule_requested'].includes(task.status);
-  const canManagerClose = APPLY_ROLES.includes(user?.role) && task.status !== 'done';
-  const shouldShowRescheduleFields = canEmployeeAct && canRequestReschedule(task);
-  const applyAvailable = canApply(user, task);
+  const [suggestedStart, setSuggestedStart] = useState(task.suggested_start_datetime || '');
+  const [suggestedEnd, setSuggestedEnd] = useState(task.suggested_end_datetime || '');
+  const [localError, setLocalError] = useState('');
+
+  const canEmployeeAct = user?.role === 'employee' && task.status === 'pending';
+  const canManage = ['executive', 'hr', 'department_manager'].includes(user?.role);
+  const canClose = canManage && task.status !== 'done';
+  const canApply = canManage && ['confirmed', 'rejected', 'reschedule_requested'].includes(task.status);
+  const creatorDepartment = useMemo(() => getCreatorDepartment(task), [task]);
+  const employeeDepartment = useMemo(() => getEmployeeDepartment(task), [task]);
 
   function submit(status) {
+    setLocalError('');
+
+    if (['rejected', 'reschedule_requested'].includes(status) && !comment.trim()) {
+      setLocalError('Для отклонения или переноса нужен комментарий.');
+      return;
+    }
+
+    if (status === 'reschedule_requested' && (!suggestedStart || !suggestedEnd)) {
+      setLocalError('Для запроса переноса укажите новое начало и конец.');
+      return;
+    }
+
     onStatusChange?.(task.id, {
       status,
-      employee_comment: comment || (status === 'confirmed' ? 'Подтверждаю.' : ''),
+      employee_comment: comment,
       suggested_start_datetime: suggestedStart || undefined,
       suggested_end_datetime: suggestedEnd || undefined
     });
+  }
+
+  function apply() {
+    setLocalError('');
+    onApplyTask?.(task.id, { action: isMeetingTask(task) ? 'apply_meeting_decision' : 'close_task' });
   }
 
   return (
@@ -71,14 +69,20 @@ export default function TaskCard({ task, user, onStatusChange, onApplyTask }) {
         <TaskTypeBadge type={task.type} />
         <TaskStatusBadge status={task.status} />
       </div>
+
+      <div className="taskTagRow">
+        <span className="departmentTag creatorTag">Создал: {creatorDepartment}</span>
+        <span className="departmentTag executorTag">Исполнитель: {employeeDepartment}</span>
+      </div>
+
       <h3>{task.title}</h3>
       <p>{task.description || task.reason || 'Описание задачи не указано.'}</p>
 
       <div className="taskMetaGrid">
         <span>Сотрудник: <b>{task.employee_name || task.employee || `#${task.employee_id}`}</b></span>
-        <span>Отдел: <b>{task.department || task.employee_team || '-'}</b></span>
         <span>Срок: <b>{task.due_date || '-'}</b></span>
         <span>Создал: <b>{task.creator_name || task.created_by_user_id || '-'}</b></span>
+        <span>Роль: <b>{task.creator_role_label || task.created_by_role || '-'}</b></span>
       </div>
 
       {task.related_event && (
@@ -89,39 +93,38 @@ export default function TaskCard({ task, user, onStatusChange, onApplyTask }) {
       )}
 
       {(task.suggested_start_datetime || task.suggested_end_datetime) && (
-        <div className="suggestedTime">
-          <span>Предложенное время</span>
-          <strong>{formatDateTime(task.suggested_start_datetime)} - {task.suggested_end_datetime ? new Date(task.suggested_end_datetime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : ''}</strong>
+        <div className="linkedEvent softWarning">
+          <img src="/icons/sort.svg" alt="" />
+          <span>Предложенное время: {task.suggested_start_datetime || '-'} - {task.suggested_end_datetime || '-'}</span>
         </div>
       )}
 
       {task.employee_comment && <p className="taskComment">Комментарий: {task.employee_comment}</p>}
+      {localError && <p className="taskLocalError">{localError}</p>}
 
-      {MEETING_TYPES.includes(task.type) && (
-        <p className="taskHint">Сотрудник отвечает на задачу, а финальное изменение встречи применяет руководитель, HR или полный руководитель.</p>
-      )}
-
-      {(canEmployeeAct || canManagerClose || applyAvailable) && (
+      {(canEmployeeAct || canClose) && (
         <div className="taskActions">
           {canEmployeeAct && (
             <textarea
               value={comment}
               onChange={(event) => setComment(event.target.value)}
-              placeholder="Комментарий к задаче. Для отказа или переноса комментарий обязателен"
+              placeholder="Комментарий к задаче. Для подтверждения можно оставить пустым. Для отказа или переноса комментарий обязателен."
             />
           )}
-          {shouldShowRescheduleFields && (
+
+          {task.type === 'reschedule_meeting' && canEmployeeAct && (
             <div className="formGrid twoInputs">
               <input value={suggestedStart} onChange={(event) => setSuggestedStart(event.target.value)} placeholder="Новое начало: 2026-05-22T12:00:00" />
               <input value={suggestedEnd} onChange={(event) => setSuggestedEnd(event.target.value)} placeholder="Новый конец: 2026-05-22T13:00:00" />
             </div>
           )}
-          <div className="actionRow">
-            {canEmployeeAct && <button className="primaryButton small" type="button" onClick={() => submit('confirmed')}>{employeePrimaryAction(task)}</button>}
-            {canEmployeeAct && canRequestReschedule(task) && <button className="ghostButton compact" type="button" onClick={() => submit('reschedule_requested')}>Предложить другое время</button>}
-            {canEmployeeAct && <button className="ghostButton compact" type="button" onClick={() => submit('rejected')}>{employeeRejectAction(task)}</button>}
-            {applyAvailable && <button className="primaryButton small" type="button" onClick={() => onApplyTask?.(task.id, { action: 'apply_reschedule' })}>Применить решение</button>}
-            {canManagerClose && !applyAvailable && task.status !== 'pending' && <button className="ghostButton compact" type="button" onClick={() => submit('done')}>Закрыть без применения</button>}
+
+          <div className="actionRow taskActionRow">
+            {canEmployeeAct && <button className="primaryButton small" type="button" onClick={() => submit('confirmed')}>Подтвердить</button>}
+            {canEmployeeAct && <button className="ghostButton compact" type="button" onClick={() => submit('rejected')}>Отклонить</button>}
+            {canEmployeeAct && task.type === 'reschedule_meeting' && <button className="ghostButton compact" type="button" onClick={() => submit('reschedule_requested')}>Запросить перенос</button>}
+            {canApply && <button className="primaryButton small" type="button" onClick={apply}>Применить решение</button>}
+            {canClose && !canApply && <button className="ghostButton compact" type="button" onClick={() => submit('done')}>Закрыть</button>}
           </div>
         </div>
       )}

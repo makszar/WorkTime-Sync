@@ -1,39 +1,45 @@
-import { buildAvailabilityWithEvents } from '../utils/calculations';
+import { buildAvailability } from '../utils/calculations';
 
-function slotTitle(slot) {
-  const details = slot.missingDetails || [];
-  if (!details.length) return `Доступно: ${slot.count}. Выпадает: никто`;
-  return `Доступно: ${slot.count}. Выпадают:\n${details.map((item) => `${item.employee}: ${item.reason}`).join('\n')}`;
+function normalizeRows(rows, employees) {
+  if (rows?.length) return rows;
+  return buildAvailability(employees);
 }
 
-export default function AvailabilityGrid({ employees = [], events = [], rows = [] }) {
-  const computedRows = rows?.length ? rows : buildAvailabilityWithEvents(employees, events);
-  const hours = computedRows[0]?.slots.map((slot) => slot.hour) || [];
+function tooltip(slot) {
+  const details = slot.missingDetails || [];
+  if (details.length) {
+    return `Доступно: ${slot.count}. Выпадают: ${details.map((item) => `${item.employee}: ${item.reason}`).join('; ')}`;
+  }
+  return `Доступно: ${slot.count}. Выпадают: ${slot.missing?.join(', ') || 'никто'}`;
+}
+
+export default function AvailabilityGrid({ employees, rows: realRows }) {
+  const rows = normalizeRows(realRows, employees);
+  const hours = rows[0]?.slots.map((slot) => slot.hour) || [];
 
   return (
-    <div className="availabilityWrap">
+    <div className="availabilityWrap realAvailabilityWrap">
       <div className="availabilityHeader">
         <span>День</span>
         {hours.map((hour) => <span key={hour}>{hour}:00</span>)}
       </div>
 
-      {computedRows.map((row) => (
+      {rows.map((row) => (
         <div className="availabilityRow" key={row.day}>
           <strong>{row.day}</strong>
           {row.slots.map((slot) => (
             <div
               className={`availabilityCell ${slot.type}`}
-              title={slotTitle(slot)}
+              title={tooltip(slot)}
               key={`${row.day}-${slot.hour}`}
             >
-              <strong>{slot.count}</strong>
-              <small>из {employees.length}</small>
+              {slot.count}
             </div>
           ))}
         </div>
       ))}
 
-      <div className="legend availabilityLegend">
+      <div className="legend">
         <span><i className="legendAll" /> доступна вся команда</span>
         <span><i className="legendMajority" /> доступно большинство</span>
         <span><i className="legendWeak" /> слабое окно</span>

@@ -1241,155 +1241,170 @@ dd {
   margin-left: 10px;
 }
 
-/* v2.6 frontend refinements */
-.availabilityPage,
-.tasksPage {
+/* v2.6 task workflow fixes */
+.tasksPage,
+.availabilityPage {
   display: grid;
-  gap: 24px;
+  gap: 22px;
 }
 
-.availabilityHero,
-.tasksHero {
+.tasksHero,
+.availabilityHero {
   margin-bottom: 0;
 }
 
-.availabilityStatsGrid {
+.taskToolbar {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.taskToolbar .inlineControl {
+  flex: 1 1 220px;
+  align-items: flex-start;
+  display: grid;
+  gap: 8px;
+}
+
+.taskToolbar .inlineControl img {
+  display: none;
+}
+
+.taskToolbar strong {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.taskHeroActions,
+.generationPanel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.generationPanel {
+  justify-content: space-between;
+}
+
+.generationPanel h2,
+.generationPanel p {
+  margin-bottom: 0;
+}
+
+.generationSelect {
+  min-width: 280px;
+}
+
+.taskFormPanel {
+  display: grid;
+  gap: 16px;
+}
+
+.creatorHint {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(59, 130, 246, 0.08);
+  color: var(--muted);
+}
+
+.creatorHint b {
+  color: var(--text);
+}
+
+.fieldHint {
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.taskTagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.departmentTag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 28px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.creatorTag {
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.10);
+  border-color: rgba(59, 130, 246, 0.20);
+}
+
+.executorTag {
+  color: #0f766e;
+  background: rgba(19, 168, 107, 0.10);
+  border-color: rgba(19, 168, 107, 0.18);
+}
+
+.taskLocalError {
+  padding: 10px 12px;
+  border-radius: 14px;
+  color: var(--danger);
+  background: rgba(235, 87, 87, 0.10);
+  font-size: 13px;
+}
+
+.taskActionRow {
+  justify-content: flex-start;
+}
+
+.softWarning {
+  background: rgba(228, 155, 35, 0.10);
+}
+
+.availabilityStats,
+.bestSlotCards {
   margin-bottom: 0;
 }
 
 .availabilityPanel {
   padding: 26px;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
-.availabilityPanelHeader {
-  align-items: flex-start;
-  margin-bottom: 22px;
+.realAvailabilityWrap {
+  min-width: 880px;
 }
 
-.availabilityPanelHeader p {
-  margin: 8px 0 0;
+.realAvailabilityWrap .availabilityCell {
+  min-height: 44px;
 }
 
-.availabilityWrap {
-  min-width: 960px;
-  padding-bottom: 4px;
-}
-
-.availabilityHeader,
-.availabilityRow {
-  grid-template-columns: 82px repeat(13, minmax(58px, 1fr));
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.availabilityCell {
-  height: 52px;
-  gap: 2px;
-  align-content: center;
-  cursor: help;
-}
-
-.availabilityCell strong {
-  font-size: 15px;
-  line-height: 1;
-}
-
-.availabilityCell small {
-  color: inherit;
-  opacity: 0.72;
-  font-size: 10px;
-  line-height: 1;
-}
-
-.availabilityLegend {
-  margin-top: 22px;
-}
-
-.availabilitySlotsGrid {
-  margin-bottom: 0;
-}
-
-.headerActions,
-.generatorControls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.generatorPanel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 0;
-}
-
-.generatorPanel h2,
-.generatorPanel p {
-  margin-bottom: 0;
-}
-
-.generatorPanel p {
-  margin-top: 6px;
-}
-
-.generatorControls select {
-  min-width: 260px;
-  min-height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 10px 14px;
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.78);
-  outline: none;
-}
-
-.suggestedTime,
-.taskHint {
-  padding: 12px;
-  border-radius: 16px;
-  background: rgba(59, 130, 246, 0.08);
-}
-
-.suggestedTime {
-  display: grid;
-  gap: 4px;
-}
-
-.suggestedTime span {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.taskHint {
-  color: var(--muted);
-  font-size: 13px;
-  margin: 0;
-}
-
-.taskActions .formGrid.twoInputs input {
-  font-size: 13px;
-}
-
-@media (max-width: 900px) {
-  .generatorPanel {
-    display: grid;
+@media (max-width: 760px) {
+  .generationPanel,
+  .taskHeroActions {
+    align-items: stretch;
   }
 
-  .generatorControls {
-    justify-content: stretch;
-  }
-
-  .generatorControls select,
-  .generatorControls button {
+  .generationPanel > *,
+  .taskHeroActions > *,
+  .generationSelect {
     width: 100%;
   }
 
+  .taskToolbar .inlineControl {
+    flex-basis: 100%;
+  }
+
   .availabilityPanel {
-    overflow-x: auto;
+    padding: 16px;
   }
 }

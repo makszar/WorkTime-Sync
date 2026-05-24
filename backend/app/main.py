@@ -123,9 +123,16 @@ def validate_task_payload(payload,employee,events):
     if payload.type=='reschedule_meeting': validate_datetime_range(payload.suggested_start_datetime,payload.suggested_end_datetime)
     elif payload.suggested_start_datetime or payload.suggested_end_datetime: raise HTTPException(status_code=400,detail='suggested_start_datetime/suggested_end_datetime используются только для reschedule_meeting')
 def users_by_id(): return {u['id']:u for u in load_users()}
+def creator_department_label(creator,task):
+    if task.get('created_by_department'): return task.get('created_by_department')
+    if creator and creator.get('department'): return creator.get('department')
+    if creator and creator.get('role')=='hr': return 'HR'
+    if creator and creator.get('role')=='executive': return 'Вся компания'
+    return task.get('created_by_role') or 'Не указан'
+
 def enrich_task(task,employees_by_id,events_by_id,users_map):
-    employee=employees_by_id.get(int(task['employee_id'])); creator=users_map.get(task.get('created_by_user_id')); related=task.get('related_event_id'); event=events_by_id.get(int(related)) if related not in (None,'') else None
-    return {**task,'employee_name':employee.get('name') if employee else None,'employee_role':employee.get('role') if employee else None,'employee_team':employee.get('team') if employee else task.get('department'),'related_event':event,'creator_name':creator.get('name') if creator else task.get('created_by_user_id'),'creator_role_label':creator.get('role_label') if creator else task.get('created_by_role')}
+    employee=employees_by_id.get(int(task['employee_id'])); creator=users_map.get(task.get('created_by_user_id')); related=task.get('related_event_id'); event=events_by_id.get(int(related)) if related not in (None,'') else None; creator_department=creator_department_label(creator,task)
+    return {**task,'employee_name':employee.get('name') if employee else None,'employee_role':employee.get('role') if employee else None,'employee_team':employee.get('team') if employee else task.get('department'),'related_event':event,'creator_name':creator.get('name') if creator else task.get('created_by_user_id'),'creator_role_label':creator.get('role_label') if creator else task.get('created_by_role'),'created_by_department':creator_department,'creator_department':creator_department}
 def enrich_tasks(tasks,employees,events): return [enrich_task(t,{int(e['id']):e for e in employees},{int(e['id']):e for e in events},users_by_id()) for t in tasks]
 def task_status_counts(tasks):
     c=Counter(t.get('status') for t in tasks); return {s:c.get(s,0) for s in sorted(ALLOWED_TASK_STATUSES)}
@@ -283,7 +290,7 @@ def create_task(payload:TaskCreateRequest,user_id:str|None=None,authorization:st
     user=require_resolved_user(user_id,authorization); e,ev,_,_=get_data(); emp=next((x for x in e if int(x['id'])==payload.employee_id),None)
     if not emp: raise HTTPException(status_code=404,detail='Сотрудник не найден')
     if not can_create_task_for_employee(user,emp): raise HTTPException(status_code=403,detail='Нет прав создать задачу этому сотруднику')
-    validate_task_payload(payload,emp,ev); t=load_tasks(); ts=now_iso(); task={'id':max([int(x['id']) for x in t],default=0)+1,'employee_id':payload.employee_id,'created_by_user_id':user['id'],'created_by_role':user['role'],'department':emp['team'],'type':payload.type,'title':payload.title,'description':payload.description,'due_date':payload.due_date,'status':'pending','employee_comment':'','created_at':ts,'updated_at':ts,'related_event_id':payload.related_event_id,'meeting_action':payload.meeting_action,'suggested_start_datetime':payload.suggested_start_datetime,'suggested_end_datetime':payload.suggested_end_datetime,'history':[]}; append_task_history(task,user,None,'pending','Задача создана',action='created'); t.append(task); save_tasks(t); return enrich_tasks([task],e,ev)[0]
+    validate_task_payload(payload,emp,ev); t=load_tasks(); ts=now_iso(); task={'id':max([int(x['id']) for x in t],default=0)+1,'employee_id':payload.employee_id,'created_by_user_id':user['id'],'created_by_role':user['role'],'created_by_department':user.get('department') or user.get('role_label') or user.get('role'),'department':emp['team'],'type':payload.type,'title':payload.title,'description':payload.description,'due_date':payload.due_date,'status':'pending','employee_comment':'','created_at':ts,'updated_at':ts,'related_event_id':payload.related_event_id,'meeting_action':payload.meeting_action,'suggested_start_datetime':payload.suggested_start_datetime,'suggested_end_datetime':payload.suggested_end_datetime,'history':[]}; append_task_history(task,user,None,'pending','Задача создана',action='created'); t.append(task); save_tasks(t); return enrich_tasks([task],e,ev)[0]
 @app.post('/tasks/generate-from-conflicts')
 def generate_tasks_from_conflicts(payload:GenerateConflictTasksRequest|None=None,user_id:str|None=None,authorization:str|None=Header(default=None)):
     payload=payload or GenerateConflictTasksRequest(); user=require_resolved_user(user_id,authorization)
@@ -297,7 +304,7 @@ def generate_tasks_from_conflicts(payload:GenerateConflictTasksRequest|None=None
         if duplicate: continue
         suggested_start=suggested_end=None; meeting_action='approve_outside_work'; title='Согласовать встречу вне рабочего времени'
         if payload.task_type=='reschedule_meeting': suggested_start,suggested_end=suggested_reschedule_for_event(employee,event); meeting_action='reschedule'; title='Согласовать перенос встречи'
-        ts=now_iso(); task={'id':max([int(x['id']) for x in t],default=0)+1,'employee_id':int(employee['id']),'created_by_user_id':user['id'],'created_by_role':user['role'],'department':employee['team'],'type':payload.task_type,'title':title,'description':f"Автоматически создано по конфликтной встрече: {event['title']}.",'due_date':due,'status':'pending','employee_comment':'','created_at':ts,'updated_at':ts,'related_event_id':int(event['id']),'meeting_action':meeting_action,'suggested_start_datetime':suggested_start,'suggested_end_datetime':suggested_end,'history':[]}; append_task_history(task,user,None,'pending','Задача автоматически создана по конфликтной встрече',action='generated_from_conflict'); t.append(task); created.append(task)
+        ts=now_iso(); task={'id':max([int(x['id']) for x in t],default=0)+1,'employee_id':int(employee['id']),'created_by_user_id':user['id'],'created_by_role':user['role'],'created_by_department':user.get('department') or user.get('role_label') or user.get('role'),'department':employee['team'],'type':payload.task_type,'title':title,'description':f"Автоматически создано по конфликтной встрече: {event['title']}.",'due_date':due,'status':'pending','employee_comment':'','created_at':ts,'updated_at':ts,'related_event_id':int(event['id']),'meeting_action':meeting_action,'suggested_start_datetime':suggested_start,'suggested_end_datetime':suggested_end,'history':[]}; append_task_history(task,user,None,'pending','Задача автоматически создана по конфликтной встрече',action='generated_from_conflict'); t.append(task); created.append(task)
         if payload.limit and len(created)>=payload.limit: break
     if created: save_tasks(t)
     return {'created':len(created),'tasks':enrich_tasks(created,e,ev)}
@@ -349,3 +356,62 @@ async def upload_dataset(dataset:str,file:UploadFile=File(...)):
     try: path=save_uploaded_table(dataset,suffix,await file.read())
     except ValueError as e: raise HTTPException(status_code=400,detail=str(e)) from e
     return {'status':'uploaded','dataset':dataset,'filename':path.name,'message':'Файл сохранён и проверен. Следующий запрос к API перечитает данные.'}
+
+
+# /api aliases for production frontend behind Nginx. They prevent POST/PATCH requests
+# from hitting the static frontend server and returning 405.
+@app.get('/api/employees/me')
+def api_get_my_employee(user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return get_my_employee(user_id=user_id, authorization=authorization)
+
+@app.patch('/api/employees/{employee_id}/confirm-schedule')
+def api_confirm_employee_schedule(employee_id: int, payload: ConfirmScheduleRequest, user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return confirm_employee_schedule(employee_id=employee_id, payload=payload, user_id=user_id, authorization=authorization)
+
+@app.get('/api/employees/{employee_id}/risk-explanation', response_model=RiskExplanation)
+def api_get_employee_risk_explanation(employee_id: int, user_id: str | None = None):
+    return get_employee_risk_explanation(employee_id=employee_id, user_id=user_id)
+
+@app.get('/api/analytics/company')
+def api_get_analytics_company(user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return get_analytics_company(user_id=user_id, authorization=authorization)
+
+@app.get('/api/analytics/hr-dashboard')
+def api_get_hr_dashboard(user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return get_hr_dashboard(user_id=user_id, authorization=authorization)
+
+@app.get('/api/analytics/availability', response_model=list[AvailabilityDay])
+def api_get_analytics_availability(department: str | None = None, user_id: str | None = None):
+    return get_analytics_availability(department=department, user_id=user_id)
+
+@app.get('/api/tasks')
+def api_get_tasks(user_id: str | None = None, status: str | None = None, department: str | None = None, authorization: str | None = Header(default=None)):
+    return get_tasks(user_id=user_id, status=status, department=department, authorization=authorization)
+
+@app.post('/api/tasks')
+def api_create_task(payload: TaskCreateRequest, user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return create_task(payload=payload, user_id=user_id, authorization=authorization)
+
+@app.post('/api/tasks/generate-from-conflicts')
+def api_generate_tasks_from_conflicts(payload: GenerateConflictTasksRequest | None = None, user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return generate_tasks_from_conflicts(payload=payload, user_id=user_id, authorization=authorization)
+
+@app.get('/api/tasks/my')
+def api_get_my_tasks(user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return get_my_tasks(user_id=user_id, authorization=authorization)
+
+@app.get('/api/tasks/meta')
+def api_get_tasks_meta():
+    return get_tasks_meta()
+
+@app.get('/api/tasks/{task_id}')
+def api_get_task(task_id: int, user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return get_task(task_id=task_id, user_id=user_id, authorization=authorization)
+
+@app.patch('/api/tasks/{task_id}/status')
+def api_update_task_status(task_id: int, payload: TaskStatusRequest, user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return update_task_status(task_id=task_id, payload=payload, user_id=user_id, authorization=authorization)
+
+@app.post('/api/tasks/{task_id}/apply')
+def api_apply_task(task_id: int, payload: TaskApplyRequest | None = None, user_id: str | None = None, authorization: str | None = Header(default=None)):
+    return apply_task(task_id=task_id, payload=payload, user_id=user_id, authorization=authorization)
