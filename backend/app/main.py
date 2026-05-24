@@ -19,6 +19,36 @@ ALLOWED_TASK_TYPES={"confirm_schedule","review_hr_profile","review_load","update
 MEETING_TASK_TYPES={"meeting_confirmation","reschedule_meeting","meeting_outside_work_approval"}
 ALLOWED_TASK_STATUSES={"pending","confirmed","rejected","done","expired","reschedule_requested"}
 COMMENT_REQUIRED_STATUSES={"rejected","reschedule_requested"}
+TASK_TYPE_LABELS={
+    "confirm_schedule":"Подтвердить рабочий график",
+    "review_hr_profile":"Проверить HR-профиль",
+    "review_load":"Проверить нагрузку",
+    "update_timezone":"Проверить часовой пояс",
+    "meeting_confirmation":"Подтвердить участие во встрече",
+    "reschedule_meeting":"Согласовать перенос встречи",
+    "meeting_outside_work_approval":"Согласовать встречу вне рабочего времени",
+}
+
+TASK_STATUS_LABELS={
+    "pending":"Ожидает действия",
+    "confirmed":"Подтверждено",
+    "rejected":"Отклонено",
+    "done":"Закрыто",
+    "expired":"Просрочено",
+    "reschedule_requested":"Запрошен перенос",
+}
+
+MEETING_ACTION_LABELS={
+    "confirm":"Подтвердить участие",
+    "reschedule":"Перенести встречу",
+    "approve_outside_work":"Согласовать вне рабочего времени",
+}
+
+MEETING_ACTIONS_BY_TASK_TYPE={
+    "meeting_confirmation":{"confirm"},
+    "reschedule_meeting":{"reschedule"},
+    "meeting_outside_work_approval":{"approve_outside_work"},
+}
 DEFAULT_USERS=[{"id":"u0","login":"executive_demo","password":"test0","name":"Executive Demo","role":"executive","role_label":"Полный руководитель","scope":"all","department":None,"employee_id":None},{"id":"u_hr","login":"hr_demo","password":"testhr","name":"HR Demo","role":"hr","role_label":"HR","scope":"all","department":None,"employee_id":None},{"id":"u1","login":"zarix","password":"i9VUibm6","name":"Зарубин Максим","role":"department_manager","role_label":"Руководитель отдела","scope":"department","department":"Core Platform","employee_id":None},{"id":"emp5","login":"gleb_employee","password":"emp5","name":"Глеб Соколов","role":"employee","role_label":"Сотрудник","scope":"self","department":"Core Platform","employee_id":5}]
 
 class LoginRequest(BaseModel):
@@ -153,6 +183,12 @@ def can_update_task(user,task,next_status):
     if user.get("role")=="employee": return int(task["employee_id"])==int(user.get("employee_id") or -1) and next_status in {"confirmed","rejected","reschedule_requested"}
     return False
 
+def validate_due_date(value):
+    try:
+        return date.fromisoformat(value)
+    except ValueError as e:
+        raise HTTPException(status_code=400,detail=f"Некорректная due_date: {e}") from e
+
 def validate_datetime_range(start_value,end_value):
     if not start_value and not end_value: return
     if not start_value or not end_value: raise HTTPException(status_code=400,detail="Для переноса нужно передать suggested_start_datetime и suggested_end_datetime")
@@ -161,19 +197,44 @@ def validate_datetime_range(start_value,end_value):
     if end<=start: raise HTTPException(status_code=400,detail="suggested_end_datetime должен быть позже suggested_start_datetime")
 
 def validate_task_payload(payload,employee,events):
-    if payload.type not in ALLOWED_TASK_TYPES: raise HTTPException(status_code=400,detail=f"Неизвестный тип задачи: {payload.type}")
-    if payload.type in MEETING_TASK_TYPES and payload.related_event_id is None: raise HTTPException(status_code=400,detail="Для задачи по встрече нужно передать related_event_id")
+    if payload.type not in ALLOWED_TASK_TYPES:
+        raise HTTPException(status_code=400,detail=f"Неизвестный тип задачи: {payload.type}")
+
+    validate_due_date(payload.due_date)
+
+    if payload.type not in MEETING_TASK_TYPES and payload.meeting_action not in (None,""):
+        raise HTTPException(status_code=400,detail="meeting_action можно передавать только для задач по встречам")
+
+    if payload.type in MEETING_TASK_TYPES and payload.related_event_id is None:
+        raise HTTPException(status_code=400,detail="Для задачи по встрече нужно передать related_event_id")
+
+    if payload.type in MEETING_TASK_TYPES:
+        allowed_actions=MEETING_ACTIONS_BY_TASK_TYPE.get(payload.type,set())
+
+        if not payload.meeting_action:
+            raise HTTPException(status_code=400,detail="Для задачи по встрече нужно передать meeting_action")
+
+        if payload.meeting_action not in allowed_actions:
+            raise HTTPException(status_code=400,detail=f"meeting_action={payload.meeting_action} не подходит для типа задачи {payload.type}")
 
     event=None
+
     if payload.related_event_id is not None:
         event=next((e for e in events if int(e["id"])==int(payload.related_event_id)),None)
-        if not event: raise HTTPException(status_code=400,detail="related_event_id не найден в events.csv")
-        if int(event["employee_id"])!=int(payload.employee_id): raise HTTPException(status_code=400,detail="related_event_id относится к другому сотруднику")
+
+        if not event:
+            raise HTTPException(status_code=400,detail="related_event_id не найден в events.csv")
+
+        if int(event["employee_id"])!=int(payload.employee_id):
+            raise HTTPException(status_code=400,detail="related_event_id относится к другому сотруднику")
 
     if payload.type=="meeting_outside_work_approval" and event and not is_event_outside_work_time(event,employee):
         raise HTTPException(status_code=400,detail="Событие не выходит за пределы рабочего времени")
 
-    if payload.type=="reschedule_meeting": validate_datetime_range(payload.suggested_start_datetime,payload.suggested_end_datetime)
+    if payload.type=="reschedule_meeting":
+        validate_datetime_range(payload.suggested_start_datetime,payload.suggested_end_datetime)
+    elif payload.suggested_start_datetime or payload.suggested_end_datetime:
+        raise HTTPException(status_code=400,detail="suggested_start_datetime/suggested_end_datetime используются только для reschedule_meeting")
 
 def users_by_id(): return {u["id"]:u for u in load_users()}
 
@@ -502,6 +563,37 @@ def create_task(
     t.append(task)
     save_tasks(t)
     return enrich_tasks([task],e,ev)[0]
+
+@app.get("/tasks/meta")
+def get_tasks_meta():
+    return {
+        "taskTypes":[
+            {
+                "value":value,
+                "label":label,
+                "requiresRelatedEvent":value in MEETING_TASK_TYPES,
+                "requiresSuggestedRange":value=="reschedule_meeting",
+                "allowedMeetingActions":sorted(MEETING_ACTIONS_BY_TASK_TYPE.get(value,set())),
+            }
+            for value,label in TASK_TYPE_LABELS.items()
+        ],
+        "taskStatuses":[
+            {
+                "value":value,
+                "label":TASK_STATUS_LABELS.get(value,value),
+                "requiresComment":value in COMMENT_REQUIRED_STATUSES,
+            }
+            for value in sorted(ALLOWED_TASK_STATUSES)
+        ],
+        "meetingActions":[
+            {
+                "value":value,
+                "label":label,
+            }
+            for value,label in MEETING_ACTION_LABELS.items()
+        ],
+        "commentRequiredStatuses":sorted(COMMENT_REQUIRED_STATUSES),
+    }
 
 @app.get("/tasks/{task_id}")
 def get_task(
