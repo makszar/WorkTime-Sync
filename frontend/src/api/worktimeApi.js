@@ -3,13 +3,6 @@ import { summaryMetrics, makeRecommendations, bestSlots, riskScore, loadRate, da
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 const FORCE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
-const BACKEND_PREFIX = '/api';
-
-function apiPath(path) {
-  if (path.startsWith('/api/') || path === '/api') return path;
-  if (path.startsWith('/auth/')) return path;
-  return `${BACKEND_PREFIX}${path}`;
-}
 
 export const TASK_STATUS_LABELS = {
   pending: 'Ожидает действия',
@@ -60,9 +53,7 @@ async function request(path, options = {}) {
   });
 
   if (!response.ok) {
-    let message = response.status === 405
-      ? 'API 405: запрос попал не в backend. Проверьте, что frontend использует /api-маршруты и Nginx проксирует /api/ на FastAPI.'
-      : `API error: ${response.status}`;
+    let message = `API error: ${response.status}`;
     try {
       const payload = await response.json();
       message = payload.detail || message;
@@ -298,7 +289,7 @@ export async function loginUser(credentials) {
 
   if (!FORCE_MOCK_DATA) {
     try {
-      const response = await request('/auth/login', {
+      const response = await request('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ login, password })
       });
@@ -328,7 +319,7 @@ export async function loadWorktimeData(user) {
 export async function loadCompanyAnalytics(user) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`${apiPath('/analytics/company')}${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`/api/analytics/company${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -339,7 +330,7 @@ export async function loadCompanyAnalytics(user) {
 export async function loadHrDashboard(user) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`${apiPath('/analytics/hr-dashboard')}${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`/api/analytics/hr-dashboard${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -350,7 +341,7 @@ export async function loadHrDashboard(user) {
 export async function loadEmployeeCabinet(user) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`${apiPath('/employees/me')}${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`/api/employees/me${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -361,7 +352,7 @@ export async function loadEmployeeCabinet(user) {
 export async function loadTasks(user, filters = {}) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`${apiPath('/tasks')}${userQuery(user, filters)}`, { headers: authHeaders(user) });
+      return await request(`/api/tasks${userQuery(user, filters)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -375,7 +366,7 @@ export async function loadTasks(user, filters = {}) {
 export async function loadMyTasks(user) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`${apiPath('/tasks/my')}${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`/api/tasks/my${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }
@@ -386,7 +377,7 @@ export async function loadMyTasks(user) {
 export async function loadTasksMeta() {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(apiPath('/tasks/meta'));
+      return await request('/api/tasks/meta');
     } catch {
       // fallback
     }
@@ -410,7 +401,7 @@ export async function loadTasksMeta() {
 
 export async function createTask(user, payload) {
   if (!FORCE_MOCK_DATA) {
-    return request(`${apiPath('/tasks')}${userQuery(user)}`, {
+    return request(`/api/tasks${userQuery(user)}`, {
       method: 'POST',
       headers: authHeaders(user),
       body: JSON.stringify(payload)
@@ -421,7 +412,7 @@ export async function createTask(user, payload) {
 
 export async function updateTaskStatus(user, taskId, payload) {
   if (!FORCE_MOCK_DATA) {
-    return request(`${apiPath(`/tasks/${taskId}/status`)}${userQuery(user)}`, {
+    return request(`/api/tasks/${taskId}/status${userQuery(user)}`, {
       method: 'PATCH',
       headers: authHeaders(user),
       body: JSON.stringify(payload)
@@ -430,43 +421,9 @@ export async function updateTaskStatus(user, taskId, payload) {
   return { id: taskId, ...payload };
 }
 
-
-export async function applyTask(user, taskId, payload = { action: 'apply' }) {
-  if (!FORCE_MOCK_DATA) {
-    return request(`${apiPath(`/tasks/${taskId}/apply`)}${userQuery(user)}`, {
-      method: 'POST',
-      headers: authHeaders(user),
-      body: JSON.stringify(payload)
-    });
-  }
-  return { status: 'applied', task: { id: taskId, status: 'done' } };
-}
-
-export async function generateConflictTasks(user, payload = {}) {
-  if (!FORCE_MOCK_DATA) {
-    return request(`${apiPath('/tasks/generate-from-conflicts')}${userQuery(user)}`, {
-      method: 'POST',
-      headers: authHeaders(user),
-      body: JSON.stringify(payload)
-    });
-  }
-  return { created: 0, tasks: [] };
-}
-
-export async function loadAvailability(user) {
-  if (!FORCE_MOCK_DATA) {
-    try {
-      return await request(`${apiPath('/analytics/availability')}${userQuery(user)}`, { headers: authHeaders(user) });
-    } catch {
-      // fallback ниже
-    }
-  }
-  return null;
-}
-
 export async function confirmSchedule(user, employeeId, payload) {
   if (!FORCE_MOCK_DATA) {
-    return request(`${apiPath(`/employees/${employeeId}/confirm-schedule`)}${userQuery(user)}`, {
+    return request(`/api/employees/${employeeId}/confirm-schedule${userQuery(user)}`, {
       method: 'PATCH',
       headers: authHeaders(user),
       body: JSON.stringify(payload)
@@ -475,10 +432,21 @@ export async function confirmSchedule(user, employeeId, payload) {
   return { employee_id: employeeId, status: 'confirmed', comment: payload.comment || '' };
 }
 
+export async function loadAvailability(user) {
+  if (!FORCE_MOCK_DATA) {
+    try {
+      return await request(`/api/analytics/availability${userQuery(user)}`, { headers: authHeaders(user) });
+    } catch {
+      // fallback
+    }
+  }
+  return null;
+}
+
 export async function loadRiskExplanation(user, employeeId) {
   if (!FORCE_MOCK_DATA) {
     try {
-      return await request(`${apiPath(`/employees/${employeeId}/risk-explanation`)}${userQuery(user)}`, { headers: authHeaders(user) });
+      return await request(`/api/employees/${employeeId}/risk-explanation${userQuery(user)}`, { headers: authHeaders(user) });
     } catch {
       // fallback
     }

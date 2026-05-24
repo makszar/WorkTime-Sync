@@ -75,65 +75,29 @@ export function summaryMetrics(employees, events) {
   };
 }
 
-function eventBlocksSlot(event, employee, day, hour) {
-  const eventEmployeeId = Number(event.employeeId ?? event.employee_id);
-  if (eventEmployeeId !== Number(employee.id)) return false;
-
-  if (event.start_datetime && event.end_datetime) {
-    const start = new Date(event.start_datetime);
-    const end = new Date(event.end_datetime);
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return false;
-    const eventDay = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'][start.getDay()];
-    const startHour = start.getHours() + start.getMinutes() / 60;
-    const endHour = end.getHours() + end.getMinutes() / 60;
-    return eventDay === day && startHour < hour + 1 && endHour > hour;
-  }
-
-  if (event.day && event.time) {
-    const [startText, endText] = String(event.time).split('-');
-    const startHour = Number(startText?.split(':')?.[0]);
-    const endHour = Number(endText?.split(':')?.[0]);
-    return event.day === day && startHour < hour + 1 && endHour > hour;
-  }
-
-  return false;
-}
-
-export function buildAvailability(employees, events = []) {
+export function buildAvailability(employees) {
   const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт'];
   const hours = Array.from({ length: 13 }, (_, index) => index + 8);
 
   return days.map((day) => ({
     day,
     slots: hours.map((hour) => {
-      const missingDetails = [];
-      const availableEmployees = employees.filter((employee) => {
-        let reason = '';
-        if (!employee.workDays.includes(day)) reason = 'нерабочий день';
-        else if (hour < employee.workStart || hour >= employee.workEnd) reason = 'вне рабочего времени';
-        else if (loadRate(employee) >= 0.95) reason = 'перегруз';
-        else if (events.some((event) => eventBlocksSlot(event, employee, day, hour))) reason = 'занят встречей';
-
-        if (reason) {
-          missingDetails.push({ employee: employee.name, reason });
-          return false;
-        }
-
-        return true;
-      });
+      const availableEmployees = employees.filter((employee) => (
+        employee.workDays.includes(day)
+        && hour >= employee.workStart
+        && hour < employee.workEnd
+        && loadRate(employee) < 0.95
+      ));
 
       let type = 'weak';
-      if (availableEmployees.length === employees.length && employees.length) type = 'all';
+      if (availableEmployees.length === employees.length) type = 'all';
       else if (availableEmployees.length >= Math.ceil(employees.length * 0.65)) type = 'majority';
-
-      const missing = employees.filter((employee) => !availableEmployees.includes(employee)).map((employee) => employee.name);
 
       return {
         hour,
         count: availableEmployees.length,
         type,
-        missing,
-        missingDetails
+        missing: employees.filter((employee) => !availableEmployees.includes(employee)).map((employee) => employee.name)
       };
     })
   }));

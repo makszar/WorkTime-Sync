@@ -22,25 +22,25 @@ REQUIRED_COLUMNS = {
  'tasks':['id','employee_id','created_by_user_id','created_by_role','department','type','title','description','due_date','status','employee_comment','created_at','updated_at'],
  'schedule_confirmations':['employee_id','confirmed_by_user_id','confirmed_at','comment','status','updated_at'],
 }
-MODEL_BY_DATASET={'employees':Employee,'events':Event,'hr_profiles':HRProfile,'absences':Absence,'tasks':Task,'schedule_confirmations':ScheduleConfirmation}
+MODEL_BY_DATASET:dict[str,Type[BaseModel]]={'employees':Employee,'events':Event,'hr_profiles':HRProfile,'absences':Absence,'tasks':Task,'schedule_confirmations':ScheduleConfirmation}
 
-def _display_path(path):
+def _display_path(path:Path|None)->str|None:
     if path is None: return None
     try: return str(path.resolve().relative_to(PROJECT_ROOT.resolve())).replace('\\','/')
     except ValueError: return str(path.resolve())
-def _target_data_dir(): return Path(os.getenv('WORKTIME_DATA_DIR', DATA_DIR)).resolve()
-def _normalize_identifier(value):
+def _target_data_dir()->Path: return Path(os.getenv('WORKTIME_DATA_DIR', DATA_DIR)).resolve()
+def _normalize_identifier(value:Any)->int:
     if isinstance(value,int): return value
     text=str(value).strip()
     if text.isdigit(): return int(text)
     m=re.search(r'(\d+)$', text)
     if m: return int(m.group(1))
     raise ValueError(f'Некорректный идентификатор: {value}')
-def _normalize_datetime(value):
+def _normalize_datetime(value:Any)->Any:
     if not isinstance(value,str) or 'T' not in value: return value
     try: return datetime.fromisoformat(value.strip()).replace(tzinfo=None).isoformat(timespec='seconds')
     except ValueError: return value
-def _convert_csv_value(value):
+def _convert_csv_value(value:str|None)->Any:
     if value is None: return value
     text=value.strip()
     if not text: return text
@@ -48,7 +48,7 @@ def _convert_csv_value(value):
     if '|' in text: return [i.strip() for i in text.split('|') if i.strip()]
     if text.isdigit(): return int(text)
     return text
-def _normalize_row(dataset,row):
+def _normalize_row(dataset:str,row:Dict[str,Any])->Dict[str,Any]:
     n=dict(row)
     if dataset=='employees':
         n['id']=_normalize_identifier(n['id'])
@@ -61,13 +61,12 @@ def _normalize_row(dataset,row):
         n['id']=_normalize_identifier(n['id']); n['employee_id']=_normalize_identifier(n['employee_id'])
     elif dataset=='tasks':
         n['id']=_normalize_identifier(n['id']); n['employee_id']=_normalize_identifier(n['employee_id'])
-        if n.get('related_event_id') not in (None,''): n['related_event_id']=_normalize_identifier(n['related_event_id'])
     return n
-def _validate_columns(dataset, rows, filename):
+def _validate_columns(dataset:str, rows:list[dict[str,Any]], filename:str)->None:
     if not rows: return
     missing=sorted(set(REQUIRED_COLUMNS.get(dataset,[]))-set(rows[0].keys()))
     if missing: raise ValueError(f"В {filename} отсутствуют обязательные колонки: {', '.join(missing)}")
-def _validate_rows(dataset, rows, filename=''):
+def _validate_rows(dataset:str, rows:List[Dict[str,Any]], filename:str='')->List[Dict[str,Any]]:
     model=MODEL_BY_DATASET.get(dataset)
     if not model: return rows
     _validate_columns(dataset, rows, filename or dataset)
@@ -77,19 +76,19 @@ def _validate_rows(dataset, rows, filename=''):
         except (ValidationError,ValueError,KeyError) as e: errors.append(f'row {i}: {e.errors() if isinstance(e,ValidationError) else str(e)}')
     if errors: raise ValueError(f"Некорректные данные в {dataset}: {'; '.join(errors[:3])}")
     return out
-def _active_data_dirs():
+def _active_data_dirs()->list[Path]:
     if os.getenv('WORKTIME_DATA_DIR'): return [Path(os.getenv('WORKTIME_DATA_DIR')).resolve()]
     dirs=[DATA_DIR]; fb=FALLBACK_DATA_DIR.resolve()
     if fb not in dirs: dirs.append(fb)
     return dirs
-def _read_table(path):
+def _read_table(path:Path)->List[Dict[str,Any]]:
     if path.suffix=='.json': rows=json.loads(path.read_text(encoding='utf-8'))
     elif path.suffix=='.csv':
         with path.open('r',encoding='utf-8-sig',newline='') as f: rows=[{k:_convert_csv_value(v) for k,v in r.items()} for r in csv.DictReader(f)]
     else: raise ValueError('Поддерживаются только .json и .csv файлы')
     if not isinstance(rows,list): raise ValueError(f'Файл {path.name} должен содержать список объектов')
     return rows
-def load_table(filename, required=True, validate_as=None, data_dir=None):
+def load_table(filename:str, required:bool=True, validate_as:str|None=None, data_dir:Path|None=None)->List[Dict[str,Any]]:
     for directory in ([data_dir] if data_dir else _active_data_dirs()):
         path=Path(directory)/filename
         if path.exists():
@@ -97,51 +96,33 @@ def load_table(filename, required=True, validate_as=None, data_dir=None):
             return _validate_rows(validate_as, rows, path.name) if validate_as else rows
     if required: raise FileNotFoundError(f"Файл не найден. Проверенные пути: {', '.join(str(Path(d)/filename) for d in ([data_dir] if data_dir else _active_data_dirs()))}")
     return []
-def _dataset_path_in_dir(dataset,directory):
+def _dataset_path_in_dir(dataset:str,directory:Path)->Path|None:
     csv_path=directory/f'{dataset}.csv'; json_path=directory/f'{dataset}.json'
     return csv_path if csv_path.exists() else (json_path if json_path.exists() else None)
-def get_dataset_path(dataset):
+def get_dataset_path(dataset:str)->Path|None:
     for d in _active_data_dirs():
         p=_dataset_path_in_dir(dataset,Path(d))
         if p: return p
     return None
-def get_data_source_info():
+def get_data_source_info()->dict[str,Any]:
     datasets={ds:get_dataset_path(ds) for ds in DATASET_ORDER}; active=[p for p in datasets.values() if p]
     source=active[0].parent if active else _active_data_dirs()[0]
     return {'active_source':_display_path(source),'fallback_source':_display_path(FALLBACK_DATA_DIR),'env_override':bool(os.getenv('WORKTIME_DATA_DIR')),'priority':[_display_path(d) for d in _active_data_dirs()],'datasets':{k:_display_path(v) for k,v in datasets.items()}}
-def get_schema_definitions(): return REQUIRED_COLUMNS
-def load_dataset(dataset, required=True):
+def get_schema_definitions()->dict[str,list[str]]: return REQUIRED_COLUMNS
+def load_dataset(dataset:str, required:bool=True)->List[Dict[str,Any]]:
     for d in _active_data_dirs():
         p=_dataset_path_in_dir(dataset,Path(d))
         if p: return load_table(p.name, required=required, validate_as=dataset, data_dir=Path(d))
     if required: raise FileNotFoundError(f'Файл {dataset}.csv/json не найден')
     return []
-def _write_csv(path, dataset, rows):
-    fieldnames=list(REQUIRED_COLUMNS[dataset])
-    for row in rows:
-        for key in row:
-            if key not in fieldnames: fieldnames.append(key)
-    with path.open('w',encoding='utf-8',newline='') as f:
-        writer=csv.DictWriter(f, fieldnames=fieldnames); writer.writeheader()
-        for row in rows:
-            prepared=dict(row)
-            for k,v in list(prepared.items()):
-                if isinstance(v, list): prepared[k]='|'.join(str(i) for i in v)
-                elif isinstance(v, dict): prepared[k]=json.dumps(v,ensure_ascii=False)
-            writer.writerow(prepared)
-def _safe_write_dataset(dataset, rows, preferred_suffix=None):
-    if dataset not in ALLOWED_DATASETS: raise ValueError('Неизвестный набор данных')
-    current=get_dataset_path(dataset); target=current.parent if current else _target_data_dir(); target.mkdir(parents=True, exist_ok=True)
-    suffix=preferred_suffix or (current.suffix if current else '.json')
-    final=target/f'{dataset}{suffix}'; tmp=target/f'.{dataset}.save-{uuid.uuid4().hex}{suffix}'
-    if suffix=='.json': tmp.write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf-8')
-    elif suffix=='.csv': _write_csv(tmp, dataset, rows)
-    else: raise ValueError('Поддерживаются только .json и .csv файлы')
+def _safe_write_json_dataset(dataset:str, rows:list[dict[str,Any]])->Path:
+    target=_target_data_dir(); target.mkdir(parents=True, exist_ok=True)
+    final=target/f'{dataset}.json'; tmp=target/f'.{dataset}.save-{uuid.uuid4().hex}.json'
+    tmp.write_text(json.dumps(rows,ensure_ascii=False,indent=2),encoding='utf-8')
     try: load_table(tmp.name, validate_as=dataset, data_dir=target)
     except Exception: tmp.unlink(missing_ok=True); raise
     tmp.replace(final); return final
-def _safe_write_json_dataset(dataset, rows): return _safe_write_dataset(dataset, rows, preferred_suffix='.json')
-def save_uploaded_table(dataset, suffix, content):
+def save_uploaded_table(dataset:str, suffix:str, content:bytes)->Path:
     if dataset not in ALLOWED_DATASETS: raise ValueError('Неизвестный набор данных')
     if suffix not in ALLOWED_SUFFIXES: raise ValueError('Можно загружать только JSON или CSV')
     target=_target_data_dir(); target.mkdir(parents=True, exist_ok=True); final=target/f'{dataset}{suffix}'; tmp=target/f'.{dataset}.upload-{uuid.uuid4().hex}{suffix}'
@@ -152,7 +133,6 @@ def save_uploaded_table(dataset, suffix, content):
 
 def load_employees(): return load_dataset('employees')
 def load_events(): return load_dataset('events')
-def save_events(events): return _safe_write_dataset('events', events)
 def load_hr_profiles(): return load_dataset('hr_profiles')
 def load_absences(): return load_dataset('absences', required=False)
 def load_tasks(): return load_dataset('tasks', required=False)

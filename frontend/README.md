@@ -51,7 +51,7 @@ VITE_API_BASE_URL=http://127.0.0.1:8040
 - src/data/mockData.js - демонстрационные данные.
 - src/styles.css - дизайн и адаптивность.
 
-## Frontend v2.5
+## Frontend v2.8
 
-Версия v2.5 перестраивает интерфейс под роли `executive`, `hr`, `department_manager` и `employee`. Подключены страницы компании, HR-панель, кабинет сотрудника, задачи, подтверждение графика и endpoints `/employees/me`, `/tasks`, `/tasks/my`, `/analytics/company`, `/analytics/hr-dashboard`, `/confirm-schedule`.
+Версия v2.8 перестраивает интерфейс под роли `executive`, `hr`, `department_manager` и `employee`. Подключены страницы компании, HR-панель, кабинет сотрудника, задачи, подтверждение графика и endpoints `/employees/me`, `/tasks`, `/tasks/my`, `/analytics/company`, `/analytics/hr-dashboard`, `/confirm-schedule`.
 

@@ -12,41 +12,38 @@ function eventLabel(event) {
   return event.title || 'Связанная встреча';
 }
 
-function getCreatorDepartment(task) {
-  return task.created_by_department || task.creator_department || task.creatorDepartment || task.createdByDepartment || task.creator_role_label || task.created_by_role || 'Не указан';
+export function creatorTag(task) {
+  if (task.creator_department) return task.creator_department;
+  if (task.creator_role_label === 'HR' || task.created_by_role === 'hr') return 'HR';
+  if (task.created_by_role === 'executive') return 'Вся компания';
+  return task.creator_name || task.created_by_user_id || 'Автор не указан';
 }
 
-function getEmployeeDepartment(task) {
-  return task.department || task.employee_team || task.employeeTeam || 'Не указан';
+export function assigneeTag(task) {
+  return task.employee_team || task.department || 'Отдел не указан';
 }
 
-function isMeetingTask(task) {
-  return task.type?.includes('meeting');
-}
-
-export default function TaskCard({ task, user, onStatusChange, onApplyTask }) {
+export default function TaskCard({ task, user, onStatusChange }) {
   const [comment, setComment] = useState('');
-  const [suggestedStart, setSuggestedStart] = useState(task.suggested_start_datetime || '');
-  const [suggestedEnd, setSuggestedEnd] = useState(task.suggested_end_datetime || '');
+  const [suggestedStart, setSuggestedStart] = useState('');
+  const [suggestedEnd, setSuggestedEnd] = useState('');
   const [localError, setLocalError] = useState('');
-
-  const canEmployeeAct = user?.role === 'employee' && task.status === 'pending';
-  const canManage = ['executive', 'hr', 'department_manager'].includes(user?.role);
-  const canClose = canManage && task.status !== 'done';
-  const canApply = canManage && ['confirmed', 'rejected', 'reschedule_requested'].includes(task.status);
-  const creatorDepartment = useMemo(() => getCreatorDepartment(task), [task]);
-  const employeeDepartment = useMemo(() => getEmployeeDepartment(task), [task]);
+  const canEmployeeAct = user?.role === 'employee' && ['pending', 'reschedule_requested'].includes(task.status);
+  const canClose = ['executive', 'hr', 'department_manager'].includes(user?.role) && task.status !== 'done';
+  const creator = useMemo(() => creatorTag(task), [task]);
+  const assignee = useMemo(() => assigneeTag(task), [task]);
+  const employeeName = task.employee_name || task.employee || `#${task.employee_id}`;
 
   function submit(status) {
     setLocalError('');
 
     if (['rejected', 'reschedule_requested'].includes(status) && !comment.trim()) {
-      setLocalError('Для отклонения или переноса нужен комментарий.');
+      setLocalError('Для отказа или переноса нужен комментарий.');
       return;
     }
 
-    if (status === 'reschedule_requested' && (!suggestedStart || !suggestedEnd)) {
-      setLocalError('Для запроса переноса укажите новое начало и конец.');
+    if (status === 'reschedule_requested' && (!suggestedStart.trim() || !suggestedEnd.trim())) {
+      setLocalError('Для переноса нужно указать новое начало и новый конец.');
       return;
     }
 
@@ -58,11 +55,6 @@ export default function TaskCard({ task, user, onStatusChange, onApplyTask }) {
     });
   }
 
-  function apply() {
-    setLocalError('');
-    onApplyTask?.(task.id, { action: isMeetingTask(task) ? 'apply_meeting_decision' : 'close_task' });
-  }
-
   return (
     <article className="taskCard">
       <div className="taskCardTop">
@@ -70,19 +62,20 @@ export default function TaskCard({ task, user, onStatusChange, onApplyTask }) {
         <TaskStatusBadge status={task.status} />
       </div>
 
-      <div className="taskTagRow">
-        <span className="departmentTag creatorTag">Создал: {creatorDepartment}</span>
-        <span className="departmentTag executorTag">Исполнитель: {employeeDepartment}</span>
+      <div className="taskTagsRow">
+        <span className="taskTag authorTag">{creator}</span>
+        <span className="taskTag assigneeTag">{assignee}</span>
+        <span className="taskTag personTag">{employeeName}</span>
       </div>
 
       <h3>{task.title}</h3>
       <p>{task.description || task.reason || 'Описание задачи не указано.'}</p>
 
-      <div className="taskMetaGrid">
-        <span>Сотрудник: <b>{task.employee_name || task.employee || `#${task.employee_id}`}</b></span>
-        <span>Срок: <b>{task.due_date || '-'}</b></span>
-        <span>Создал: <b>{task.creator_name || task.created_by_user_id || '-'}</b></span>
-        <span>Роль: <b>{task.creator_role_label || task.created_by_role || '-'}</b></span>
+      <div className="taskMetaGrid compactTaskMeta">
+        <span>{employeeName}</span>
+        <span>{assignee}</span>
+        <span>{task.due_date || '-'}</span>
+        <span>{creator}</span>
       </div>
 
       {task.related_event && (
@@ -92,39 +85,27 @@ export default function TaskCard({ task, user, onStatusChange, onApplyTask }) {
         </div>
       )}
 
-      {(task.suggested_start_datetime || task.suggested_end_datetime) && (
-        <div className="linkedEvent softWarning">
-          <img src="/icons/sort.svg" alt="" />
-          <span>Предложенное время: {task.suggested_start_datetime || '-'} - {task.suggested_end_datetime || '-'}</span>
-        </div>
-      )}
-
       {task.employee_comment && <p className="taskComment">Комментарий: {task.employee_comment}</p>}
-      {localError && <p className="taskLocalError">{localError}</p>}
+      {localError && <div className="inlineError">{localError}</div>}
 
       {(canEmployeeAct || canClose) && (
         <div className="taskActions">
-          {canEmployeeAct && (
-            <textarea
-              value={comment}
-              onChange={(event) => setComment(event.target.value)}
-              placeholder="Комментарий к задаче. Для подтверждения можно оставить пустым. Для отказа или переноса комментарий обязателен."
-            />
-          )}
-
+          <textarea
+            value={comment}
+            onChange={(event) => setComment(event.target.value)}
+            placeholder="Комментарий к задаче. Для подтверждения можно оставить пустым. Для отказа или переноса комментарий обязателен."
+          />
           {task.type === 'reschedule_meeting' && canEmployeeAct && (
             <div className="formGrid twoInputs">
               <input value={suggestedStart} onChange={(event) => setSuggestedStart(event.target.value)} placeholder="Новое начало: 2026-05-22T12:00:00" />
               <input value={suggestedEnd} onChange={(event) => setSuggestedEnd(event.target.value)} placeholder="Новый конец: 2026-05-22T13:00:00" />
             </div>
           )}
-
-          <div className="actionRow taskActionRow">
+          <div className="actionRow">
             {canEmployeeAct && <button className="primaryButton small" type="button" onClick={() => submit('confirmed')}>Подтвердить</button>}
             {canEmployeeAct && <button className="ghostButton compact" type="button" onClick={() => submit('rejected')}>Отклонить</button>}
-            {canEmployeeAct && task.type === 'reschedule_meeting' && <button className="ghostButton compact" type="button" onClick={() => submit('reschedule_requested')}>Запросить перенос</button>}
-            {canApply && <button className="primaryButton small" type="button" onClick={apply}>Применить решение</button>}
-            {canClose && !canApply && <button className="ghostButton compact" type="button" onClick={() => submit('done')}>Закрыть</button>}
+            {canEmployeeAct && task.type === 'reschedule_meeting' && <button className="ghostButton compact" type="button" onClick={() => submit('reschedule_requested')}>Предложить другое время</button>}
+            {canClose && <button className="primaryButton small" type="button" onClick={() => submit('done')}>Закрыть</button>}
           </div>
         </div>
       )}
