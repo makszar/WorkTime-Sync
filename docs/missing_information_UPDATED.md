@@ -1,94 +1,134 @@
-# Missing information и задачи следующего этапа WorkTime Sync
+# Missing information WorkTime Sync — финальные задачи для завершения MVP
 
-Файл фиксирует текущее состояние проекта после backend V2.2 и список того, что нужно доделать дальше.
+Документ фиксирует **окончательный список того, чего ещё не хватает**, чтобы закрыть текущий MVP WorkTime Sync после обновлений backend/data до версии V2.4.
+
+Цель этого файла — дать команде понятные инструкции: что нужно доделать во frontend, что осталось в backend, что нужно проверить по данным, и что уже можно считать реализованным.
 
 ---
 
-## 1. Текущее состояние
+## 1. Текущее состояние проекта
 
-| Область | Статус |
+### 1.1. Что уже реализовано
+
+| Блок | Статус |
 |---|---|
-| Backend V2.2 | роли, scope, tasks, confirmations, company/hr endpoints уже добавлены |
-| Frontend | пока в основном старый MVP под руководителя отдела |
-| Данные | базовые данные есть, но мало данных для красивого demo workflow |
-| Задачи | общий механизм задач есть |
-| Задачи по встречам | не доработаны как отдельный сценарий |
-| Личный кабинет сотрудника | backend endpoint есть, frontend UI нет |
-| HR-dashboard | backend endpoint есть, frontend UI нет |
-| Executive dashboard | backend endpoint есть, frontend UI нет |
-| Реальные уведомления | нет, пока только задачи/уведомления внутри API |
-| Production-auth | нет |
-| База данных | нет, используются CSV/JSON |
+| FastAPI backend | реализовано |
+| Backend V2.4.0 | реализовано |
+| Demo-login | реализовано |
+| Demo-token `Authorization: Bearer demo-...` | реализовано |
+| Роли пользователей | реализовано |
+| Scope-доступ по ролям | реализовано |
+| Полный руководитель `executive` | реализовано на уровне backend/data |
+| HR `hr` | реализовано на уровне backend/data |
+| Руководители отделов `department_manager` | реализовано |
+| Сотрудники `employee` | реализовано |
+| Аккаунты для всех 25 сотрудников | реализовано |
+| `tasks.json` | реализовано |
+| `schedule_confirmations.json` | реализовано |
+| Задачи по встречам | реализовано на уровне backend/data |
+| `related_event_id` | реализовано |
+| Проверка связи задачи и события | реализовано |
+| Подтверждение графика | реализовано на уровне backend |
+| `/employees/me` | реализовано |
+| `/tasks`, `/tasks/my` | реализовано |
+| `/analytics/company` | реализовано |
+| `/analytics/hr-dashboard` | реализовано |
+| Risk weights по отделам | реализовано |
+| Data-quality для основных данных | реализовано |
+| Frontend login | реализовано |
+| Frontend API через `user_id` | частично реализовано |
+| Frontend нормализация `tasks`, `taskStatusCounts`, `currentUser`, `meta` | частично реализовано |
 
 ---
 
-## 2. Главная цель следующего этапа
+## 2. Главный вывод по текущему состоянию
 
-Нужно визуально и логически соединить backend V2.2 с frontend.
-
-```text
-руководитель/HR входит в ЛК
-   ↓
-видит сотрудников и проблемы
-   ↓
-создаёт задачу сотруднику
-   ↓
-сотрудник входит в личный кабинет
-   ↓
-видит задачу
-   ↓
-подтверждает, отклоняет или комментирует
-   ↓
-руководитель/HR видит обновлённый статус
-```
-
-Дополнительно нужно добавить задачи по встречам:
+Backend и synthetic data уже в целом закрывают новую логику MVP:
 
 ```text
-событие в календаре → конфликт/планирование встречи → задача сотруднику → подтверждение/перенос/согласование
+роли → доступ → задачи → подтверждения → задачи по встречам → аналитика по компании/HR
 ```
+
+Главный незакрытый блок сейчас — **frontend**. Многие возможности уже есть в API, но пользователь пока не видит их в интерфейсе.
+
+Текущий frontend всё ещё в основном работает как старый MVP:
+
+```text
+Dashboard
+Employees
+EmployeeProfile
+Conflicts
+Availability
+Recommendations
+```
+
+Нужно вывести новые backend-возможности на экран.
 
 ---
 
-# 3. Задачи для frontend
+# 3. Финальные задачи для frontend
 
-## 3.1. Обновить frontend API client
+## 3.1. Обновить экран входа
 
-**Файл:** `frontend/src/api/worktimeApi.js`
+### Проблема
 
-Сейчас frontend всё ещё грузит данные в основном через department. Нужно перейти на `user_id`:
-
-```text
-/api/worktime/overview?user_id=<user.id>
-```
-
-Добавить функции:
-
-```js
-export async function loadWorktimeData(user) {}
-export async function loadCompanyAnalytics(user) {}
-export async function loadHrDashboard(user) {}
-export async function loadEmployeeCabinet(user) {}
-export async function loadTasks(user, filters = {}) {}
-export async function loadMyTasks(user) {}
-export async function createTask(user, payload) {}
-export async function updateTaskStatus(user, taskId, payload) {}
-export async function confirmSchedule(user, employeeId, payload) {}
-export async function loadRiskExplanation(user, employeeId) {}
-```
-
-Важно: старую работу через `department` можно оставить как fallback.
-
-## 3.2. Добавить role-based routing
-
-**Файлы:**
+Сейчас экран входа всё ещё подписан как вход руководителя отдела, хотя теперь есть 4 типа ролей:
 
 ```text
-frontend/src/App.jsx
-frontend/src/components/Layout.jsx
+executive
+hr
+department_manager
+employee
 ```
 
-После login frontend должен смотреть:
+### Что сделать
+
+В `frontend/src/App.jsx` или отдельном компоненте login:
+
+1. заменить текст “Вход руководителя отдела”;
+2. написать, что доступно 4 роли;
+3. добавить подсказки с demo-аккаунтами;
+4. показать пользователю, что можно войти не только руководителем, но и HR/сотрудником.
+
+### Рекомендуемый текст
+
+```text
+Вход в WorkTime Sync
+
+В демо доступны роли:
+полный руководитель, HR, руководитель отдела и сотрудник.
+```
+
+### Demo-аккаунты для подсказки
+
+| Роль | Логин | Пароль |
+|---|---|---|
+| Полный руководитель | `executive_demo` | `test0` |
+| HR | `hr_demo` | `testhr` |
+| Руководитель Core Platform | `zarix` | `i9VUibm6` |
+| Руководитель Product UI | `lixxxa` | `test1` |
+| Руководитель People Ops | `baftype` | `test2` |
+| Руководитель Delivery | `ssdshkaaa` | `test3` |
+| Руководитель Quality | `agentemy` | `test4` |
+| Сотрудник 1 | `employee1` | `emp1` |
+| Сотрудник 5 / demo | `employee5` или `gleb_employee` | `emp5` |
+| Сотрудник 25 | `employee25` | `emp25` |
+
+### Критерий готовности
+
+Пользователь на экране входа понимает, что система поддерживает разные роли, а не только руководителя отдела.
+
+---
+
+## 3.2. Сделать role-based routing
+
+### Проблема
+
+После login frontend сейчас всё равно открывает старый `dashboard`.
+
+### Что сделать
+
+После авторизации смотреть:
 
 ```js
 user.role
@@ -97,469 +137,776 @@ user.department
 user.employee_id
 ```
 
-| Role | Главная страница |
+И открывать нужный интерфейс.
+
+### Логика маршрутизации
+
+| `user.role` | Главный экран |
 |---|---|
 | `executive` | `ExecutiveDashboard` |
 | `hr` | `HRDashboard` |
 | `department_manager` | текущий `Dashboard` отдела |
 | `employee` | `EmployeeCabinet` |
 
-## 3.3. Обновить экран входа
+### Где менять
 
-Сейчас экран входа подписан как вход руководителя отдела. Нужно изменить текст, потому что теперь есть 4 роли.
+```text
+frontend/src/App.jsx
+frontend/src/components/Layout.jsx
+```
 
-Добавить подсказку с demo-аккаунтами:
+### Критерий готовности
 
-| Роль | Логин | Пароль |
-|---|---|---|
-| Полный руководитель | `executive_demo` | `test0` |
-| HR | `hr_demo` | `testhr` |
-| Руководитель Core Platform | `zarix` | `i9VUibm6` |
-| Сотрудник Core Platform | `gleb_employee` | `emp5` |
+При входе под разными demo-аккаунтами открываются разные интерфейсы.
 
-## 3.4. ExecutiveDashboard
+---
 
-**Новый файл:** `frontend/src/pages/ExecutiveDashboard.jsx`
+## 3.3. Доработать frontend API client
 
-Показывать:
+### Проблема
 
-- все отделы;
-- количество сотрудников;
-- средний риск по компании;
-- количество конфликтов;
-- среднюю загрузку;
-- топ сотрудников по риску;
-- сравнение отделов;
-- задачи по компании;
-- переход в конкретный отдел.
+`worktimeApi.js` уже начал работать через `user_id`, но в нём ещё нет полного набора функций для новых сценариев.
 
-Backend endpoint:
+### Что добавить
+
+Файл:
+
+```text
+frontend/src/api/worktimeApi.js
+```
+
+Добавить функции:
+
+```js
+export async function loadCompanyAnalytics(user) {}
+export async function loadHrDashboard(user) {}
+export async function loadEmployeeCabinet(user) {}
+export async function loadTasks(user, filters = {}) {}
+export async function loadMyTasks(user) {}
+export async function loadTaskMeta(user) {}
+export async function createTask(user, payload) {}
+export async function updateTaskStatus(user, taskId, payload) {}
+export async function confirmSchedule(user, employeeId, payload) {}
+export async function loadRiskExplanation(user, employeeId) {}
+```
+
+### Как лучше отправлять авторизацию
+
+Backend поддерживает два варианта:
+
+```text
+?user_id=<user.id>
+```
+
+и
+
+```http
+Authorization: Bearer demo-...
+```
+
+Для frontend лучше использовать token, который приходит после login:
+
+```js
+headers: {
+  Authorization: `Bearer ${user.token}`
+}
+```
+
+`user_id` можно оставить как fallback.
+
+### Критерий готовности
+
+Frontend умеет обращаться ко всем новым backend endpoint’ам:
+
+```text
+/employees/me
+/tasks
+/tasks/my
+/tasks/meta
+/analytics/company
+/analytics/hr-dashboard
+/employees/{id}/confirm-schedule
+/tasks/{id}/status
+```
+
+---
+
+## 3.4. Сделать ExecutiveDashboard
+
+### Назначение
+
+Экран полного руководителя показывает общую картину по компании.
+
+### Файл
+
+```text
+frontend/src/pages/ExecutiveDashboard.jsx
+```
+
+### Backend endpoint
+
+```text
+GET /analytics/company
+Authorization: Bearer demo-executive_demo
+```
+
+или:
 
 ```text
 GET /analytics/company?user_id=u0
 ```
 
-## 3.5. HRDashboard
+### Что показывать
 
-**Новый файл:** `frontend/src/pages/HRDashboard.jsx`
+| Блок | Что внутри |
+|---|---|
+| Общая сводка | количество сотрудников, средний риск, конфликты |
+| Отделы | сравнение отделов |
+| Риски | топ сотрудников/отделов с высоким риском |
+| Задачи | pending/rejected/done по компании |
+| Подтверждения | процент подтверждённых графиков |
+| Проблемные отделы | худшая подтверждаемость, много встреч вне графика |
 
-Показывать:
+### Критерий готовности
 
-- HR/data mismatches;
-- timezone conflicts;
-- устаревшие графики;
-- сотрудники без подтверждения;
-- schedule confirmations;
-- задачи HR;
-- data-quality;
-- кнопку создания HR-задачи.
+Полный руководитель видит данные **по всем отделам**, а не только по одному department.
 
-Backend endpoint:
+---
+
+## 3.5. Сделать HRDashboard
+
+### Назначение
+
+Экран HR показывает качество и актуальность кадровых данных.
+
+### Файл
+
+```text
+frontend/src/pages/HRDashboard.jsx
+```
+
+### Backend endpoint
+
+```text
+GET /analytics/hr-dashboard
+Authorization: Bearer demo-hr_demo
+```
+
+или:
 
 ```text
 GET /analytics/hr-dashboard?user_id=u_hr
 ```
 
-## 3.6. EmployeeCabinet
+### Что показывать
 
-**Новый файл:** `frontend/src/pages/EmployeeCabinet.jsx`
-
-Показывать:
-
-| Блок | Содержимое |
+| Блок | Что внутри |
 |---|---|
-| Мой профиль | имя, отдел, роль, формат работы |
-| Мой график | дни, часы, timezone |
-| Мои метрики | актуальность, загрузка, риск |
-| Мои события | встречи и конфликты |
-| Мои задачи | pending/confirmed/rejected/done |
-| Подтверждение графика | статус и кнопка подтверждения |
-| Комментарий | поле для комментария при подтверждении/отклонении |
+| HR-расхождения | mismatch по графику, timezone, формату |
+| Подтверждения | confirmed/pending/rejected/change_requested |
+| Задачи HR | pending/rejected/overdue |
+| Сотрудники без подтверждения | список |
+| Data-quality | ошибки и предупреждения |
+| Действия | создать HR-задачу |
 
-Backend endpoints:
+### Критерий готовности
+
+HR видит не проектную нагрузку как руководитель отдела, а именно HR-проблемы: актуальность графиков, расхождения, подтверждения, отклонения.
+
+---
+
+## 3.6. Сделать EmployeeCabinet
+
+### Назначение
+
+Личный кабинет сотрудника — ключевой экран новой логики.
+
+### Файл
+
+```text
+frontend/src/pages/EmployeeCabinet.jsx
+```
+
+### Backend endpoint
+
+```text
+GET /employees/me
+Authorization: Bearer demo-employee5
+```
+
+или:
 
 ```text
 GET /employees/me?user_id=emp5
-GET /tasks/my?user_id=emp5
-PATCH /employees/5/confirm-schedule?user_id=emp5
-PATCH /tasks/{task_id}/status?user_id=emp5
 ```
 
-## 3.7. UI задач для руководителя отдела
+### Что показывать
 
-В текущий интерфейс руководителя отдела добавить:
-
-- список задач отдела;
-- фильтр по статусу;
-- кнопку “Создать задачу”;
-- кнопку “Запросить подтверждение графика”;
-- кнопку “Создать задачу по встрече”;
-- статус задач в карточке сотрудника.
-
-Backend endpoints:
-
-```text
-GET /tasks?user_id=u1
-POST /tasks?user_id=u1
-PATCH /tasks/{task_id}/status?user_id=u1
-```
-
-## 3.8. UI задач по встречам
-
-Нужно добавить сценарии:
-
-| Сценарий | Действие |
+| Блок | Что внутри |
 |---|---|
-| Встреча вне рабочего времени | создать задачу `meeting_outside_work_approval` |
-| Нужно подтвердить участие | создать задачу `meeting_confirmation` |
-| Нужно перенести встречу | создать задачу `reschedule_meeting` |
+| Мой профиль | имя, отдел, роль, формат работы |
+| Мой график | рабочие дни, часы, timezone |
+| Моя актуальность | `schedule_actuality`, дата обновления |
+| Мой риск | risk, risk status, объяснение |
+| Мои события | upcoming events |
+| Мои конфликты | conflicting events |
+| Мои задачи | pending/completed/meeting tasks |
+| Подтверждение графика | текущий статус + кнопка |
+| Комментарий | поле для подтверждения/отклонения |
 
-В карточке задачи показывать:
+### Кнопки
 
-- тип задачи;
-- сотрудника;
-- связанную встречу;
-- время встречи;
-- причину;
-- статус;
-- комментарий сотрудника.
+| Кнопка | Endpoint |
+|---|---|
+| Подтвердить график | `PATCH /employees/{employee_id}/confirm-schedule` |
+| Подтвердить задачу | `PATCH /tasks/{task_id}/status` |
+| Отклонить задачу | `PATCH /tasks/{task_id}/status` |
+| Запросить перенос | `PATCH /tasks/{task_id}/status` со статусом `reschedule_requested` |
 
-## 3.9. Компоненты
+### Критерий готовности
 
-Добавить компоненты:
+Сотрудник входит в систему и видит **только свои данные**, свои задачи и свои встречи.
+
+---
+
+## 3.7. Сделать UI задач
+
+### Что нужно
+
+Добавить отдельный UI для задач во всех ролях:
+
+| Роль | Что видит |
+|---|---|
+| Executive | задачи по всей компании |
+| HR | HR-задачи и статусы |
+| Руководитель отдела | задачи своего отдела |
+| Сотрудник | только свои задачи |
+
+### Компоненты
+
+Создать:
 
 ```text
 frontend/src/components/TaskCard.jsx
 frontend/src/components/TaskForm.jsx
 frontend/src/components/TaskStatusBadge.jsx
-frontend/src/components/RoleBadge.jsx
 frontend/src/components/TaskTypeBadge.jsx
+frontend/src/components/RoleBadge.jsx
 frontend/src/components/ScheduleConfirmationCard.jsx
 ```
 
-## 3.10. Не ломать текущий frontend
+### TaskCard должен показывать
 
-Сохранить:
+| Поле | Отображение |
+|---|---|
+| `title` | название задачи |
+| `type` | тип задачи |
+| `status` | бейдж статуса |
+| `employee_name` | кому назначена |
+| `creator_name` | кто назначил |
+| `department` | отдел |
+| `due_date` | срок |
+| `employee_comment` | комментарий |
+| `related_event` | связанная встреча, если есть |
+| `suggested_start_datetime` | предложенное время переноса |
+| `suggested_end_datetime` | предложенное время переноса |
 
-- текущий Dashboard;
-- Employees;
-- EmployeeProfile;
-- Conflicts;
-- Availability;
-- Recommendations;
-- fallback на mock;
-- работу с `department`, если backend старой версии.
+### Критерий готовности
+
+Задачи отображаются понятно и не требуют открытия Swagger.
 
 ---
 
-# 4. Задачи по данным для backend и frontend
+## 3.8. Сделать создание задач из интерфейса
 
-## 4.1. Расширить users.json
+### Кто может создавать задачи
 
-Сейчас employee-аккаунтов только 3. Для демо мало.
+| Роль | Кому может назначать |
+|---|---|
+| `executive` | любому сотруднику |
+| `hr` | любому сотруднику |
+| `department_manager` | только сотрудникам своего отдела |
+| `employee` | не может создавать задачи |
 
-| Что | Минимум | Лучше |
-|---|---:|---:|
-| employee-аккаунты | 10 | 25 |
-| employee-аккаунты на отдел | 2 | 5 |
+### Backend endpoint
 
-Рекомендация: добавить аккаунты для всех 25 сотрудников.
-
-## 4.2. Расширить tasks.json
-
-Сейчас задач только 3, все `pending`. Нужно добавить 12–15 задач.
-
-| Тип | Сколько | Статусы |
-|---|---:|---|
-| `confirm_schedule` | 3–4 | pending/confirmed |
-| `review_hr_profile` | 2–3 | pending/rejected |
-| `review_load` | 2–3 | pending/done |
-| `meeting_confirmation` | 2–3 | pending/confirmed |
-| `reschedule_meeting` | 2–3 | pending/rejected |
-| `meeting_outside_work_approval` | 2–3 | pending/confirmed |
-
-## 4.3. Добавить related_event_id для задач по встречам
-
-Для задач по встречам добавить поле:
-
-```json
-"related_event_id": 12
+```text
+POST /tasks
 ```
 
-Зачем:
+### UI
 
-- frontend сможет показать, к какой встрече относится задача;
-- backend сможет проверить, существует ли событие;
-- сотрудник увидит время и название встречи.
+В карточке сотрудника или списке задач добавить кнопку:
 
-## 4.4. Расширить schedule_confirmations.json
+```text
+Создать задачу
+```
 
-Сейчас подтверждений мало. Нужно добавить 10–15 записей.
+### Поля формы
 
-| Статус | Что означает |
+| Поле | Обязательно? |
 |---|---|
-| `confirmed` | график подтверждён |
-| `pending` | ожидает подтверждения |
-| `rejected` | сотрудник не согласен |
-| `change_requested` | сотрудник просит изменить график |
+| сотрудник | да |
+| тип задачи | да |
+| title | да |
+| description | да |
+| due_date | да |
+| related_event_id | только для задач по встречам |
+| meeting_action | только для задач по встречам |
+| suggested_start_datetime | для `reschedule_meeting` |
+| suggested_end_datetime | для `reschedule_meeting` |
 
-## 4.5. Добавить данные для красивого demo
+### Критерий готовности
 
-| Сценарий | Данные |
-|---|---|
-| руководитель назначает задачу сотруднику | task `confirm_schedule` |
-| HR назначает задачу | task `review_hr_profile` |
-| сотрудник подтверждает график | schedule confirmation |
-| сотрудник отклоняет задачу | task `rejected` + comment |
-| встреча вне рабочего времени | event + task `meeting_outside_work_approval` |
-| перенос встречи | event + task `reschedule_meeting` |
-| подтверждение встречи | event + task `meeting_confirmation` |
+Руководитель отдела может создать задачу сотруднику своего отдела, но не может назначить задачу сотруднику чужого отдела.
 
 ---
 
-# 5. Задачи для backend
+## 3.9. Сделать задачи по встречам в UI
 
-## 5.1. Добавить допустимые типы задач
+### Уже есть на backend
 
-**Файлы:**
-
-```text
-backend/app/models.py
-backend/app/main.py
-```
-
-Разрешённые типы:
+Backend уже поддерживает:
 
 ```text
-confirm_schedule
-review_hr_profile
-review_load
-update_timezone
 meeting_confirmation
 reschedule_meeting
 meeting_outside_work_approval
+related_event_id
+meeting_action
+suggested_start_datetime
+suggested_end_datetime
 ```
 
-Если приходит неизвестный type — возвращать `400`.
+### Что нужно во frontend
 
-## 5.2. Добавить задачи по встречам
+При создании задачи по встрече:
 
-Расширить модель задачи:
+1. выбрать сотрудника;
+2. показать его события;
+3. выбрать событие;
+4. выбрать тип задачи;
+5. передать `related_event_id`;
+6. для переноса передать новое время.
 
-| Поле | Назначение |
+### Типы задач по встречам
+
+| Тип | Когда использовать |
 |---|---|
-| `related_event_id` | id события из `events.csv` |
-| `meeting_action` | confirm / reschedule / approve_outside_work |
-| `suggested_start_datetime` | новое время, если предлагается перенос |
-| `suggested_end_datetime` | новое время, если предлагается перенос |
+| `meeting_confirmation` | нужно подтвердить участие |
+| `reschedule_meeting` | нужно согласовать перенос |
+| `meeting_outside_work_approval` | встреча вне рабочего времени |
 
-Для MVP достаточно `related_event_id`.
+### Критерий готовности
 
-## 5.3. Проверять related_event_id
+Руководитель может из интерфейса создать задачу по конкретной встрече, а сотрудник увидит её в личном кабинете с названием/временем встречи.
 
-При создании задачи по встрече backend должен проверить:
+---
 
-1. `related_event_id` существует;
-2. событие относится к тому же сотруднику;
-3. руководитель отдела имеет доступ к этому сотруднику;
-4. если задача `meeting_outside_work_approval`, событие реально вне рабочего времени;
-5. если задача `reschedule_meeting`, событие существует и может быть перенесено;
-6. если задача `meeting_confirmation`, событие связано с сотрудником.
+## 3.10. Сделать подтверждение/отклонение задач сотрудником
 
-## 5.4. Обновить TaskCreateRequest
+### Endpoint
 
-Добавить поля:
+```text
+PATCH /tasks/{task_id}/status
+```
+
+### Статусы
+
+| Статус | Кто ставит |
+|---|---|
+| `confirmed` | сотрудник / руководитель / HR |
+| `rejected` | сотрудник |
+| `reschedule_requested` | сотрудник |
+| `done` | руководитель / HR |
+| `expired` | система или руководитель/HR |
+
+### Важно
+
+Для статусов:
+
+```text
+rejected
+reschedule_requested
+```
+
+комментарий обязателен.
+
+### Критерий готовности
+
+Сотрудник может подтвердить задачу, отклонить её с комментарием или запросить перенос.
+
+---
+
+## 3.11. Сделать подтверждение графика из интерфейса
+
+### Endpoint
+
+```text
+PATCH /employees/{employee_id}/confirm-schedule
+```
+
+### Где показывать
+
+В `EmployeeCabinet`:
+
+```text
+Статус графика: pending / confirmed / rejected / change_requested
+```
+
+Кнопка:
+
+```text
+Подтвердить график
+```
+
+Поле:
+
+```text
+Комментарий
+```
+
+### Критерий готовности
+
+Сотрудник может подтвердить график без Swagger, и статус обновляется в интерфейсе.
+
+---
+
+# 4. Финальные задачи для backend
+
+Backend V2.4 уже закрывает большую часть MVP, но остаются задачи, которые нужны для финального завершения workflow.
+
+---
+
+## 4.1. Реально применять решение по задаче встречи
+
+### Проблема
+
+Сейчас задача по встрече может быть создана и подтверждена, но нет отдельного финального действия, которое меняет само событие в `events.csv` после согласованного переноса.
+
+### Что сделать
+
+Добавить endpoint:
+
+```text
+POST /tasks/{task_id}/apply
+```
+
+или:
+
+```text
+PATCH /tasks/{task_id}/apply
+```
+
+### Логика
+
+| Тип задачи | Что делает apply |
+|---|---|
+| `meeting_confirmation` | фиксирует согласие, событие не меняет |
+| `meeting_outside_work_approval` | фиксирует согласование встречи вне рабочего времени |
+| `reschedule_meeting` | меняет `start_datetime` и `end_datetime` у события |
+| `confirm_schedule` | синхронизирует `schedule_confirmations` |
+| `review_hr_profile` | только закрывает задачу или оставляет комментарий |
+| `review_load` | только закрывает задачу или оставляет комментарий |
+
+### Критерий готовности
+
+Если задача `reschedule_meeting` подтверждена, руководитель может применить перенос, и связанное событие реально меняет время.
+
+---
+
+## 4.2. Добавить save_events()
+
+### Проблема
+
+Для применения переноса встречи нужно сохранять изменённые события.
+
+### Что сделать
+
+В `backend/app/data_loader.py` добавить функцию:
 
 ```python
-related_event_id: int | None = None
-meeting_action: str | None = None
-suggested_start_datetime: str | None = None
-suggested_end_datetime: str | None = None
+save_events(events)
 ```
 
-## 5.5. Обновить create_task
+Она должна сохранять обновлённые события обратно в active data source.
 
-В `POST /tasks` добавить:
+### Критерий готовности
 
-- валидацию `type`;
-- валидацию `related_event_id`;
-- сохранение новых полей;
-- понятные ошибки;
-- автоматическое заполнение department по сотруднику;
-- запрет руководителю отдела создавать задачу сотруднику другого отдела.
+После применения переноса событие сохраняется и при следующем запросе возвращается уже с новым временем.
 
-## 5.6. Обновить update_task_status
+---
 
-Для задач по встречам:
+## 4.3. Автоматическая генерация задач по проблемным встречам
 
-| Статус | Что делать |
-|---|---|
-| `confirmed` | сотрудник согласился |
-| `rejected` | сотрудник не согласен, нужен комментарий |
-| `done` | руководитель/HR закрыл задачу |
-| `reschedule_requested` | сотрудник просит другое время |
+### Сейчас
 
-Добавить проверку: при `rejected` или `reschedule_requested` комментарий обязателен.
+Задачи создаются вручную.
 
-## 5.7. Расширить /tasks и /tasks/my
+### Что добавить
 
-В ответ задач добавить:
+Endpoint или служебную функцию:
 
-- `employee_name`;
-- `employee_role`;
-- `department`;
-- `related_event`;
-- `creator_name`;
-- `creator_role_label`.
+```text
+POST /tasks/generate-from-conflicts
+```
 
-Это упростит frontend, чтобы ему не приходилось склеивать данные вручную.
+Логика:
 
-## 5.8. Обновить /employees/me
+1. найти встречи вне рабочего времени;
+2. если по встрече ещё нет открытой задачи;
+3. создать задачу `meeting_outside_work_approval` или `reschedule_meeting`;
+4. назначить её сотруднику;
+5. указать `related_event_id`.
 
-В личный кабинет сотрудника добавить:
+### Критерий готовности
 
-- pending tasks;
-- completed tasks;
-- scheduleConfirmationStatus;
-- tasks by type;
-- upcoming/conflicting events;
-- meeting tasks.
+Руководитель может одним действием создать задачи по проблемным встречам отдела.
 
-## 5.9. Обновить /analytics/hr-dashboard
+---
 
-Добавить:
+## 4.4. Улучшить task history
 
-- сотрудники без подтверждения;
-- задачи HR;
-- просроченные задачи;
-- rejected tasks;
-- change_requested confirmations;
-- HR mismatch с открытой задачей или без неё.
+### Проблема
 
-## 5.10. Обновить /analytics/company
+Сейчас задача хранит только текущий статус и комментарий.
 
-Добавить:
+### Что добавить
 
-- задачи по отделам;
-- количество pending tasks;
-- количество rejected tasks;
-- процент подтверждённых графиков;
-- отделы с худшей подтверждаемостью;
-- отделы с большим количеством встреч вне рабочего времени.
+Добавить историю изменений:
 
-## 5.11. Обновить data-quality
+```json
+"history": [
+  {
+    "changed_at": "2026-05-24T15:30:00",
+    "changed_by_user_id": "emp5",
+    "old_status": "pending",
+    "new_status": "confirmed",
+    "comment": "Подтверждаю."
+  }
+]
+```
 
-Проверять:
+### Критерий готовности
+
+Можно показать, кто и когда подтвердил/отклонил задачу.
+
+---
+
+## 4.5. Расширить data-quality под финальные проверки задач
+
+### Уже есть
+
+Data-quality частично работает с tasks/confirmations.
+
+### Что ещё проверить
 
 | Проверка | Что ловит |
 |---|---|
-| orphan tasks | задача на несуществующего сотрудника |
-| orphan related_event_id | задача с несуществующей встречей |
-| task-event mismatch | задача по встрече не того сотрудника |
-| invalid task status | неизвестный статус |
-| invalid task type | неизвестный тип |
-| orphan confirmations | подтверждение для несуществующего сотрудника |
-| duplicate confirmations | несколько подтверждений одного сотрудника |
+| task без employee | задача назначена несуществующему сотруднику |
+| task без creator | задача создана несуществующим пользователем |
+| task с чужим related_event_id | событие относится к другому сотруднику |
+| meeting task без related_event_id | задача по встрече без встречи |
+| reschedule task без suggested datetime | перенос без нового времени |
+| duplicate confirmation | несколько подтверждений одного сотрудника |
+| confirmation без employee | подтверждение для несуществующего сотрудника |
+| invalid confirmation status | неверный статус подтверждения |
+| task overdue | просроченная задача |
 
-## 5.12. Обновить backend-тесты
+### Критерий готовности
+
+`/analytics/data-quality` показывает ошибки не только по employees/events/hr_profiles, но и по задачам/подтверждениям.
+
+---
+
+## 4.6. Добавить тесты backend на финальный workflow
 
 Добавить тесты:
 
 | Тест | Что проверяет |
 |---|---|
-| create meeting task | руководитель создаёт задачу по встрече |
+| demo-token auth | API работает через `Authorization` |
+| token/user_id mismatch | конфликт token и user_id даёт 403 |
+| executive can assign any employee | полный руководитель может назначить всем |
 | manager cannot assign outside department | руководитель не может назначить чужому отделу |
-| employee sees meeting task | сотрудник видит свою задачу по встрече |
-| employee confirms meeting task | статус меняется на confirmed |
-| employee rejects with comment | rejected требует комментарий |
-| related_event_id validation | несуществующее событие даёт 400 |
-| task-event mismatch | событие другого сотрудника даёт 400 |
-| data-quality tasks | ловит ошибки в tasks.json |
-| company analytics tasks | считает задачи по компании |
-| HR dashboard task statuses | показывает rejected/pending/overdue |
+| employee sees only own tasks | сотрудник видит только свои задачи |
+| meeting task requires related_event_id | задача по встрече требует событие |
+| related_event_id must match employee | событие должно относиться к сотруднику |
+| reschedule requires suggested range | перенос требует новое время |
+| rejected requires comment | отклонение требует комментарий |
+| confirm_schedule sync | подтверждение задачи обновляет schedule confirmation |
+| task apply reschedule | перенос реально меняет event |
+| data-quality detects task errors | data-quality ловит ошибки задач |
 
 ---
 
-# 6. Оставшиеся missing проекта
+# 5. Финальные задачи по данным
 
-## 6.1. Frontend не подключен к backend V2.2 полностью
+Данные сейчас сильно улучшены: есть 25 employee-аккаунтов, 24 задачи, 25 подтверждений графика. Остались не критичные, но полезные для финального MVP улучшения.
 
-Нужно подключить:
+---
 
-- `user_id`;
-- roles;
-- tasks;
-- confirmations;
-- `/employees/me`;
-- `/analytics/company`;
-- `/analytics/hr-dashboard`.
+## 5.1. Проверить users.json
 
-## 6.2. Нет production-авторизации
+### Уже есть
 
-Сейчас:
+- executive;
+- HR;
+- 5 руководителей отделов;
+- employee1–employee25;
+- удобный demo-login `gleb_employee`.
 
-- пароли в JSON;
-- demo-token;
-- нет JWT;
-- нет refresh/session.
+### Что проверить
 
-## 6.3. Нет базы данных
-
-Сейчас CSV/JSON. Дальше: SQLite для MVP+, PostgreSQL для production.
-
-## 6.4. Нет реальных интеграций
-
-| Источник | Реальная интеграция |
+| Проверка | Ожидаемый результат |
 |---|---|
-| календарь | Google Calendar / Outlook |
-| HR | HRM |
-| задачи | Jira / YouTrack |
-| уведомления | email / Telegram / Slack |
-
-## 6.5. Нет реальных уведомлений
-
-Сейчас задачи отображаются через API, но не отправляются автоматически. Дальше: уведомления в интерфейсе, email, Telegram, Slack/Teams.
-
-## 6.6. Нет полной истории изменений
-
-Нужно хранить:
-
-- кто создал задачу;
-- кто изменил статус;
-- когда;
-- старое/новое значение;
-- комментарий;
-- историю подтверждений графика.
-
-## 6.7. Нет AI-ассистента
-
-Сейчас есть risk explanation и рекомендации. Возможное развитие: объяснять риск, советовать, кому назначить задачу, выбирать лучший слот встречи, формировать сообщение сотруднику.
+| у каждого employee есть `employee_id` | да |
+| `employee_id` существует в employees.csv | да |
+| department пользователя совпадает с team сотрудника | да |
+| нет дубликатов `id` | желательно |
+| нет дубликатов `login`, кроме осознанного demo alias | желательно |
+| все пароли подходят для demo | да |
 
 ---
 
-## 7. Приоритеты
+## 5.2. Проверить tasks.json
 
-### Высокий приоритет
+### Уже есть
 
-1. Подключить frontend к `user_id`.
-2. Сделать EmployeeCabinet.
-3. Сделать UI задач.
-4. Сделать создание задач руководителем/HR.
-5. Добавить задачи по встречам в backend.
-6. Расширить synthetic data.
+- разные типы задач;
+- разные статусы;
+- задачи по встречам;
+- `related_event_id`;
+- `meeting_action`;
+- `suggested_start_datetime`;
+- `suggested_end_datetime`.
 
-### Средний приоритет
+### Что проверить
 
-1. ExecutiveDashboard.
-2. HRDashboard.
-3. Расширенная data-quality.
-4. Тесты задач по встречам.
-5. Красивые статусы и бейджи.
+| Проверка | Ожидаемый результат |
+|---|---|
+| у каждой задачи есть employee | да |
+| creator существует в users.json | да |
+| department задачи совпадает с team сотрудника | да |
+| related_event_id существует | для meeting tasks |
+| related_event_id относится к тому же employee | да |
+| reschedule task имеет suggested datetime | да |
+| rejected/reschedule_requested имеют comment | да |
 
-### Низкий приоритет
+---
 
-1. Реальные интеграции.
-2. Production-auth.
-3. База данных.
-4. Реальные уведомления.
-5. AI-ассистент.
+## 5.3. Проверить schedule_confirmations.json
+
+### Уже есть
+
+Записи для всех 25 сотрудников.
+
+### Что проверить
+
+| Проверка | Ожидаемый результат |
+|---|---|
+| employee_id 1–25 покрыты | да |
+| нет дублей employee_id | да |
+| статус из допустимого списка | да |
+| confirmed имеет confirmed_at | да |
+| rejected/change_requested имеют comment | желательно |
+| pending может иметь пустой confirmed_at | да |
+
+---
+
+## 5.4. Добавить больше реалистичных absent/conflict сценариев
+
+Не обязательно для MVP, но полезно для защиты:
+
+| Сценарий | Зачем |
+|---|---|
+| встреча во время больничного | показать conflict с absence |
+| встреча в отпуске | показать data/availability конфликт |
+| сотрудник в другом timezone | показать timezone mismatch |
+| сотрудник с неполной неделей | показать нестандартный график |
+| перегруз QA перед релизом | показать риск Quality |
+| Delivery-сотрудник с переносом встречи | показать meeting workflow |
+
+---
+
+# 6. Что не нужно делать до завершения MVP
+
+Чтобы не распыляться, эти задачи лучше оставить на развитие после MVP:
+
+| Задача | Почему не сейчас |
+|---|---|
+| Полноценный JWT | demo-token достаточно для защиты |
+| PostgreSQL | CSV/JSON достаточно для MVP |
+| Реальная интеграция Google Calendar | synthetic events закрывают кейс |
+| Реальная HRM-интеграция | synthetic HR profiles закрывают кейс |
+| Telegram/email уведомления | задачи в интерфейсе достаточно |
+| AI-chat assistant | risk explanation уже закрывает базовое объяснение |
+| Полная история аудита | можно добавить позже |
+| Сложный таск-трекер | tasks.json достаточно для MVP |
+
+---
+
+# 7. Финальный чек-лист завершения MVP
+
+## Frontend
+
+| Задача | Статус |
+|---|---|
+| Обновить login под 4 роли | нужно сделать |
+| Role-based routing | нужно сделать |
+| ExecutiveDashboard | нужно сделать |
+| HRDashboard | нужно сделать |
+| EmployeeCabinet | нужно сделать |
+| UI задач | нужно сделать |
+| Создание задач | нужно сделать |
+| Подтверждение/отклонение задач | нужно сделать |
+| Подтверждение графика | нужно сделать |
+| UI задач по встречам | нужно сделать |
+| Отображение related_event | нужно сделать |
+| Использование demo-token | желательно сделать |
+
+## Backend
+
+| Задача | Статус |
+|---|---|
+| Роли и scope | сделано |
+| Demo-token | сделано |
+| Tasks API | сделано |
+| Meeting tasks | сделано |
+| Schedule confirmations | сделано |
+| Company analytics | сделано |
+| HR dashboard API | сделано |
+| Применение решения по задаче встречи | нужно сделать |
+| `save_events()` | нужно сделать |
+| Автогенерация задач по конфликтным встречам | желательно сделать |
+| Task history | желательно сделать |
+| Финальные tests | нужно сделать |
+
+## Data
+
+| Задача | Статус |
+|---|---|
+| 25 employee accounts | сделано |
+| 24 tasks | сделано |
+| 25 confirmations | сделано |
+| meeting tasks | сделано |
+| проверить консистентность users/tasks/confirmations | нужно проверить |
+| добавить больше absence/conflict сценариев | желательно |
+
+---
+
+# 8. Минимум, который нужно сделать перед финальной защитой
+
+Если времени мало, обязательно закрыть только это:
+
+1. `EmployeeCabinet`;
+2. отображение задач сотрудника;
+3. подтверждение/отклонение задачи;
+4. подтверждение графика;
+5. создание задачи руководителем отдела;
+6. отображение задачи по встрече с `related_event`;
+7. обновить экран входа под 4 роли;
+8. проверить, что executive/HR/manager/employee видят разные данные;
+9. проверить backend tests.
+
+После этого MVP можно считать завершённым и переходить к развитию.
