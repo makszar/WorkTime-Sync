@@ -1,5 +1,5 @@
 import { employees, calendarEvents, roadmap, users, mockTasks, mockScheduleConfirmations } from '../data/mockData';
-import { summaryMetrics, makeRecommendations, bestSlots, riskScore, loadRate, daysSince } from '../utils/calculations';
+import { summaryMetrics, makeRecommendations, bestSlots, riskScore, loadRate, daysSince, buildAvailabilityWithEvents } from '../utils/calculations';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 const FORCE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
@@ -131,7 +131,7 @@ function buildMockOverview(user) {
     roadmap,
     summary: summaryMetrics(scopedEmployees, scopedEvents),
     recommendations: makeRecommendations(scopedEmployees, scopedEvents),
-    bestSlots: bestSlots(scopedEmployees),
+    bestSlots: bestSlots(scopedEmployees, scopedEvents),
     tasks: scopedTasks,
     taskStatusCounts: countByStatus(scopedTasks),
     departments: [...new Set(employees.map((employee) => employee.team))].map((name) => ({
@@ -172,7 +172,7 @@ function normalizeOverview(payload, user) {
     roadmap: payload.roadmap || roadmap,
     summary: normalizeSummary(payload.summary, scopedEmployees, events),
     recommendations: payload.recommendations || makeRecommendations(scopedEmployees, events),
-    bestSlots: payload.bestSlots || payload.best_slots || bestSlots(scopedEmployees),
+    bestSlots: payload.bestSlots || payload.best_slots || bestSlots(scopedEmployees, events),
     tasks: payload.tasks || [],
     taskStatusCounts: payload.taskStatusCounts || countByStatus(payload.tasks || []),
     departments: payload.departments || [...new Set(scopedEmployees.map((employee) => employee.team))].map((name) => ({
@@ -281,6 +281,55 @@ function buildMockEmployeeCabinet(user) {
     },
     recommendations: makeRecommendations([employee], employeeEvents)
   };
+}
+
+
+function normalizeAvailabilityRows(rows, fallbackEmployees = []) {
+  if (!Array.isArray(rows) || !rows.length) return [];
+  return rows.map((row) => ({
+    day: row.day,
+    slots: (row.slots || []).map((slot) => ({
+      hour: Number(slot.hour),
+      count: Number(slot.count || 0),
+      type: slot.type || (Number(slot.count || 0) === fallbackEmployees.length ? 'all' : Number(slot.count || 0) >= Math.ceil(fallbackEmployees.length * 0.65) ? 'majority' : 'weak'),
+      missing: slot.missing || [],
+      missingDetails: slot.missingDetails || slot.missing_details || []
+    }))
+  }));
+}
+
+export async function loadAvailability(user, fallbackEmployees = []) {
+  if (!FORCE_MOCK_DATA) {
+    try {
+      const rows = await request(`/analytics/availability${userQuery(user)}`, { headers: authHeaders(user) });
+      return normalizeAvailabilityRows(rows, fallbackEmployees);
+    } catch {
+      // fallback for frontend-only launch
+    }
+  }
+  return normalizeAvailabilityRows(buildAvailabilityWithEvents(fallbackEmployees.length ? fallbackEmployees : scopedEmployeesForUser(user)), fallbackEmployees);
+}
+
+export async function applyTask(user, taskId, payload = { action: 'apply' }) {
+  if (!FORCE_MOCK_DATA) {
+    return request(`/tasks/${taskId}/apply${userQuery(user)}`, {
+      method: 'POST',
+      headers: authHeaders(user),
+      body: JSON.stringify(payload)
+    });
+  }
+  return { status: 'applied', action: payload.action || 'apply', task: { id: taskId, status: 'done' } };
+}
+
+export async function generateTasksFromConflicts(user, payload = {}) {
+  if (!FORCE_MOCK_DATA) {
+    return request(`/tasks/generate-from-conflicts${userQuery(user)}`, {
+      method: 'POST',
+      headers: authHeaders(user),
+      body: JSON.stringify(payload)
+    });
+  }
+  return { created: 0, tasks: [] };
 }
 
 export async function loginUser(credentials) {

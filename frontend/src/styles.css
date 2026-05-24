@@ -1240,3 +1240,156 @@ dd {
 .brandBlock .versionBadge {
   margin-left: 10px;
 }
+
+/* v2.6 frontend refinements */
+.availabilityPage,
+.tasksPage {
+  display: grid;
+  gap: 24px;
+}
+
+.availabilityHero,
+.tasksHero {
+  margin-bottom: 0;
+}
+
+.availabilityStatsGrid {
+  margin-bottom: 0;
+}
+
+.availabilityPanel {
+  padding: 26px;
+  overflow: hidden;
+}
+
+.availabilityPanelHeader {
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.availabilityPanelHeader p {
+  margin: 8px 0 0;
+}
+
+.availabilityWrap {
+  min-width: 960px;
+  padding-bottom: 4px;
+}
+
+.availabilityHeader,
+.availabilityRow {
+  grid-template-columns: 82px repeat(13, minmax(58px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.availabilityCell {
+  height: 52px;
+  gap: 2px;
+  align-content: center;
+  cursor: help;
+}
+
+.availabilityCell strong {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.availabilityCell small {
+  color: inherit;
+  opacity: 0.72;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.availabilityLegend {
+  margin-top: 22px;
+}
+
+.availabilitySlotsGrid {
+  margin-bottom: 0;
+}
+
+.headerActions,
+.generatorControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.generatorPanel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 0;
+}
+
+.generatorPanel h2,
+.generatorPanel p {
+  margin-bottom: 0;
+}
+
+.generatorPanel p {
+  margin-top: 6px;
+}
+
+.generatorControls select {
+  min-width: 260px;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 10px 14px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.78);
+  outline: none;
+}
+
+.suggestedTime,
+.taskHint {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.suggestedTime {
+  display: grid;
+  gap: 4px;
+}
+
+.suggestedTime span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.taskHint {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.taskActions .formGrid.twoInputs input {
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .generatorPanel {
+    display: grid;
+  }
+
+  .generatorControls {
+    justify-content: stretch;
+  }
+
+  .generatorControls select,
+  .generatorControls button {
+    width: 100%;
+  }
+
+  .availabilityPanel {
+    overflow-x: auto;
+  }
+}

@@ -11,15 +11,18 @@ import Conflicts from './pages/Conflicts';
 import Availability from './pages/Availability';
 import Recommendations from './pages/Recommendations';
 import {
+  applyTask,
   confirmSchedule,
   createTask,
   loadCompanyAnalytics,
   loadEmployeeCabinet,
   loadHrDashboard,
+  loadAvailability,
   loadMyTasks,
   loadTasks,
   loadWorktimeData,
   loginUser,
+  generateTasksFromConflicts,
   updateTaskStatus
 } from './api/worktimeApi';
 
@@ -68,7 +71,7 @@ function LoginScreen({ onLogin }) {
   return (
     <main className="loginPage">
       <section className="loginCard fadeIn">
-        <div className="loginBrand">WorkTime-Sync <span className="versionBadge">v2.5</span></div>
+        <div className="loginBrand">WorkTime-Sync <span className="versionBadge">v2.6</span></div>
         <span className="eyebrow">Вход по роли</span>
         <h1>Откройте нужный контур: компания, HR, отдел или личный кабинет сотрудника</h1>
         <p>Фронтенд подключён к role-based API: user_id, demo-token, задачи, подтверждения графика и аналитика.</p>
@@ -130,6 +133,7 @@ export default function App() {
   const [companyAnalytics, setCompanyAnalytics] = useState(null);
   const [hrDashboard, setHrDashboard] = useState(null);
   const [employeeCabinet, setEmployeeCabinet] = useState(null);
+  const [availabilityRows, setAvailabilityRows] = useState([]);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
@@ -143,6 +147,7 @@ export default function App() {
     try {
       const overview = await loadWorktimeData(currentUser);
       setData(overview);
+      setAvailabilityRows(await loadAvailability(currentUser, overview.employees || []));
 
       const tasksLoader = currentUser.role === 'employee' ? loadMyTasks : loadTasks;
       setTasks(await tasksLoader(currentUser));
@@ -213,6 +218,27 @@ export default function App() {
     }
   }
 
+
+  async function handleApplyTask(taskId, payload = { action: 'apply' }) {
+    try {
+      await applyTask(user, taskId, payload);
+      setNotice('Решение применено, данные обновлены');
+      await reloadAll(user);
+    } catch (requestError) {
+      setNotice(requestError.message || 'Не удалось применить решение');
+    }
+  }
+
+  async function handleGenerateConflictTasks(payload = {}) {
+    try {
+      const result = await generateTasksFromConflicts(user, payload);
+      setNotice(`Создано задач: ${result.created ?? 0}`);
+      await reloadAll(user);
+    } catch (requestError) {
+      setNotice(requestError.message || 'Не удалось создать задачи по конфликтам');
+    }
+  }
+
   async function handleConfirmSchedule(employeeId, payload) {
     try {
       await confirmSchedule(user, employeeId, payload);
@@ -237,12 +263,12 @@ export default function App() {
       {notice && <div className="noticeToast">{notice}</div>}
 
       {page === 'executive' && <ExecutiveDashboard analytics={companyAnalytics} overview={data} setPage={setPage} />}
-      {page === 'hr' && <HRDashboard dashboard={hrDashboard} overview={data} user={user} onTaskStatusChange={handleTaskStatusChange} setPage={setPage} />}
+      {page === 'hr' && <HRDashboard dashboard={hrDashboard} overview={data} user={user} onTaskStatusChange={handleTaskStatusChange} onApplyTask={handleApplyTask} setPage={setPage} />}
       {page === 'employee' && <EmployeeCabinet cabinet={employeeCabinet} user={user} onConfirmSchedule={handleConfirmSchedule} onTaskStatusChange={handleTaskStatusChange} />}
-      {page === 'myTasks' && <Tasks user={user} tasks={tasks} employees={data.employees} events={data.events} onCreateTask={handleCreateTask} onTaskStatusChange={handleTaskStatusChange} />}
+      {page === 'myTasks' && <Tasks user={user} tasks={tasks} employees={data.employees} events={data.events} onCreateTask={handleCreateTask} onTaskStatusChange={handleTaskStatusChange} onApplyTask={handleApplyTask} onGenerateConflictTasks={handleGenerateConflictTasks} />}
       {page === 'dashboard' && <Dashboard data={data} setPage={setPage} />}
       {page === 'employees' && <Employees employees={data.employees} onOpen={openEmployee} department={user.department || 'Все отделы'} user={user} />}
-      {page === 'tasks' && <Tasks user={user} tasks={tasks} employees={data.employees} events={data.events} onCreateTask={handleCreateTask} onTaskStatusChange={handleTaskStatusChange} />}
+      {page === 'tasks' && <Tasks user={user} tasks={tasks} employees={data.employees} events={data.events} onCreateTask={handleCreateTask} onTaskStatusChange={handleTaskStatusChange} onApplyTask={handleApplyTask} onGenerateConflictTasks={handleGenerateConflictTasks} />}
       {page === 'profile' && selectedEmployee && (
         <EmployeeProfile
           employee={selectedEmployee}
@@ -252,7 +278,7 @@ export default function App() {
         />
       )}
       {page === 'conflicts' && <Conflicts events={data.events} />}
-      {page === 'availability' && <Availability employees={data.employees} slots={data.bestSlots} />}
+      {page === 'availability' && <Availability employees={data.employees} events={data.events} slots={data.bestSlots} rows={availabilityRows} />}
       {page === 'recommendations' && <Recommendations recommendations={data.recommendations} roadmap={data.roadmap} />}
     </Layout>
   );
