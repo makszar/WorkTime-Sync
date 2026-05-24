@@ -118,5 +118,85 @@
     "comment": "",
     "status": "pending",
     "updated_at": "2026-05-18T10:00:00"
-  }
+  },
+  {
+  "employee_id": 16,
+  "confirmed_by_user_id": "",
+  "confirmed_at": "",
+  "comment": "Ожидается подтверждение после релизной недели.",
+  "status": "pending",
+  "updated_at": "2026-05-20T10:00:00"
+},
+{
+  "employee_id": 17,
+  "confirmed_by_user_id": "emp17",
+  "confirmed_at": "2026-05-20T11:00:00",
+  "comment": "График актуален.",
+  "status": "confirmed",
+  "updated_at": "2026-05-20T11:00:00"
+},
+{
+  "employee_id": 18,
+  "confirmed_by_user_id": "",
+  "confirmed_at": "",
+  "comment": "Нужно уточнить рабочие часы из-за другого часового пояса.",
+  "status": "change_requested",
+  "updated_at": "2026-05-19T12:00:00"
+},
+{
+  "employee_id": 19,
+  "confirmed_by_user_id": "emp19",
+  "confirmed_at": "2026-05-19T15:30:00",
+  "comment": "График актуален.",
+  "status": "confirmed",
+  "updated_at": "2026-05-19T15:30:00"
+},
+{
+  "employee_id": 20,
+  "confirmed_by_user_id": "",
+  "confirmed_at": "",
+  "comment": "",
+  "status": "pending",
+  "updated_at": "2026-05-18T10:00:00"
+},
+{
+  "employee_id": 21,
+  "confirmed_by_user_id": "",
+  "confirmed_at": "",
+  "comment": "Рабочее время не совпадает с фактическими QA-синками.",
+  "status": "rejected",
+  "updated_at": "2026-05-19T10:00:00"
+},
+{
+  "employee_id": 22,
+  "confirmed_by_user_id": "emp22",
+  "confirmed_at": "2026-05-20T09:30:00",
+  "comment": "График актуален.",
+  "status": "confirmed",
+  "updated_at": "2026-05-20T09:30:00"
+},
+{
+  "employee_id": 23,
+  "confirmed_by_user_id": "",
+  "confirmed_at": "",
+  "comment": "Прошу обновить график: фактически начинаю раньше.",
+  "status": "change_requested",
+  "updated_at": "2026-05-20T10:30:00"
+},
+{
+  "employee_id": 24,
+  "confirmed_by_user_id": "emp24",
+  "confirmed_at": "2026-05-19T16:00:00",
+  "comment": "График актуален.",
+  "status": "confirmed",
+  "updated_at": "2026-05-19T16:00:00"
+},
+{
+  "employee_id": 25,
+  "confirmed_by_user_id": "",
+  "confirmed_at": "",
+  "comment": "",
+  "status": "pending",
+  "updated_at": "2026-05-18T11:00:00"
+}
 ]
