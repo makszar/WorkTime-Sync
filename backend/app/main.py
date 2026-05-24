@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -56,6 +56,45 @@ def get_user(user_id): return next((u for u in load_users() if u.get("id")==user
 def require_user(user_id):
     user=get_user(user_id)
     if not user: raise HTTPException(status_code=401,detail="Неизвестный пользователь или не передан user_id")
+    return user
+
+def get_user_by_login(login):
+    return next((u for u in load_users() if u.get("login")==login), None) if login else None
+
+def get_user_from_authorization(authorization):
+    if not authorization:
+        return None
+
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        raise HTTPException(status_code=401, detail="Некорректный Authorization header")
+
+    if not token.startswith("demo-"):
+        raise HTTPException(status_code=401, detail="Некорректный demo-token")
+
+    login = token.removeprefix("demo-")
+    user = get_user_by_login(login)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Пользователь из token не найден")
+
+    return user
+
+def resolve_user(user_id=None, authorization=None):
+    token_user = get_user_from_authorization(authorization)
+    query_user = get_user(user_id)
+
+    if token_user and query_user and token_user.get("id") != query_user.get("id"):
+        raise HTTPException(status_code=403, detail="user_id не совпадает с token")
+
+    return token_user or query_user
+
+def require_resolved_user(user_id=None, authorization=None):
+    user = resolve_user(user_id, authorization)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Неизвестный пользователь или не передан token/user_id")
+
     return user
 
 def filter_by_department(department,employees,events,hr_profiles,absences):
@@ -160,8 +199,12 @@ def get_data_source(): return get_data_source_info()
 @app.get("/schemas")
 def get_schemas(): return get_schema_definitions()
 @app.get("/api/worktime/overview")
-def get_worktime_overview(department:str|None=None,user_id:str|None=None):
-    e,ev,hr,a,t,c=get_extended_data(); user=get_user(user_id); scoped=apply_user_scope(user,e,ev,hr,a,department); result=build_worktime_overview(*scoped)
+def get_worktime_overview(
+    department: str | None = None,
+    user_id: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    e,ev,hr,a,t,c=get_extended_data(); user=resolve_user(user_id, authorization); scoped=apply_user_scope(user,e,ev,hr,a,department); result=build_worktime_overview(*scoped)
     ids={int(x["id"]) for x in scoped[0]}; scoped_tasks=[x for x in t if int(x["employee_id"]) in ids]; src=get_data_source_info()
     result.update({"tasks":enrich_tasks(scoped_tasks,e,ev),"taskStatusCounts":task_status_counts(scoped_tasks),"total_synthetic_employees":len(e),"departments":departments_from_employees(e),"currentUser":public_user(user) if user else None,"meta":{"backend_version":app.version,"data_source":src["active_source"],"department":department,"user_id":user_id,"scope":user.get("scope") if user else None,"role":user.get("role") if user else None,"employees_count":len(scoped[0]),"events_count":len(scoped[1]),"hr_profiles_count":len(scoped[2]),"absences_count":len(scoped[3]),"tasks_count":len(scoped_tasks),"total_employees_count":len(e),"generated_at":datetime.now().isoformat(timespec="seconds")}})
     return result
@@ -172,8 +215,11 @@ def get_employees(department:str|None=None,user_id:str|None=None):
 def get_frontend_employees(department:str|None=None,user_id:str|None=None):
     e,ev,hr,a=get_data(); return build_worktime_overview(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))["employees"]
 @app.get("/employees/me")
-def get_my_employee(user_id:str):
-    user=require_user(user_id)
+def get_my_employee(
+    user_id: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    user=require_resolved_user(user_id, authorization)
     if user.get("role")!="employee": raise HTTPException(status_code=403,detail="Личный кабинет доступен только роли employee")
     e,ev,hr,a,t,c=get_extended_data(); eid=int(user.get("employee_id") or 0); employee=next((x for x in e if int(x["id"])==eid),None)
     if not employee: raise HTTPException(status_code=404,detail="Сотрудник не найден")
@@ -195,8 +241,13 @@ def get_employee_risk_explanation(employee_id:int,user_id:str|None=None):
     if user and not can_access_employee(user,emp): raise HTTPException(status_code=403,detail="Нет доступа к этому сотруднику")
     return build_risk_explanation(employee_id,e,ev,hr,a,c)
 @app.patch("/employees/{employee_id}/confirm-schedule")
-def confirm_employee_schedule(employee_id:int,payload:ConfirmScheduleRequest,user_id:str):
-    user=require_user(user_id); e,ev,hr,a,t,c=get_extended_data(); emp=next((x for x in e if int(x["id"])==employee_id),None)
+def confirm_employee_schedule(
+    employee_id: int,
+    payload: ConfirmScheduleRequest,
+    user_id: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    user=require_resolved_user(user_id, authorization); e,ev,hr,a,t,c=get_extended_data(); emp=next((x for x in e if int(x["id"])==employee_id),None)
     if not emp: raise HTTPException(status_code=404,detail="Сотрудник не найден")
     if not can_access_employee(user,emp): raise HTTPException(status_code=403,detail="Нет доступа к подтверждению графика")
     ts=now_iso(); record={"employee_id":employee_id,"confirmed_by_user_id":user["id"],"confirmed_at":ts,"comment":payload.comment,"status":"confirmed","updated_at":ts}; old=next((x for x in c if int(x["employee_id"])==employee_id),None)
@@ -209,15 +260,21 @@ def confirm_employee_schedule(employee_id:int,payload:ConfirmScheduleRequest,use
 def get_analytics_summary(department:str|None=None,user_id:str|None=None):
     e,ev,hr,a=get_data(); return build_summary(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))
 @app.get("/analytics/company")
-def get_analytics_company(user_id:str):
-    user=require_user(user_id)
+def get_analytics_company(
+    user_id: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    user=require_resolved_user(user_id, authorization)
     if user.get("role") not in {"executive","hr"}: raise HTTPException(status_code=403,detail="Company analytics доступны только executive или HR")
     e,ev,hr,a,t,c=get_extended_data(); result=build_company_analytics(e,ev,hr,a); conflicts=build_conflicts(e,ev); conflict_counts=Counter(next((emp["team"] for emp in e if int(emp["id"])==int(x["employeeId"])),"unknown") for x in conflicts)
     result.update({"tasksByDepartment":tasks_by_department(t),"taskStatusCounts":task_status_counts(t),"pendingTasks":sum(1 for x in t if x["status"]=="pending"),"rejectedTasks":sum(1 for x in t if x["status"]=="rejected"),"scheduleConfirmationRate":confirmation_rate(e,c),"confirmationByDepartment":confirmation_stats_by_department(e,c),"worstConfirmationDepartments":sorted(confirmation_stats_by_department(e,c),key=lambda x:x["confirmationRate"])[:3],"outsideWorkMeetingDepartments":[{"department":dep,"outsideWorkMeetings":cnt} for dep,cnt in sorted(conflict_counts.items())]})
     return result
 @app.get("/analytics/hr-dashboard")
-def get_hr_dashboard(user_id:str):
-    user=require_user(user_id)
+def get_hr_dashboard(
+    user_id: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    user=require_resolved_user(user_id, authorization)
     if user.get("role") not in {"hr","executive"}: raise HTTPException(status_code=403,detail="HR dashboard доступен только HR или executive")
     e,ev,hr,a,t,c=get_extended_data(); result=build_hr_dashboard(e,ev,hr,a,t,c); today=date(2026,5,19)
     result.update({"pendingTasks":enrich_tasks([x for x in t if x["status"]=="pending"],e,ev),"rejectedTasks":enrich_tasks([x for x in t if x["status"]=="rejected"],e,ev),"overdueTasks":enrich_tasks([x for x in t if x["status"]=="pending" and date.fromisoformat(x["due_date"])<today],e,ev),"changeRequestedConfirmations":[x for x in c if x.get("status")=="change_requested"],"confirmationByDepartment":confirmation_stats_by_department(e,c),"taskStatusCounts":task_status_counts(t)})
@@ -247,33 +304,54 @@ def get_notifications(department:str|None=None,user_id:str|None=None):
 def get_meeting_slots(department:str|None=None,user_id:str|None=None):
     e,ev,hr,a=get_data(); return build_best_slots(*apply_user_scope(get_user(user_id),e,ev,hr,a,department))
 @app.get("/tasks")
-def get_tasks(user_id:str,status:str|None=None,department:str|None=None):
-    user=require_user(user_id); e,ev,_,_,t,_=get_extended_data(); visible=[x for x in t if can_view_task(user,x)]
+def get_tasks(
+    user_id: str | None = None,
+    status: str | None = None,
+    department: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    user=require_resolved_user(user_id, authorization); e,ev,_,_,t,_=get_extended_data(); visible=[x for x in t if can_view_task(user,x)]
     if status: visible=[x for x in visible if x.get("status")==status]
     if department: visible=[x for x in visible if x.get("department")==department]
     return enrich_tasks(visible,e,ev)
 @app.get("/tasks/my")
-def get_my_tasks(user_id:str):
-    user=require_user(user_id)
+def get_my_tasks(
+    user_id: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    user=require_resolved_user(user_id, authorization)
     if user.get("role")!="employee": raise HTTPException(status_code=403,detail="/tasks/my доступен только сотрудникам")
     e,ev,_,_,t,_=get_extended_data(); my=[x for x in t if int(x["employee_id"])==int(user.get("employee_id") or 0)]
     return enrich_tasks(my,e,ev)
 @app.post("/tasks")
-def create_task(payload:TaskCreateRequest,user_id:str):
-    user=require_user(user_id); e,ev,_,_=get_data(); emp=next((x for x in e if int(x["id"])==payload.employee_id),None)
+def create_task(
+    payload: TaskCreateRequest,
+    user_id: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    user=require_resolved_user(user_id, authorization); e,ev,_,_=get_data(); emp=next((x for x in e if int(x["id"])==payload.employee_id),None)
     if not emp: raise HTTPException(status_code=404,detail="Сотрудник не найден")
     if not can_create_task_for_employee(user,emp): raise HTTPException(status_code=403,detail="Нет прав создать задачу этому сотруднику")
     validate_task_payload(payload,emp,ev); t=load_tasks(); ts=now_iso(); task={"id":max([int(x["id"]) for x in t],default=0)+1,"employee_id":payload.employee_id,"created_by_user_id":user["id"],"created_by_role":user["role"],"department":emp["team"],"type":payload.type,"title":payload.title,"description":payload.description,"due_date":payload.due_date,"status":"pending","employee_comment":"","created_at":ts,"updated_at":ts,"related_event_id":payload.related_event_id,"meeting_action":payload.meeting_action,"suggested_start_datetime":payload.suggested_start_datetime,"suggested_end_datetime":payload.suggested_end_datetime}
     t.append(task); save_tasks(t); return enrich_tasks([task],e,ev)[0]
 @app.get("/tasks/{task_id}")
-def get_task(task_id:int,user_id:str):
-    user=require_user(user_id); e,ev,_,_,t,_=get_extended_data(); task=next((x for x in t if int(x["id"])==task_id),None)
+def get_task(
+    task_id: int,
+    user_id: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    user=require_resolved_user(user_id, authorization); e,ev,_,_,t,_=get_extended_data(); task=next((x for x in t if int(x["id"])==task_id),None)
     if not task: raise HTTPException(status_code=404,detail="Задача не найдена")
     if not can_view_task(user,task): raise HTTPException(status_code=403,detail="Нет доступа к задаче")
     return enrich_tasks([task],e,ev)[0]
 @app.patch("/tasks/{task_id}/status")
-def update_task_status(task_id:int,payload:TaskStatusRequest,user_id:str):
-    user=require_user(user_id); e,ev,_,_,t,_=get_extended_data(); task=next((x for x in t if int(x["id"])==task_id),None)
+def update_task_status(
+    task_id: int,
+    payload: TaskStatusRequest,
+    user_id: str | None = None,
+    authorization: str | None = Header(default=None)
+):
+    user=require_resolved_user(user_id, authorization); e,ev,_,_,t,_=get_extended_data(); task=next((x for x in t if int(x["id"])==task_id),None)
     if not task: raise HTTPException(status_code=404,detail="Задача не найдена")
     if payload.status not in ALLOWED_TASK_STATUSES: raise HTTPException(status_code=400,detail=f"Неизвестный статус задачи: {payload.status}")
     if payload.status in COMMENT_REQUIRED_STATUSES and not payload.employee_comment.strip(): raise HTTPException(status_code=400,detail="Для rejected/reschedule_requested комментарий обязателен")

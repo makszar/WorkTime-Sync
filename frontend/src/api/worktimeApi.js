@@ -76,16 +76,17 @@ function normalizeSummary(summary, scopedEmployees, events) {
 }
 
 function normalizeOverview(payload, user) {
-  const department = departmentFilter(user);
-  const scopedEmployees = department
-    ? (payload.employees || []).filter((employee) => employee.team === department)
-    : (payload.employees || []);
+  const scopedEmployees = payload.employees || [];
   const employeeIds = new Set(scopedEmployees.map((employee) => employee.id));
   const events = (payload.events || payload.conflicts || []).filter((event) => employeeIds.has(event.employeeId));
 
   return {
     employees: scopedEmployees,
     events,
+    tasks: payload.tasks || [],
+    taskStatusCounts: payload.taskStatusCounts || payload.task_status_counts || {},
+    currentUser: payload.currentUser || payload.current_user || user || null,
+    meta: payload.meta || {},
     roadmap: payload.roadmap || roadmap,
     summary: normalizeSummary(payload.summary, scopedEmployees, events),
     recommendations: payload.recommendations || makeRecommendations(scopedEmployees, events),
@@ -110,7 +111,10 @@ export async function loginUser(credentials) {
         body: JSON.stringify({ login, password })
       });
 
-      return response.user;
+      return {
+      ...response.user,
+      token: response.token
+    };
     } catch (error) {
       // For local demos without a running backend we fall back to the same demo accounts.
     }
@@ -121,14 +125,18 @@ export async function loginUser(credentials) {
     throw new Error('Неверный логин или пароль');
   }
 
-  return publicUser(user);
+    const safeUser = publicUser(user);
+
+  return {
+    ...safeUser,
+    token: `demo-${safeUser.login}`
+  };
 }
 
 export async function loadWorktimeData(user) {
   if (!FORCE_MOCK_DATA) {
     try {
-      const department = departmentFilter(user);
-      const query = department ? `?department=${encodeURIComponent(department)}` : '';
+      const query = user?.id ? `?user_id=${encodeURIComponent(user.id)}` : '';
       const payload = await request(`/api/worktime/overview${query}`);
       return normalizeOverview(payload, user);
     } catch (error) {
